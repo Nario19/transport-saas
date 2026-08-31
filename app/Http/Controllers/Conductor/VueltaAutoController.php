@@ -143,6 +143,13 @@ class VueltaAutoController extends Controller
         $conductor = auth()->user()->conductor;
         $vuelta = Vuelta::where('conductor_id', $conductor->id)
             ->where('estado', 'activa')
+            ->with([
+                'ruta.paraderos' => function ($q) {
+                    $q->orderBy('orden');
+                },
+                'vehiculo',
+                'paraderoSalida'
+            ])
             ->latest()
             ->first();
 

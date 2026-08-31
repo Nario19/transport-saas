@@ -5,6 +5,51 @@
     $pageSubtitle = 'Registro y monitoreo de recorridos operativos';
 @endphp
 
+@section('extra_css')
+<style>
+    .cronometro-live-badge {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 15px;
+        font-weight: 900;
+        padding: 7px 14px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        letter-spacing: 0.5px;
+        box-shadow: 0 2px 8px rgba(34, 197, 94, 0.22);
+        background: #ecfdf5;
+        color: #15803d;
+        border: 1.5px solid #86efac;
+    }
+    .cronometro-live-badge.excedido {
+        background: #fef2f2;
+        color: #b91c1c;
+        border-color: #fca5a5;
+        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.22);
+    }
+    .cronometro-completada-badge {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 14.5px;
+        font-weight: 800;
+        padding: 7px 13px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        letter-spacing: 0.3px;
+        background: #f8fafc;
+        color: #334155;
+        border: 1px solid #cbd5e1;
+    }
+    .cronometro-completada-badge.excedido {
+        background: #fef2f2;
+        color: #dc2626;
+        border-color: #fecaca;
+    }
+</style>
+@endsection
+
 @section('content')
     <div class="panel">
         
@@ -96,7 +141,7 @@
                             <th>Ruta Operativa</th>
                             <th>Salida</th>
                             <th>Llegada</th>
-                            <th>Duracion</th>
+                            <th style="min-width: 170px;">Tiempo / Cronómetro</th>
                             <th class="col-status" style="width: 150px;">Estado</th>
                             <th>G Salida</th>
                             <th>G Llegada</th>
@@ -141,23 +186,26 @@
                                             $hh = floor($sec / 3600);
                                             $mm = floor(($sec % 3600) / 60);
                                             $ss = $sec % 60;
-                                            $dur = ($hh > 0 ? "{$hh}h " : "0h ") . "{$mm}m {$ss}s";
+                                            $dur = ($hh > 0 ? "{$hh}h " : "") . "{$mm}m " . str_pad($ss, 2, '0', STR_PAD_LEFT) . "s";
                                         @endphp
                                         @if($excede)
-                                            <span class="pill red" style="font-weight: 800; font-family: monospace; font-size: 14px; padding: 8px 14px;" title="Estimado de Ruta: {{ $estimado }} min">
-                                                <i class="fa-solid fa-triangle-exclamation" style="margin-right: 5px;"></i> {{ $dur }} (Excedido)
+                                            <span class="cronometro-completada-badge excedido" title="Estimado de Ruta: {{ $estimado }} min (Superado)">
+                                                <i class="fa-solid fa-triangle-exclamation" style="font-size: 13px;"></i>
+                                                <span>{{ $dur }}</span>
+                                                <span style="font-size: 10.5px; opacity: 0.85; font-weight: 700;">(+{{ $minutosTotal - $estimado }}m)</span>
                                             </span>
                                         @else
-                                            <span class="pill gray" style="font-weight: 800; font-family: monospace; font-size: 14px; padding: 8px 14px;">
-                                                <i class="fa-regular fa-clock" style="margin-right: 5px;"></i> {{ $dur }}
+                                            <span class="cronometro-completada-badge">
+                                                <i class="fa-regular fa-clock" style="color: #64748b; font-size: 13px;"></i>
+                                                <span>{{ $dur }}</span>
                                             </span>
                                         @endif
                                     @else
-                                        <span class="duracion-vivo pill green" 
+                                        <span class="duracion-vivo cronometro-live-badge" 
                                               data-salida-timestamp="{{ \Carbon\Carbon::parse($vuelta->fecha->format('Y-m-d') . ' ' . $vuelta->hora_salida)->timestamp * 1000 }}"
-                                              data-estimado-minutos="{{ $vuelta->ruta?->duracion_min ?? 0 }}"
-                                              style="font-family: monospace; font-weight: 800; font-size: 14px; padding: 8px 14px;">
-                                            <i class="fa-regular fa-clock" style="margin-right: 5px;"></i> En Ruta...
+                                              data-estimado-minutos="{{ $vuelta->ruta?->duracion_min ?? 0 }}">
+                                            <span class="pulse-dot" style="width: 8px; height: 8px; background: #22c55e; margin: 0; display: inline-block;"></span>
+                                            <span>En Ruta...</span>
                                         </span>
                                     @endif
                                 </td>
@@ -276,18 +324,20 @@
                     const mm = Math.floor(residuo / 60);
                     const ss = residuo % 60;
                     
-                    let durStr = `${hh}h ${mm}m ${ss}s`;
+                    let durStr = (hh > 0 ? `${hh}h ` : "") + `${mm}m ` + String(ss).padStart(2, '0') + "s";
 
                     const diffMin = Math.floor(diff / 60);
                     const estimado = parseInt(el.getAttribute('data-estimado-minutos')) || 0;
                     const excede = estimado > 0 && diffMin > estimado;
 
                     if (excede) {
-                        el.className = "duracion-vivo pill red";
-                        el.innerHTML = `<i class="fa-solid fa-triangle-exclamation" style="margin-right: 5px;"></i> ${durStr} (Excedido)`;
+                        el.className = "duracion-vivo cronometro-live-badge excedido";
+                        el.title = `Estimado de Ruta: ${estimado} min (Superado)`;
+                        el.innerHTML = `<i class="fa-solid fa-triangle-exclamation" style="font-size: 13px;"></i> <span>${durStr}</span> <span style="font-size: 10.5px; opacity: 0.85; font-weight: 700;">(+${diffMin - estimado}m)</span>`;
                     } else {
-                        el.className = "duracion-vivo pill green";
-                        el.innerHTML = `<i class="fa-regular fa-clock" style="margin-right: 5px;"></i> ${durStr}`;
+                        el.className = "duracion-vivo cronometro-live-badge";
+                        el.title = `En Ruta (Estimado: ${estimado} min)`;
+                        el.innerHTML = `<span class="pulse-dot" style="width: 8px; height: 8px; background: #22c55e; margin: 0; display: inline-block;"></span> <i class="fa-regular fa-clock" style="font-size: 13px; color: #16a34a;"></i> <span>${durStr}</span>`;
                     }
                 });
             }

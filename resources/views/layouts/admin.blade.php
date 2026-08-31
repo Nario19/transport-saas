@@ -80,7 +80,7 @@
                     </a>
                     <a href="{{ route('superadmin.permisos.index') }}"
                         class="nav-item nav-item-modern {{ request()->routeIs('superadmin.permisos.*') ? 'active' : '' }}">
-                        <span class="ni"><i class="fa-solid fa-clock-rotate-left"></i></span> Permisos Globales
+                        <span class="ni"><i class="fa-solid fa-key"></i></span> Permisos Globales
                     </a>
                 </div>
             @endrole

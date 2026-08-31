@@ -46,8 +46,8 @@
                     <a href="{{ route('superadmin.permisos.index') }}" class="btn-secondary" style="height: 45px; display: inline-flex; align-items: center; padding: 0 20px; text-decoration: none; border-radius: 10px; font-weight: 700;">
                         Cancelar
                     </a>
-                    <button type="submit" class="btn-primary" style="height: 45px; padding: 0 25px; border-radius: 10px; font-weight: 700;">
-                        💾 Actualizar Permiso
+                    <button type="submit" class="btn-primary" style="height: 45px; padding: 0 25px; border-radius: 10px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-floppy-disk"></i> Actualizar Permiso
                     </button>
                 </div>
             </form>

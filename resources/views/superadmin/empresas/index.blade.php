@@ -56,9 +56,9 @@
                                         @endif
                                         <div>
                                             <div style="font-weight: 800; color: var(--text); font-size: 14px;">{{ $empresa->nombre }}</div>
-                                            <div style="font-size: 11px; color: var(--text3); display: flex; gap: 10px;">
-                                                <span>🆔 RUC: {{ $empresa->ruc ?? 'No definido' }}</span>
-                                                <span>📅 {{ $empresa->created_at->format('d/m/Y') }}</span>
+                                            <div style="font-size: 11px; color: var(--text3); display: flex; gap: 12px; margin-top: 2px;">
+                                                <span><i class="fa-solid fa-id-card" style="color: var(--accent); margin-right: 4px;"></i>RUC: {{ $empresa->ruc ?? 'No definido' }}</span>
+                                                <span><i class="fa-solid fa-calendar-days" style="color: var(--text3); margin-right: 4px;"></i>{{ $empresa->created_at->format('d/m/Y') }}</span>
                                             </div>
                                         </div>
                                     </div>

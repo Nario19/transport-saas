@@ -12,8 +12,9 @@
         <div class="card"
             style="padding: 24px; display: flex; align-items: center; gap: 20px; border-left: 5px solid var(--gold);">
             <div
-                style="font-size: 35px; background: rgba(255, 215, 0, 0.1); width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 15px;">
-                🏢</div>
+                style="font-size: 26px; background: rgba(255, 215, 0, 0.12); color: var(--gold); width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 15px;">
+                <i class="fa-solid fa-building"></i>
+            </div>
             <div>
                 <div
                     style="font-size: 13px; color: var(--text3); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">
@@ -25,8 +26,9 @@
         <div class="card"
             style="padding: 24px; display: flex; align-items: center; gap: 20px; border-left: 5px solid #22c55e;">
             <div
-                style="font-size: 35px; background: rgba(34, 197, 94, 0.1); width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 15px;">
-                👥</div>
+                style="font-size: 26px; background: rgba(34, 197, 94, 0.12); color: #16a34a; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 15px;">
+                <i class="fa-solid fa-users"></i>
+            </div>
             <div>
                 <div
                     style="font-size: 13px; color: var(--text3); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">
@@ -38,8 +40,9 @@
         <div class="card"
             style="padding: 24px; display: flex; align-items: center; gap: 20px; border-left: 5px solid var(--accent);">
             <div
-                style="font-size: 35px; background: rgba(29, 78, 216, 0.1); width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 15px;">
-                📈</div>
+                style="font-size: 26px; background: rgba(29, 78, 216, 0.12); color: var(--accent); width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 15px;">
+                <i class="fa-solid fa-chart-line"></i>
+            </div>
             <div>
                 <div
                     style="font-size: 13px; color: var(--text3); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">

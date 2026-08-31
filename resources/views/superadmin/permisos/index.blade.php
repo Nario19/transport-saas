@@ -24,8 +24,8 @@
                                style="padding-left: 40px; height: 45px; border-radius: 10px; border: 1.5px solid var(--border); width: 100%; font-size: 14px;">
                         <i class="fa-solid fa-search" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text3);"></i>
                     </div>
-                    <button type="submit" class="btn-primary" style="height: 45px; padding: 0 20px; font-weight: 700; border-radius: 10px;">
-                        🔍 Buscar
+                    <button type="submit" class="btn-primary" style="height: 45px; padding: 0 20px; font-weight: 700; border-radius: 10px; display: inline-flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-magnifying-glass"></i> Buscar
                     </button>
                     @if($search)
                         <a href="{{ route('superadmin.permisos.index') }}" class="btn-secondary" style="height: 45px; display: flex; align-items: center; justify-content: center; padding: 0 15px; border-radius: 10px; text-decoration: none;" title="Limpiar búsqueda">

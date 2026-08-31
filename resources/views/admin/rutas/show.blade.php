@@ -307,6 +307,84 @@
             }
         });
 
+        function construirTrazadoDesdeParaderos(paraderosList) {
+            const validos = (paraderosList || []).filter(p => p.latitud_a && p.longitud_a);
+            if (validos.length === 0) return [[]];
+            if (validos.length === 1) return [[[parseFloat(validos[0].latitud_a), parseFloat(validos[0].longitud_a)]]];
+
+            const origenes = validos.filter(p => p.tipo === 'origen');
+            const intermedios = validos.filter(p => p.tipo === 'intermedio');
+            const destinos = validos.filter(p => p.tipo === 'destino');
+
+            const getCoord = (p) => [parseFloat(p.latitud_a), parseFloat(p.longitud_a)];
+
+            if (origenes.length <= 1 && destinos.length <= 1) {
+                return [ validos.map(getCoord) ];
+            }
+
+            const branches = [];
+
+            if (destinos.length > 1 && origenes.length <= 1) {
+                const trunkParaderos = [];
+                if (origenes.length === 1) trunkParaderos.push(origenes[0]);
+                trunkParaderos.push(...intermedios);
+
+                const forkPoint = trunkParaderos.length > 0 ? trunkParaderos[trunkParaderos.length - 1] : null;
+                const forkCoord = forkPoint ? getCoord(forkPoint) : null;
+                const trunkCoords = trunkParaderos.map(getCoord);
+
+                branches.push([...trunkCoords, getCoord(destinos[0])]);
+
+                for (let i = 1; i < destinos.length; i++) {
+                    if (forkCoord) {
+                        branches.push([forkCoord, getCoord(destinos[i])]);
+                    } else {
+                        branches.push([getCoord(destinos[i])]);
+                    }
+                }
+                return branches;
+            }
+
+            if (origenes.length > 1 && destinos.length <= 1) {
+                const trunkParaderos = [...intermedios];
+                if (destinos.length === 1) trunkParaderos.push(destinos[0]);
+
+                const joinPoint = trunkParaderos.length > 0 ? trunkParaderos[0] : null;
+                const joinCoord = joinPoint ? getCoord(joinPoint) : null;
+                const trunkCoords = trunkParaderos.map(getCoord);
+
+                branches.push([getCoord(origenes[0]), ...trunkCoords]);
+
+                for (let i = 1; i < origenes.length; i++) {
+                    if (joinCoord) {
+                        branches.push([getCoord(origenes[i]), joinCoord]);
+                    } else {
+                        branches.push([getCoord(origenes[i])]);
+                    }
+                }
+                return branches;
+            }
+
+            const trunkCoords = intermedios.map(getCoord);
+            const firstInterCoord = trunkCoords.length > 0 ? trunkCoords[0] : (destinos.length > 0 ? getCoord(destinos[0]) : null);
+            const lastInterCoord = trunkCoords.length > 0 ? trunkCoords[trunkCoords.length - 1] : (origenes.length > 0 ? getCoord(origenes[0]) : null);
+
+            const mainBranch = [];
+            if (origenes.length > 0) mainBranch.push(getCoord(origenes[0]));
+            mainBranch.push(...trunkCoords);
+            if (destinos.length > 0) mainBranch.push(getCoord(destinos[0]));
+            branches.push(mainBranch);
+
+            for (let i = 1; i < origenes.length; i++) {
+                if (firstInterCoord) branches.push([getCoord(origenes[i]), firstInterCoord]);
+            }
+            for (let i = 1; i < destinos.length; i++) {
+                if (lastInterCoord) branches.push([lastInterCoord, getCoord(destinos[i])]);
+            }
+
+            return branches.length > 0 ? branches : [ validos.map(getCoord) ];
+        }
+
         const customTrazado = @json(is_string($ruta->trazado) ? json_decode($ruta->trazado, true) : $ruta->trazado);
         const customColor = '{{ $ruta->color ?? "#3b82f6" }}';
 
@@ -325,8 +403,14 @@
                 allFlatCoords = lineCoords;
             }
         } else {
-            lineCoords = latlngs;
-            allFlatCoords = latlngs;
+            const autoB = construirTrazadoDesdeParaderos(paraderos);
+            if (autoB.length === 1) {
+                lineCoords = autoB[0];
+                allFlatCoords = autoB[0];
+            } else {
+                lineCoords = autoB;
+                autoB.forEach(b => b.forEach(c => allFlatCoords.push(c)));
+            }
         }
 
         if (allFlatCoords.length >= 2) {

@@ -32,14 +32,6 @@
                         </div>
                     </div>
                 </div>
-
-                @unless (auth()->user()->hasRole('SUPER_ADMIN'))
-                    @can('gestionar ajustes de empresa')
-                        <a href="{{ route('ajustes.index') }}" title="Ajustes de Empresa" class="logout-btn-modern">
-                            <i class="fa-solid fa-gear" style="font-size: 15px; color: #8e8e93;"></i>
-                        </a>
-                    @endcan
-                @endunless
             </div>
         </div>
 

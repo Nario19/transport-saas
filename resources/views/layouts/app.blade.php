@@ -22,6 +22,9 @@
         (function() {
             const theme = localStorage.getItem('theme') || 'light';
             document.documentElement.setAttribute('data-theme', theme);
+            if (localStorage.getItem('sidebar_collapsed') === 'true' && window.innerWidth > 768) {
+                document.documentElement.classList.add('sb-collapsed-init');
+            }
         })();
     </script>
     <style>
@@ -87,6 +90,15 @@
             font-size: 16px;
         }
 
+        html.sb-collapsed-init body .sb-modern {
+            transform: translateX(-100%) !important;
+            transition: none !important;
+        }
+        html.sb-collapsed-init body .main-modern {
+            margin-left: 0 !important;
+            transition: none !important;
+        }
+
         /* ── SIDEBAR ── */
         .sb {
             width: 232px;
@@ -99,6 +111,7 @@
             display: flex;
             flex-direction: column;
             z-index: 200;
+            transition: transform 0.25s ease;
         }
 
         .sb-brand {
@@ -280,6 +293,16 @@
             display: flex;
             flex-direction: column;
             min-height: 100vh;
+            transition: margin-left 0.25s ease;
+        }
+
+        /* Colapso en Desktop */
+        body.sb-collapsed .sb-modern {
+            transform: translateX(-100%);
+        }
+
+        body.sb-collapsed .main-modern {
+            margin-left: 0 !important;
         }
 
         .topbar {
@@ -1278,20 +1301,21 @@
         
         /* Toggle and Backdrop elements */
         .sb-toggle-btn {
-            display: none;
+            display: flex;
             background: none;
             border: none;
             color: var(--text2);
-            font-size: 20px;
+            font-size: 18px;
             cursor: pointer;
-            padding: 8px;
+            padding: 8px 10px;
             border-radius: 8px;
             align-items: center;
             justify-content: center;
-            transition: background 0.15s;
+            transition: background 0.15s, color 0.15s;
         }
         .sb-toggle-btn:hover {
             background: var(--border);
+            color: var(--accent);
         }
         .sb-backdrop {
             display: none;
@@ -1453,13 +1477,29 @@
         }
 
         function toggleSidebar() {
+            const isMobile = window.innerWidth <= 768;
             const sidebar = document.querySelector('.sb-modern');
             const backdrop = document.getElementById('sbBackdrop');
-            if (sidebar && backdrop) {
-                sidebar.classList.toggle('active');
-                backdrop.classList.toggle('active');
+            
+            if (isMobile) {
+                if (sidebar && backdrop) {
+                    sidebar.classList.toggle('active');
+                    backdrop.classList.toggle('active');
+                }
+            } else {
+                document.body.classList.toggle('sb-collapsed');
+                const isCollapsed = document.body.classList.contains('sb-collapsed');
+                localStorage.setItem('sidebar_collapsed', isCollapsed ? 'true' : 'false');
+                document.documentElement.classList.remove('sb-collapsed-init');
             }
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.innerWidth > 768 && localStorage.getItem('sidebar_collapsed') === 'true') {
+                document.body.classList.add('sb-collapsed');
+            }
+            document.documentElement.classList.remove('sb-collapsed-init');
+        });
     </script>
 </body>
 

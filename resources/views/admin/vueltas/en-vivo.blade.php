@@ -136,7 +136,7 @@
                         <div style="font-size: 10px; color: var(--text2); font-weight: 700; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 110px;" title="{{ $nombreCompleto }}">{{ $nombreCompleto }}</div>
                     </div>
                 </div>
-                <button type="button" onclick="event.stopPropagation(); activarEditorGrupo('{{ addslashes($nombreRuta) }}', '{{ json_encode($grupoRutas->toArray()) }}');" title="Editar trazado de la ruta" 
+                <button type="button" onclick="event.stopPropagation(); activarEditorGrupo('{{ addslashes($nombreRuta) }}');" title="Editar trazado de la ruta" 
                         style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--bg2); color: var(--text3); border: 1px solid var(--border); cursor: pointer;">
                     <i class="fa-solid fa-pencil" style="font-size: 10px;"></i>
                 </button>
@@ -505,14 +505,9 @@ document.addEventListener('DOMContentLoaded', function() {
         recalcularYRenderizarStatsPorRuta(todasLasVueltas);
     };
 
-    window.activarEditorGrupo = function(nombreGrupo, rutasJson) {
-        let rutas;
-        try {
-            rutas = typeof rutasJson === 'string' ? JSON.parse(rutasJson) : rutasJson;
-        } catch(e) {
-            console.error("Error parsing routes JSON", e);
-            return;
-        }
+    window.activarEditorGrupo = function(nombreGrupo) {
+        const rutas = rutasTrazados.filter(r => r.nombre === nombreGrupo);
+        if (!rutas || rutas.length === 0) return;
 
         if (rutas.length === 1) {
             activarEditorTrazado(rutas[0].id);
@@ -891,7 +886,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <div style="font-size: 10px; color: var(--text2); font-weight: 700; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 110px;" title="${nombreCompleto}">${nombreCompleto}</div>
                             </div>
                         </div>
-                        <button type="button" onclick="event.stopPropagation(); activarEditorGrupo('${nombreRuta.replace(/'/g, "\\'")}', '${JSON.stringify(grupoRutas).replace(/'/g, "\\'")}');" title="Editar trazado de la ruta" 
+                        <button type="button" onclick="event.stopPropagation(); activarEditorGrupo('${nombreRuta.replace(/'/g, "\\'")}');" title="Editar trazado de la ruta" 
                                 style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--bg2); color: var(--text3); border: 1px solid var(--border); cursor: pointer;">
                             <i class="fa-solid fa-pencil" style="font-size: 10px;"></i>
                         </button>

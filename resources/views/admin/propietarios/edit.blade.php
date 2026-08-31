@@ -214,60 +214,73 @@
                             </div>
                         </div>
                     @else
-                        @foreach($propietario->vehiculos as $index => $v)
-                            <div class="form-section vehiculo-ingreso-section" style="margin-top: 30px; border-top: 1px dashed var(--border); padding-top: 20px;">
-                                <h4 class="vehiculo-titulo-ingreso" style="font-weight: 800; font-size: 15px; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
-                                    <i class="fa-solid fa-bus" style="color: var(--accent);"></i>
-                                    Control de Monto de Ingreso - Vehículo: <span style="color: var(--accent); font-weight: 800;">{{ $v->placa }}</span> 
-                                    <span class="v_obligado_header" style="font-size: 13px; color: var(--text3); font-weight: 600;">(Total Obligado: S/. 600.00)</span>
+                        <div style="margin-top: 30px; border-top: 1px dashed var(--border); padding-top: 20px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                                <h4 style="font-weight: 800; font-size: 16px; margin: 0; display: flex; align-items: center; gap: 8px;">
+                                    <i class="fa-solid fa-hand-holding-dollar" style="color: var(--accent);"></i>
+                                    Control de Monto de Ingreso ({{ $propietario->vehiculos->count() }} Vehículos Asignados)
                                 </h4>
-
-                                <div class="v_socio_banner" style="display: none; background: #eff6ff; border: 1.5px solid #bfdbfe; color: #1e40af; padding: 12px 16px; border-radius: 10px; margin-bottom: 15px; font-size: 12.5px;">
-                                    <i class="fa-solid fa-circle-check" style="color: #3b82f6; margin-right: 4px;"></i> <b>Unidad de Socio Exonerada:</b> Exento de cobro de ingreso (S/. 0.00).
-                                </div>
-
-                                <div class="g-4" style="grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 15px; display: grid;">
-                                    <div class="field" style="background: var(--bg); padding: 12px; border-radius: 10px; border: 1px solid var(--border);">
-                                        <label style="font-weight: 700;">Monto Inicial (S/.)</label>
-                                        <input type="number" class="monto_inicial_v" name="vehiculos[{{ $v->id }}][monto_inicial]" step="0.01" min="0" max="600" value="{{ old('vehiculos.'.$v->id.'.monto_inicial', $v->monto_inicial) }}" placeholder="0.00" oninput="calcularTotalIngresoV(this)">
-                                        
-                                        <label style="font-size: 11px; color: var(--text3); margin-top: 8px;">Fecha de Pago</label>
-                                        <input type="date" name="vehiculos[{{ $v->id }}][fecha_monto_inicial]" value="{{ old('vehiculos.'.$v->id.'.fecha_monto_inicial', $v->fecha_monto_inicial?->format('Y-m-d')) }}">
-                                    </div>
-
-                                    <div class="field" style="background: var(--bg); padding: 12px; border-radius: 10px; border: 1px solid var(--border);">
-                                        <label style="font-weight: 700;">Cuota 1 (S/.)</label>
-                                        <input type="number" class="cuota_1_v" name="vehiculos[{{ $v->id }}][cuota_1]" step="0.01" min="0" max="600" value="{{ old('vehiculos.'.$v->id.'.cuota_1', $v->cuota_1) }}" placeholder="0.00" oninput="calcularTotalIngresoV(this)">
-                                        
-                                        <label style="font-size: 11px; color: var(--text3); margin-top: 8px;">Fecha de Pago</label>
-                                        <input type="date" name="vehiculos[{{ $v->id }}][fecha_cuota_1]" value="{{ old('vehiculos.'.$v->id.'.fecha_cuota_1', $v->fecha_cuota_1?->format('Y-m-d')) }}">
-                                    </div>
-
-                                    <div class="field" style="background: var(--bg); padding: 12px; border-radius: 10px; border: 1px solid var(--border);">
-                                        <label style="font-weight: 700;">Cuota 2 (S/.)</label>
-                                        <input type="number" class="cuota_2_v" name="vehiculos[{{ $v->id }}][cuota_2]" step="0.01" min="0" max="600" value="{{ old('vehiculos.'.$v->id.'.cuota_2', $v->cuota_2) }}" placeholder="0.00" oninput="calcularTotalIngresoV(this)">
-                                        
-                                        <label style="font-size: 11px; color: var(--text3); margin-top: 8px;">Fecha de Pago</label>
-                                        <input type="date" name="vehiculos[{{ $v->id }}][fecha_cuota_2]" value="{{ old('vehiculos.'.$v->id.'.fecha_cuota_2', $v->fecha_cuota_2?->format('Y-m-d')) }}">
-                                    </div>
-
-                                    <div class="field" style="background: var(--bg); padding: 12px; border-radius: 10px; border: 1px solid var(--border);">
-                                        <label style="font-weight: 700;">Cuota 3 (S/.)</label>
-                                        <input type="number" class="cuota_3_v" name="vehiculos[{{ $v->id }}][cuota_3]" step="0.01" min="0" max="600" value="{{ old('vehiculos.'.$v->id.'.cuota_3', $v->cuota_3) }}" placeholder="0.00" oninput="calcularTotalIngresoV(this)">
-                                        
-                                        <label style="font-size: 11px; color: var(--text3); margin-top: 8px;">Fecha de Pago</label>
-                                        <input type="date" name="vehiculos[{{ $v->id }}][fecha_cuota_3]" value="{{ old('vehiculos.'.$v->id.'.fecha_cuota_3', $v->fecha_cuota_3?->format('Y-m-d')) }}">
-                                    </div>
-                                </div>
-                                
-                                <div style="margin-top: 15px; background: var(--bg); border: 1px solid var(--border); padding: 12px 18px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center;">
-                                    <span style="font-weight: 800; font-size: 13px;">
-                                        Total Recaudado: <span class="suma_total_v" style="color: var(--accent);">S/. 0.00</span> / <span class="v_obligado_txt">S/. 600.00</span>
-                                    </span>
-                                    <span class="estado_badge_v pill" style="font-weight: 800; font-size: 12px; padding: 4px 10px; border-radius: 99px;">DEUDA</span>
-                                </div>
+                                <span style="font-size: 12px; color: var(--text3); font-weight: 600;">(S/. 600.00 por cada vehículo asignado)</span>
                             </div>
-                        @endforeach
+
+                            @foreach($propietario->vehiculos as $index => $v)
+                                <div class="form-section vehiculo-ingreso-section" style="margin-bottom: 24px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                                        <h5 class="vehiculo-titulo-ingreso" style="font-weight: 800; font-size: 15px; margin: 0; display: flex; align-items: center; gap: 8px;">
+                                            <span class="pill blue" style="font-size: 11px; font-weight: 900;">Flota #{{ $v->numero_flota }}</span>
+                                            <span style="color: var(--text); font-weight: 800;">{{ $v->placa }}</span>
+                                            <span style="font-size: 12px; color: var(--text3); font-weight: 500;">({{ $v->marca }} {{ $v->modelo }})</span>
+                                            <span class="v_obligado_header" style="font-size: 12.5px; color: var(--text3); font-weight: 600;">(Obligación: S/. 600.00)</span>
+                                        </h5>
+                                    </div>
+
+                                    <div class="v_socio_banner" style="display: none; background: #eff6ff; border: 1.5px solid #bfdbfe; color: #1e40af; padding: 12px 16px; border-radius: 10px; margin-bottom: 15px; font-size: 12.5px;">
+                                        <i class="fa-solid fa-circle-check" style="color: #3b82f6; margin-right: 4px;"></i> <b>Unidad de Socio Exonerada:</b> Exento de cobro de ingreso (S/. 0.00).
+                                    </div>
+
+                                    <div class="g-4" style="grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 15px; display: grid;">
+                                        <div class="field" style="background: var(--bg); padding: 12px; border-radius: 10px; border: 1px solid var(--border);">
+                                            <label style="font-weight: 700;">Monto Inicial (S/.)</label>
+                                            <input type="number" class="monto_inicial_v" name="vehiculos[{{ $v->id }}][monto_inicial]" step="0.01" min="0" max="600" value="{{ old('vehiculos.'.$v->id.'.monto_inicial', $v->monto_inicial) }}" placeholder="0.00" oninput="calcularTotalIngresoV(this)">
+                                            
+                                            <label style="font-size: 11px; color: var(--text3); margin-top: 8px;">Fecha de Pago</label>
+                                            <input type="date" name="vehiculos[{{ $v->id }}][fecha_monto_inicial]" value="{{ old('vehiculos.'.$v->id.'.fecha_monto_inicial', $v->fecha_monto_inicial?->format('Y-m-d')) }}">
+                                        </div>
+
+                                        <div class="field" style="background: var(--bg); padding: 12px; border-radius: 10px; border: 1px solid var(--border);">
+                                            <label style="font-weight: 700;">Cuota 1 (S/.)</label>
+                                            <input type="number" class="cuota_1_v" name="vehiculos[{{ $v->id }}][cuota_1]" step="0.01" min="0" max="600" value="{{ old('vehiculos.'.$v->id.'.cuota_1', $v->cuota_1) }}" placeholder="0.00" oninput="calcularTotalIngresoV(this)">
+                                            
+                                            <label style="font-size: 11px; color: var(--text3); margin-top: 8px;">Fecha de Pago</label>
+                                            <input type="date" name="vehiculos[{{ $v->id }}][fecha_cuota_1]" value="{{ old('vehiculos.'.$v->id.'.fecha_cuota_1', $v->fecha_cuota_1?->format('Y-m-d')) }}">
+                                        </div>
+
+                                        <div class="field" style="background: var(--bg); padding: 12px; border-radius: 10px; border: 1px solid var(--border);">
+                                            <label style="font-weight: 700;">Cuota 2 (S/.)</label>
+                                            <input type="number" class="cuota_2_v" name="vehiculos[{{ $v->id }}][cuota_2]" step="0.01" min="0" max="600" value="{{ old('vehiculos.'.$v->id.'.cuota_2', $v->cuota_2) }}" placeholder="0.00" oninput="calcularTotalIngresoV(this)">
+                                            
+                                            <label style="font-size: 11px; color: var(--text3); margin-top: 8px;">Fecha de Pago</label>
+                                            <input type="date" name="vehiculos[{{ $v->id }}][fecha_cuota_2]" value="{{ old('vehiculos.'.$v->id.'.fecha_cuota_2', $v->fecha_cuota_2?->format('Y-m-d')) }}">
+                                        </div>
+
+                                        <div class="field" style="background: var(--bg); padding: 12px; border-radius: 10px; border: 1px solid var(--border);">
+                                            <label style="font-weight: 700;">Cuota 3 (S/.)</label>
+                                            <input type="number" class="cuota_3_v" name="vehiculos[{{ $v->id }}][cuota_3]" step="0.01" min="0" max="600" value="{{ old('vehiculos.'.$v->id.'.cuota_3', $v->cuota_3) }}" placeholder="0.00" oninput="calcularTotalIngresoV(this)">
+                                            
+                                            <label style="font-size: 11px; color: var(--text3); margin-top: 8px;">Fecha de Pago</label>
+                                            <input type="date" name="vehiculos[{{ $v->id }}][fecha_cuota_3]" value="{{ old('vehiculos.'.$v->id.'.fecha_cuota_3', $v->fecha_cuota_3?->format('Y-m-d')) }}">
+                                        </div>
+                                    </div>
+                                    
+                                    <div style="margin-top: 15px; background: var(--bg); border: 1px solid var(--border); padding: 12px 18px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center;">
+                                        <span style="font-weight: 800; font-size: 13px;">
+                                            Total Recaudado en Unidad: <span class="suma_total_v" style="color: var(--accent);">S/. 0.00</span> / <span class="v_obligado_txt">S/. 600.00</span>
+                                        </span>
+                                        <span class="estado_badge_v pill" style="font-weight: 800; font-size: 12px; padding: 4px 10px; border-radius: 99px;">DEUDA</span>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
                     @endif
 
                     @push('scripts')
@@ -316,7 +329,7 @@
                                     }
                                 } else {
                                     if (vBanner) vBanner.style.display = 'none';
-                                    if (vHeader) vHeader.textContent = '(Total Obligado: S/. 600.00)';
+                                    if (vHeader) vHeader.textContent = '(Obligación: S/. 600.00)';
                                     if (vObligado) vObligado.textContent = 'S/. 600.00';
                                     const input = section.querySelector('.monto_inicial_v');
                                     if (input) calcularTotalIngresoV(input);
@@ -346,7 +359,8 @@
                                     badge.style.background = 'var(--green-l)';
                                     badge.style.color = 'var(--green)';
                                 } else {
-                                    badge.textContent = 'DEUDA';
+                                    const deuda = 600 - total;
+                                    badge.textContent = 'DEUDA: S/. ' + deuda.toFixed(2);
                                     badge.style.background = 'var(--red-l)';
                                     badge.style.color = 'var(--red)';
                                 }
@@ -375,7 +389,8 @@
                                     badge.style.background = 'var(--green-l)';
                                     badge.style.color = 'var(--green)';
                                 } else {
-                                    badge.textContent = 'DEUDA';
+                                    const deuda = 600 - total;
+                                    badge.textContent = 'DEUDA: S/. ' + deuda.toFixed(2);
                                     badge.style.background = 'var(--red-l)';
                                     badge.style.color = 'var(--red)';
                                 }

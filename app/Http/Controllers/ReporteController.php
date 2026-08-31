@@ -479,7 +479,7 @@ class ReporteController extends Controller
                 $pFecha = $p->created_at ? \Carbon\Carbon::parse($p->created_at) : today();
 
                 if ($p->vehiculos->count() === 0) {
-                    if (!$filtrarPorFecha || $pFecha->between($desde->startOfDay(), $hasta->endOfDay())) {
+                    if (!$filtrarPorFecha || $tipo === 'monto_ingreso' || $pFecha->between($desde->startOfDay(), $hasta->endOfDay())) {
                         $item = new \stdClass();
                         $item->id = 'ingreso_prop_' . $p->id;
                         $item->fecha = $pFecha;
@@ -511,12 +511,12 @@ class ReporteController extends Controller
                     }
                 } else {
                     foreach ($p->vehiculos as $v) {
-                        if ($flota && $v->numero_flota != $flota) {
+                        if ($tipo !== 'monto_ingreso' && $flota && $v->numero_flota != $flota) {
                             continue;
                         }
 
                         $vFecha = $v->created_at ? \Carbon\Carbon::parse($v->created_at) : $pFecha;
-                        if (!$filtrarPorFecha || $vFecha->between($desde->startOfDay(), $hasta->endOfDay())) {
+                        if (!$filtrarPorFecha || $tipo === 'monto_ingreso' || $vFecha->between($desde->startOfDay(), $hasta->endOfDay())) {
                             $item = new \stdClass();
                             $item->id = 'ingreso_veh_' . $v->id;
                             $item->fecha = $vFecha;

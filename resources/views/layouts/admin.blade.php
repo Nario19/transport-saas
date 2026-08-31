@@ -183,15 +183,15 @@
 
     <div class="main main-modern">
         <header class="topbar topbar-modern">
-            <div class="tb-left" style="display: flex; align-items: center; gap: 12px;">
-                <button class="sb-toggle-btn" onclick="toggleSidebar()" type="button" aria-label="Toggle Sidebar">
+            <div class="tb-left" style="display: flex; flex-direction: row; align-items: center; gap: 14px;">
+                <button class="sb-toggle-btn" onclick="toggleSidebar()" type="button" aria-label="Toggle Sidebar" title="Ocultar/Mostrar menú lateral">
                     <i class="fa-solid fa-bars"></i>
                 </button>
-                <div>
-                    <div class="tb-title tb-title-modern" id="topTitle">
+                <div style="display: flex; flex-direction: column; justify-content: center;">
+                    <div class="tb-title tb-title-modern" id="topTitle" style="line-height: 1.2;">
                         {{ $pageTitle ?? 'TransJunín' }}
                     </div>
-                    <div class="tb-crumb tb-crumb-modern" id="topCrumb">
+                    <div class="tb-crumb tb-crumb-modern" id="topCrumb" style="line-height: 1.2; margin-top: 2px;">
                         {{ $pageSubtitle ?? 'Huancayo, Perú' }}
                     </div>
                 </div>

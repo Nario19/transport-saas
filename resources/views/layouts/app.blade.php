@@ -321,7 +321,9 @@
 
         .tb-left {
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
+            align-items: center;
+            gap: 12px;
         }
 
         .tb-title {
@@ -1301,20 +1303,23 @@
         
         /* Toggle and Backdrop elements */
         .sb-toggle-btn {
-            display: flex;
-            background: none;
-            border: none;
-            color: var(--text2);
-            font-size: 18px;
-            cursor: pointer;
-            padding: 8px 10px;
-            border-radius: 8px;
+            display: inline-flex !important;
             align-items: center;
             justify-content: center;
-            transition: background 0.15s, color 0.15s;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text2);
+            font-size: 16px;
+            cursor: pointer;
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            flex-shrink: 0;
+            transition: all 0.15s ease;
         }
         .sb-toggle-btn:hover {
-            background: var(--border);
+            background: var(--card);
+            border-color: var(--accent);
             color: var(--accent);
         }
         .sb-backdrop {

@@ -9,7 +9,7 @@
 
 @section('content')
     <div class="panel">
-        <div class="card" style="max-width: 800px; margin: 0 auto;">
+        <div class="card" style="max-width: 850px; margin: 0 auto;">
             <div class="card-header">
                 <div class="card-title">Registrar Nuevo Socio Propietario</div>
             </div>
@@ -38,6 +38,24 @@
                                 <input type="text" id="apellidos" name="apellidos" value="{{ old('apellidos') }}" required
                                     pattern="[A-Za-zÀ-ÿ\s]{2,60}" placeholder="Ej. Perez Garcia">
                                 @error('apellidos')
+                                    <span style="color: var(--red); font-size: 11px;">{{ $message }}</span>
+                                @enderror
+                            </div>
+
+                            <div class="field" style="grid-column: span 2;">
+                                <label for="tipo_persona">Tipo de Persona / Condición</label>
+                                <select id="tipo_persona" name="tipo_persona" onchange="handleTipoPersonaChange()" style="font-weight: 700;" required>
+                                    <option value="personal_normal" {{ old('tipo_persona', 'personal_normal') === 'personal_normal' ? 'selected' : '' }}>
+                                        Persona / Tercero Normal (Obligado a Pago de Ingreso S/. 600.00)
+                                    </option>
+                                    <option value="socio" {{ old('tipo_persona') === 'socio' ? 'selected' : '' }}>
+                                        ⭐ Socio de la Empresa (Exonerado de Pago de Ingreso S/. 0.00)
+                                    </option>
+                                </select>
+                                <div style="font-size: 11.5px; color: var(--text3); margin-top: 3px;">
+                                    Los socios de la empresa no pagan cuotas de ingreso por registrar uno o más vehículos.
+                                </div>
+                                @error('tipo_persona')
                                     <span style="color: var(--red); font-size: 11px;">{{ $message }}</span>
                                 @enderror
                             </div>
@@ -148,53 +166,119 @@
                     </div>
 
                     {{-- SECCIÓN 4: Control de Monto de Ingreso --}}
-                    <div class="form-section">
-                        <div class="form-section-title">
+                    <div class="form-section" id="seccion_monto_ingreso">
+                        <div class="form-section-title" id="titulo_monto_ingreso">
                             <i class="fa-solid fa-hand-holding-dollar"></i> Control de Monto de Ingreso (Total Obligado: S/. 600.00)
                         </div>
-                        <div class="g-4" style="grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px; display: grid;">
-                            <div class="field">
-                                <label for="monto_inicial">Monto Inicial (S/.)</label>
+
+                        <div id="socio_exonerado_banner" style="display: none; background: #eff6ff; border: 1.5px solid #bfdbfe; color: #1e40af; padding: 14px 18px; border-radius: 12px; margin-bottom: 15px; font-size: 13px; line-height: 1.5;">
+                            <i class="fa-solid fa-circle-check" style="font-size: 16px; margin-right: 6px; color: #3b82f6;"></i>
+                            <b>Socio de la Empresa Exonerado:</b> Por ser socio registrado de la empresa, <u>no se le cobra monto de ingreso</u> al registrar su vehículo ni unidades adicionales (Total Obligado: S/. 0.00).
+                        </div>
+
+                        <div class="g-4" style="grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 15px; display: grid;">
+                            {{-- Monto Inicial --}}
+                            <div class="field" style="background: var(--bg); padding: 12px; border-radius: 10px; border: 1px solid var(--border);">
+                                <label for="monto_inicial" style="font-weight: 700; color: var(--text);">Monto Inicial (S/.)</label>
                                 <input type="number" id="monto_inicial" name="monto_inicial" step="0.01" min="0" max="600" value="{{ old('monto_inicial', '0.00') }}" placeholder="0.00" oninput="calcularTotalIngreso()">
                                 @error('monto_inicial')
                                     <span style="color: var(--red); font-size: 11px;">{{ $message }}</span>
                                 @enderror
+
+                                <label for="fecha_monto_inicial" style="font-size: 11px; color: var(--text3); margin-top: 8px;">Fecha de Pago</label>
+                                <input type="date" id="fecha_monto_inicial" name="fecha_monto_inicial" value="{{ old('fecha_monto_inicial') }}">
+                                @error('fecha_monto_inicial')
+                                    <span style="color: var(--red); font-size: 11px;">{{ $message }}</span>
+                                @enderror
                             </div>
 
-                            <div class="field">
-                                <label for="cuota_1">Cuota 1 (S/.)</label>
+                            {{-- Cuota 1 --}}
+                            <div class="field" style="background: var(--bg); padding: 12px; border-radius: 10px; border: 1px solid var(--border);">
+                                <label for="cuota_1" style="font-weight: 700; color: var(--text);">Cuota 1 (S/.)</label>
                                 <input type="number" id="cuota_1" name="cuota_1" step="0.01" min="0" max="600" value="{{ old('cuota_1', '0.00') }}" placeholder="0.00" oninput="calcularTotalIngreso()">
                                 @error('cuota_1')
                                     <span style="color: var(--red); font-size: 11px;">{{ $message }}</span>
                                 @enderror
-                            </div>
 
-                            <div class="field">
-                                <label for="cuota_2">Cuota 2 (S/.)</label>
-                                <input type="number" id="cuota_2" name="cuota_2" step="0.01" min="0" max="600" value="{{ old('cuota_2', '0.00') }}" placeholder="0.00" oninput="calcularTotalIngreso()">
-                                @error('cuota_2')
+                                <label for="fecha_cuota_1" style="font-size: 11px; color: var(--text3); margin-top: 8px;">Fecha de Pago</label>
+                                <input type="date" id="fecha_cuota_1" name="fecha_cuota_1" value="{{ old('fecha_cuota_1') }}">
+                                @error('fecha_cuota_1')
                                     <span style="color: var(--red); font-size: 11px;">{{ $message }}</span>
                                 @enderror
                             </div>
 
-                            <div class="field">
-                                <label for="cuota_3">Cuota 3 (S/.)</label>
+                            {{-- Cuota 2 --}}
+                            <div class="field" style="background: var(--bg); padding: 12px; border-radius: 10px; border: 1px solid var(--border);">
+                                <label for="cuota_2" style="font-weight: 700; color: var(--text);">Cuota 2 (S/.)</label>
+                                <input type="number" id="cuota_2" name="cuota_2" step="0.01" min="0" max="600" value="{{ old('cuota_2', '0.00') }}" placeholder="0.00" oninput="calcularTotalIngreso()">
+                                @error('cuota_2')
+                                    <span style="color: var(--red); font-size: 11px;">{{ $message }}</span>
+                                @enderror
+
+                                <label for="fecha_cuota_2" style="font-size: 11px; color: var(--text3); margin-top: 8px;">Fecha de Pago</label>
+                                <input type="date" id="fecha_cuota_2" name="fecha_cuota_2" value="{{ old('fecha_cuota_2') }}">
+                                @error('fecha_cuota_2')
+                                    <span style="color: var(--red); font-size: 11px;">{{ $message }}</span>
+                                @enderror
+                            </div>
+
+                            {{-- Cuota 3 --}}
+                            <div class="field" style="background: var(--bg); padding: 12px; border-radius: 10px; border: 1px solid var(--border);">
+                                <label for="cuota_3" style="font-weight: 700; color: var(--text);">Cuota 3 (S/.)</label>
                                 <input type="number" id="cuota_3" name="cuota_3" step="0.01" min="0" max="600" value="{{ old('cuota_3', '0.00') }}" placeholder="0.00" oninput="calcularTotalIngreso()">
                                 @error('cuota_3')
+                                    <span style="color: var(--red); font-size: 11px;">{{ $message }}</span>
+                                @enderror
+
+                                <label for="fecha_cuota_3" style="font-size: 11px; color: var(--text3); margin-top: 8px;">Fecha de Pago</label>
+                                <input type="date" id="fecha_cuota_3" name="fecha_cuota_3" value="{{ old('fecha_cuota_3') }}">
+                                @error('fecha_cuota_3')
                                     <span style="color: var(--red); font-size: 11px;">{{ $message }}</span>
                                 @enderror
                             </div>
                         </div>
                         
                         <div style="margin-top: 15px; background: var(--bg); border: 1px solid var(--border); padding: 12px 18px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-weight: 800; font-size: 13px;">Total Recaudado: <span id="suma_total" style="color: var(--accent);">S/. 0.00</span> / S/. 600.00</span>
+                            <span style="font-weight: 800; font-size: 13px;">
+                                Total Recaudado: <span id="suma_total" style="color: var(--accent);">S/. 0.00</span> / <span id="total_obligado_txt">S/. 600.00</span>
+                            </span>
                             <span id="estado_badge" class="pill" style="font-weight: 800; font-size: 12px; padding: 4px 10px; border-radius: 99px;">DEUDA</span>
                         </div>
                     </div>
 
                     @push('scripts')
                     <script>
+                        function handleTipoPersonaChange() {
+                            const tipo = document.getElementById('tipo_persona').value;
+                            const isSocio = tipo === 'socio';
+                            const banner = document.getElementById('socio_exonerado_banner');
+                            const titulo = document.getElementById('titulo_monto_ingreso');
+                            const obligadoTxt = document.getElementById('total_obligado_txt');
+                            const badge = document.getElementById('estado_badge');
+
+                            if (isSocio) {
+                                if (banner) banner.style.display = 'block';
+                                if (titulo) titulo.innerHTML = '<i class="fa-solid fa-star" style="color: #3b82f6;"></i> Control de Monto de Ingreso (SOCIO DE LA EMPRESA - EXONERADO S/. 0.00)';
+                                if (obligadoTxt) obligadoTxt.textContent = 'S/. 0.00 (Exonerado)';
+                                if (badge) {
+                                    badge.textContent = 'EXONERADO (SOCIO)';
+                                    badge.style.background = '#dbeafe';
+                                    badge.style.color = '#1d4ed8';
+                                }
+                            } else {
+                                if (banner) banner.style.display = 'none';
+                                if (titulo) titulo.innerHTML = '<i class="fa-solid fa-hand-holding-dollar"></i> Control de Monto de Ingreso (Total Obligado: S/. 600.00)';
+                                if (obligadoTxt) obligadoTxt.textContent = 'S/. 600.00';
+                                calcularTotalIngreso();
+                            }
+                        }
+
                         function calcularTotalIngreso() {
+                            const tipo = document.getElementById('tipo_persona').value;
+                            if (tipo === 'socio') {
+                                return handleTipoPersonaChange();
+                            }
+
                             const mi = parseFloat(document.getElementById('monto_inicial').value) || 0;
                             const c1 = parseFloat(document.getElementById('cuota_1').value) || 0;
                             const c2 = parseFloat(document.getElementById('cuota_2').value) || 0;
@@ -214,7 +298,11 @@
                                 badge.style.color = 'var(--red)';
                             }
                         }
-                        document.addEventListener('DOMContentLoaded', calcularTotalIngreso);
+
+                        document.addEventListener('DOMContentLoaded', () => {
+                            handleTipoPersonaChange();
+                            calcularTotalIngreso();
+                        });
                     </script>
                     @endpush
 

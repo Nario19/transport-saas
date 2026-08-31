@@ -14,20 +14,31 @@ class Propietario extends Model implements Auditable
     use SoftDeletes, AuditableWithEmpresa, HasFactory;
 
     protected $fillable = [
-        'empresa_id', 'nombre', 'apellidos', 'dni', 'telefono',
+        'empresa_id', 'nombre', 'apellidos', 'dni', 'tipo_persona', 'telefono',
         'telefono_alt', 'email', 'direccion', 'activo', 'notas',
-        'monto_inicial', 'cuota_1', 'cuota_2', 'cuota_3',
+        'monto_inicial', 'fecha_monto_inicial',
+        'cuota_1', 'fecha_cuota_1',
+        'cuota_2', 'fecha_cuota_2',
+        'cuota_3', 'fecha_cuota_3',
     ];
     protected $casts = [
-        'activo'        => 'boolean',
-        'monto_inicial' => 'float',
-        'cuota_1'       => 'float',
-        'cuota_2'       => 'float',
-        'cuota_3'       => 'float',
+        'activo'              => 'boolean',
+        'monto_inicial'       => 'float',
+        'cuota_1'             => 'float',
+        'cuota_2'             => 'float',
+        'cuota_3'             => 'float',
+        'fecha_monto_inicial' => 'date',
+        'fecha_cuota_1'       => 'date',
+        'fecha_cuota_2'       => 'date',
+        'fecha_cuota_3'       => 'date',
     ];
 
     // Auditoría: solo campos relevantes
-    protected $auditInclude = ['nombre','apellidos','dni','telefono','activo','monto_inicial','cuota_1','cuota_2','cuota_3'];
+    protected $auditInclude = [
+        'nombre','apellidos','dni','tipo_persona','telefono','activo',
+        'monto_inicial','fecha_monto_inicial','cuota_1','fecha_cuota_1',
+        'cuota_2','fecha_cuota_2','cuota_3','fecha_cuota_3'
+    ];
 
     public function empresa()   { return $this->belongsTo(Empresa::class); }
     public function vehiculos() { return $this->hasMany(Vehiculo::class); }
@@ -43,8 +54,16 @@ class Propietario extends Model implements Auditable
         return trim("{$this->nombre} {$this->apellidos}");
     }
 
+    public function getEsSocioAttribute(): bool
+    {
+        return ($this->tipo_persona ?? 'personal_normal') === 'socio';
+    }
+
     public function getMontoIngresoTotalAttribute(): float
     {
+        if ($this->es_socio) {
+            return 0.0;
+        }
         if ($this->vehiculos()->count() === 0) {
             return (float) (($this->monto_inicial ?? 0) + ($this->cuota_1 ?? 0) + ($this->cuota_2 ?? 0) + ($this->cuota_3 ?? 0));
         }
@@ -53,6 +72,9 @@ class Propietario extends Model implements Auditable
 
     public function getEstadoIngresoAttribute(): string
     {
+        if ($this->es_socio) {
+            return 'EXONERADO (SOCIO)';
+        }
         if ($this->vehiculos()->count() === 0) {
             return $this->monto_ingreso_total >= 600 ? 'PAGADO' : 'DEUDA';
         }
@@ -61,6 +83,9 @@ class Propietario extends Model implements Auditable
 
     public function getMontoIngresoDeudaAttribute(): float
     {
+        if ($this->es_socio) {
+            return 0.0;
+        }
         if ($this->vehiculos()->count() === 0) {
             return (float) max(0, 600 - $this->monto_ingreso_total);
         }

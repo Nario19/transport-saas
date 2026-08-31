@@ -1,8 +1,8 @@
 @extends('layouts.admin')
 
 @php
-    $pageTitle = 'Ficha del Propietario';
-    $pageSubtitle = "{$propietario->nombre} {$propietario->apellidos}";
+    $pageTitle = 'Expediente de Socio Propietario';
+    $pageSubtitle = 'Detalles legales, padrón y control de cuotas de ingreso';
 @endphp
 
 @section('back_url', route('propietarios.index'))
@@ -10,18 +10,27 @@
 @section('content')
     <div class="panel">
         
-        {{-- 1. CABECERA CON ACCIONES --}}
-        <div class="flex-between" style="margin-bottom: 25px;">
-            <div class="flex-h">
-                <div class="user-av" style="width: 60px; height: 60px; font-size: 24px; border-radius: 16px; background: var(--sidebar); color: var(--text-inv);">
+        {{-- 1. CABECERA CON PERFIL Y ACCIONES --}}
+        <div class="card-header-actions" style="margin-bottom: 24px;">
+            <div class="flex-h" style="gap: 16px; align-items: center;">
+                <div class="avatar" style="width: 54px; height: 54px; font-size: 20px; background: var(--surface2); border: 2px solid var(--border);">
                     {{ strtoupper(substr($propietario->nombre, 0, 1) . substr($propietario->apellidos, 0, 1)) }}
                 </div>
-                <div>
+                <div class="flex-v" style="gap: 4px;">
                     <h2 style="font-size: 24px; font-weight: 800; color: var(--text);">{{ $propietario->nombre }} {{ $propietario->apellidos }}</h2>
-                    <div class="flex-h" style="gap: 10px;">
+                    <div class="flex-h" style="gap: 10px; align-items: center; flex-wrap: wrap;">
                         <span class="pill {{ $propietario->activo ? 'green' : 'red' }}">
                             {{ $propietario->activo ? 'VIGENTE' : 'INACTIVO' }}
                         </span>
+                        @if($propietario->es_socio)
+                            <span class="pill blue" style="font-size: 11px; font-weight: 800;">
+                                <i class="fa-solid fa-star"></i> SOCIO DE LA EMPRESA
+                            </span>
+                        @else
+                            <span class="pill gray" style="font-size: 11px; font-weight: 700;">
+                                Persona / Tercero Normal
+                            </span>
+                        @endif
                         @if($propietario->conductor)
                             <span class="pill gold" style="font-size: 11px; font-weight: 800;">
                                 <i class="fa-solid fa-id-card"></i> SOCIO-CONDUCTOR
@@ -52,9 +61,19 @@
                     <div class="card-body" style="padding: 0;">
                         <table class="tbl">
                             <tbody>
+                                <tr>
+                                    <td style="width: 220px; color: var(--text3); font-weight: 600;">Condición / Tipo</td>
+                                    <td>
+                                        @if($propietario->es_socio)
+                                            <span class="pill blue" style="font-weight: 800;"><i class="fa-solid fa-star"></i> SOCIO DE LA EMPRESA (Exonerado de Ingreso)</span>
+                                        @else
+                                            <span class="pill gray" style="font-weight: 700;">Persona / Tercero Normal (Obligado a S/. 600.00)</span>
+                                        @endif
+                                    </td>
+                                </tr>
                                 @if($propietario->dni)
                                     <tr>
-                                        <td style="width: 220px; color: var(--text3); font-weight: 600;">DNI / RUC</td>
+                                        <td style="color: var(--text3); font-weight: 600;">DNI / RUC</td>
                                         <td><span class="mono">{{ $propietario->dni }}</span></td>
                                     </tr>
                                 @endif
@@ -84,42 +103,103 @@
                 @if($propietario->vehiculos->count() === 0)
                     <div class="card">
                         <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-                            <div class="card-title">Control de Monto de Ingreso (Total Obligado: S/. 600.00)</div>
+                            <div class="card-title">
+                                Control de Monto de Ingreso 
+                                @if($propietario->es_socio)
+                                    <span style="font-size: 13px; color: var(--accent); font-weight: 700;">(SOCIO EXONERADO: S/. 0.00)</span>
+                                @else
+                                    <span style="font-size: 13px; color: var(--text3); font-weight: 600;">(Total Obligado: S/. 600.00)</span>
+                                @endif
+                            </div>
                             @php
                                 $estado = $propietario->estado_ingreso;
-                                $badgeClass = $estado === 'PAGADO' ? 'green' : 'red';
+                                $badgeClass = $propietario->es_socio ? 'blue' : ($estado === 'PAGADO' ? 'green' : 'red');
                             @endphp
                             <span class="pill {{ $badgeClass }}" style="font-weight: 800; font-size: 11px;">
                                 {{ $estado }}
                             </span>
                         </div>
                         <div class="card-body" style="padding: 0;">
+                            @if($propietario->es_socio)
+                                <div style="background: #eff6ff; color: #1e40af; padding: 12px 18px; border-bottom: 1px solid #bfdbfe; font-size: 12.5px;">
+                                    <i class="fa-solid fa-circle-check" style="margin-right: 6px;"></i>
+                                    <b>Socio de la Empresa:</b> No está sujeto al cobro de monto de ingreso (Total Obligado: S/. 0.00).
+                                </div>
+                            @endif
                             <table class="tbl">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 180px;">Concepto</th>
+                                        <th>Monto Pagado</th>
+                                        <th>Fecha de Pago</th>
+                                    </tr>
+                                </thead>
                                 <tbody>
                                     <tr>
-                                        <td style="width: 220px; color: var(--text3); font-weight: 600;">Monto Inicial</td>
+                                        <td style="color: var(--text3); font-weight: 600;">Monto Inicial</td>
                                         <td style="font-weight: 700;">S/. {{ number_format($propietario->monto_inicial ?? 0, 2) }}</td>
+                                        <td>
+                                            @if($propietario->fecha_monto_inicial)
+                                                <i class="fa-solid fa-calendar-day" style="color: var(--accent); font-size: 11px; margin-right: 4px;"></i>
+                                                {{ $propietario->fecha_monto_inicial->format('d/m/Y') }}
+                                            @else
+                                                <span style="color: var(--text3); font-size: 12px;">—</span>
+                                            @endif
+                                        </td>
                                     </tr>
                                     <tr>
                                         <td style="color: var(--text3); font-weight: 600;">Cuota 1</td>
-                                        <td>S/. {{ number_format($propietario->cuota_1 ?? 0, 2) }}</td>
+                                        <td style="font-weight: 700;">S/. {{ number_format($propietario->cuota_1 ?? 0, 2) }}</td>
+                                        <td>
+                                            @if($propietario->fecha_cuota_1)
+                                                <i class="fa-solid fa-calendar-day" style="color: var(--accent); font-size: 11px; margin-right: 4px;"></i>
+                                                {{ $propietario->fecha_cuota_1->format('d/m/Y') }}
+                                            @else
+                                                <span style="color: var(--text3); font-size: 12px;">—</span>
+                                            @endif
+                                        </td>
                                     </tr>
                                     <tr>
                                         <td style="color: var(--text3); font-weight: 600;">Cuota 2</td>
-                                        <td>S/. {{ number_format($propietario->cuota_2 ?? 0, 2) }}</td>
+                                        <td style="font-weight: 700;">S/. {{ number_format($propietario->cuota_2 ?? 0, 2) }}</td>
+                                        <td>
+                                            @if($propietario->fecha_cuota_2)
+                                                <i class="fa-solid fa-calendar-day" style="color: var(--accent); font-size: 11px; margin-right: 4px;"></i>
+                                                {{ $propietario->fecha_cuota_2->format('d/m/Y') }}
+                                            @else
+                                                <span style="color: var(--text3); font-size: 12px;">—</span>
+                                            @endif
+                                        </td>
                                     </tr>
                                     <tr>
                                         <td style="color: var(--text3); font-weight: 600;">Cuota 3</td>
-                                        <td>S/. {{ number_format($propietario->cuota_3 ?? 0, 2) }}</td>
+                                        <td style="font-weight: 700;">S/. {{ number_format($propietario->cuota_3 ?? 0, 2) }}</td>
+                                        <td>
+                                            @if($propietario->fecha_cuota_3)
+                                                <i class="fa-solid fa-calendar-day" style="color: var(--accent); font-size: 11px; margin-right: 4px;"></i>
+                                                {{ $propietario->fecha_cuota_3->format('d/m/Y') }}
+                                            @else
+                                                <span style="color: var(--text3); font-size: 12px;">—</span>
+                                            @endif
+                                        </td>
                                     </tr>
                                     <tr style="background: var(--bg); font-weight: 800;">
                                         <td style="color: var(--text); font-weight: 800;">Total Recaudado</td>
-                                        <td style="color: var(--accent); font-weight: 800;">S/. {{ number_format($propietario->monto_ingreso_total, 2) }}</td>
+                                        <td style="color: var(--accent); font-weight: 800;">
+                                            S/. {{ number_format($propietario->monto_ingreso_total, 2) }}
+                                        </td>
+                                        <td>
+                                            @if($propietario->es_socio)
+                                                <span class="pill blue" style="font-size: 10px;">EXONERADO</span>
+                                            @else
+                                                <span style="font-size: 11px; color: var(--text3);">de S/. 600.00</span>
+                                            @endif
+                                        </td>
                                     </tr>
-                                    @if($propietario->monto_ingreso_deuda > 0)
+                                    @if(!$propietario->es_socio && $propietario->monto_ingreso_deuda > 0)
                                         <tr style="background: #fef2f2; color: #b91c1c; font-weight: 800;">
                                             <td style="font-weight: 800;">Saldo Pendiente (Deuda)</td>
-                                            <td style="font-weight: 800;">S/. {{ number_format($propietario->monto_ingreso_deuda, 2) }}</td>
+                                            <td style="font-weight: 800;" colspan="2">S/. {{ number_format($propietario->monto_ingreso_deuda, 2) }}</td>
                                         </tr>
                                     @endif
                                 </tbody>
@@ -131,43 +211,102 @@
                         <div class="card" style="margin-bottom: 20px;">
                             <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
                                 <div class="card-title">
-                                    Control de Monto de Ingreso - Vehículo: <span style="color: var(--accent); font-weight: 800;">{{ $v->placa }}</span> (Total Obligado: S/. 600.00)
+                                    Control de Monto de Ingreso - Vehículo: <span style="color: var(--accent); font-weight: 800;">{{ $v->placa }}</span> 
+                                    @if($propietario->es_socio)
+                                        <span style="font-size: 13px; color: var(--accent); font-weight: 700;">(SOCIO EXONERADO: S/. 0.00)</span>
+                                    @else
+                                        <span style="font-size: 13px; color: var(--text3); font-weight: 600;">(Total Obligado: S/. 600.00)</span>
+                                    @endif
                                 </div>
                                 @php
                                     $estado = $v->estado_ingreso;
-                                    $badgeClass = $estado === 'PAGADO' ? 'green' : 'red';
+                                    $badgeClass = $propietario->es_socio ? 'blue' : ($estado === 'PAGADO' ? 'green' : 'red');
                                 @endphp
                                 <span class="pill {{ $badgeClass }}" style="font-weight: 800; font-size: 11px;">
                                     {{ $estado }}
                                 </span>
                             </div>
                             <div class="card-body" style="padding: 0;">
+                                @if($propietario->es_socio)
+                                    <div style="background: #eff6ff; color: #1e40af; padding: 12px 18px; border-bottom: 1px solid #bfdbfe; font-size: 12.5px;">
+                                        <i class="fa-solid fa-circle-check" style="margin-right: 6px;"></i>
+                                        <b>Unidad de Socio de la Empresa:</b> Exonerado de cobro de ingreso (S/. 0.00).
+                                    </div>
+                                @endif
                                 <table class="tbl">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 180px;">Concepto</th>
+                                            <th>Monto Pagado</th>
+                                            <th>Fecha de Pago</th>
+                                        </tr>
+                                    </thead>
                                     <tbody>
                                         <tr>
-                                            <td style="width: 220px; color: var(--text3); font-weight: 600;">Monto Inicial</td>
+                                            <td style="color: var(--text3); font-weight: 600;">Monto Inicial</td>
                                             <td style="font-weight: 700;">S/. {{ number_format($v->monto_inicial ?? 0, 2) }}</td>
+                                            <td>
+                                                @if($v->fecha_monto_inicial)
+                                                    <i class="fa-solid fa-calendar-day" style="color: var(--accent); font-size: 11px; margin-right: 4px;"></i>
+                                                    {{ $v->fecha_monto_inicial->format('d/m/Y') }}
+                                                @else
+                                                    <span style="color: var(--text3); font-size: 12px;">—</span>
+                                                @endif
+                                            </td>
                                         </tr>
                                         <tr>
                                             <td style="color: var(--text3); font-weight: 600;">Cuota 1</td>
-                                            <td>S/. {{ number_format($v->cuota_1 ?? 0, 2) }}</td>
+                                            <td style="font-weight: 700;">S/. {{ number_format($v->cuota_1 ?? 0, 2) }}</td>
+                                            <td>
+                                                @if($v->fecha_cuota_1)
+                                                    <i class="fa-solid fa-calendar-day" style="color: var(--accent); font-size: 11px; margin-right: 4px;"></i>
+                                                    {{ $v->fecha_cuota_1->format('d/m/Y') }}
+                                                @else
+                                                    <span style="color: var(--text3); font-size: 12px;">—</span>
+                                                @endif
+                                            </td>
                                         </tr>
                                         <tr>
                                             <td style="color: var(--text3); font-weight: 600;">Cuota 2</td>
-                                            <td>S/. {{ number_format($v->cuota_2 ?? 0, 2) }}</td>
+                                            <td style="font-weight: 700;">S/. {{ number_format($v->cuota_2 ?? 0, 2) }}</td>
+                                            <td>
+                                                @if($v->fecha_cuota_2)
+                                                    <i class="fa-solid fa-calendar-day" style="color: var(--accent); font-size: 11px; margin-right: 4px;"></i>
+                                                    {{ $v->fecha_cuota_2->format('d/m/Y') }}
+                                                @else
+                                                    <span style="color: var(--text3); font-size: 12px;">—</span>
+                                                @endif
+                                            </td>
                                         </tr>
                                         <tr>
                                             <td style="color: var(--text3); font-weight: 600;">Cuota 3</td>
-                                            <td>S/. {{ number_format($v->cuota_3 ?? 0, 2) }}</td>
+                                            <td style="font-weight: 700;">S/. {{ number_format($v->cuota_3 ?? 0, 2) }}</td>
+                                            <td>
+                                                @if($v->fecha_cuota_3)
+                                                    <i class="fa-solid fa-calendar-day" style="color: var(--accent); font-size: 11px; margin-right: 4px;"></i>
+                                                    {{ $v->fecha_cuota_3->format('d/m/Y') }}
+                                                @else
+                                                    <span style="color: var(--text3); font-size: 12px;">—</span>
+                                                @endif
+                                            </td>
                                         </tr>
                                         <tr style="background: var(--bg); font-weight: 800;">
                                             <td style="color: var(--text); font-weight: 800;">Total Recaudado</td>
-                                            <td style="color: var(--accent); font-weight: 800;">S/. {{ number_format($v->monto_ingreso_total, 2) }}</td>
+                                            <td style="color: var(--accent); font-weight: 800;">
+                                                S/. {{ number_format($v->monto_ingreso_total, 2) }}
+                                            </td>
+                                            <td>
+                                                @if($propietario->es_socio)
+                                                    <span class="pill blue" style="font-size: 10px;">EXONERADO</span>
+                                                @else
+                                                    <span style="font-size: 11px; color: var(--text3);">de S/. 600.00</span>
+                                                @endif
+                                            </td>
                                         </tr>
-                                        @if($v->monto_ingreso_deuda > 0)
+                                        @if(!$propietario->es_socio && $v->monto_ingreso_deuda > 0)
                                             <tr style="background: #fef2f2; color: #b91c1c; font-weight: 800;">
                                                 <td style="font-weight: 800;">Saldo Pendiente (Deuda)</td>
-                                                <td style="font-weight: 800;">S/. {{ number_format($v->monto_ingreso_deuda, 2) }}</td>
+                                                <td style="font-weight: 800;" colspan="2">S/. {{ number_format($v->monto_ingreso_deuda, 2) }}</td>
                                             </tr>
                                         @endif
                                     </tbody>

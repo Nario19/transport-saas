@@ -90,6 +90,13 @@
                             <tr>
                                 <td>
                                     <span class="text-main">{{ $p->nombre_completo }}</span>
+                                    @if($p->es_socio)
+                                        <span class="pill blue" style="font-size: 9.5px; font-weight: 800; padding: 2px 6px; margin-top: 3px; display: inline-block;">
+                                            <i class="fa-solid fa-star"></i> SOCIO EMPRESA
+                                        </span>
+                                    @else
+                                        <span class="text-sub" style="font-size: 11px;">Persona / Tercero Normal</span>
+                                    @endif
                                 </td>
                                 <td>
                                     <span class="text-main">{{ $p->dni ?? '---' }}</span>
@@ -120,8 +127,16 @@
                                 <td style="text-align: center;">
                                     @php
                                         $estIng = $p->estado_ingreso;
-                                        $badgeBg = $estIng === 'PAGADO' ? 'var(--green-l)' : 'var(--red-l)';
-                                        $badgeColor = $estIng === 'PAGADO' ? 'var(--green)' : 'var(--red)';
+                                        if ($p->es_socio) {
+                                            $badgeBg = '#dbeafe';
+                                            $badgeColor = '#1d4ed8';
+                                        } elseif ($estIng === 'PAGADO') {
+                                            $badgeBg = 'var(--green-l)';
+                                            $badgeColor = 'var(--green)';
+                                        } else {
+                                            $badgeBg = 'var(--red-l)';
+                                            $badgeColor = 'var(--red)';
+                                        }
                                     @endphp
                                     <span style="font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 99px; background: {{ $badgeBg }}; color: {{ $badgeColor }}; display: inline-block;">
                                         {{ $estIng }}

@@ -38,8 +38,12 @@ Route::get('/', fn() => redirect()->route('login'));
 Route::middleware('guest')->group(function () {
     Route::get('/login',     [LoginController::class,    'index'])->name('login');
     Route::post('/login',    [LoginController::class,    'store']);
-    Route::get('/register',  [RegisterController::class, 'index'])->name('register');
-    Route::post('/register', [RegisterController::class, 'store']);
+
+    // Registro bloqueado temporalmente: redirige a login
+    Route::get('/register',  fn() => redirect()->route('login'))->name('register');
+    Route::post('/register', fn() => redirect()->route('login'));
+    // Route::get('/register',  [RegisterController::class, 'index'])->name('register');
+    // Route::post('/register', [RegisterController::class, 'store']);
 });
 
 Route::middleware('auth')->group(function () {

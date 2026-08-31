@@ -46,11 +46,21 @@
                         @foreach ($empresas as $empresa)
                             <tr>
                                 <td>
-                                    <div style="font-weight: 800; color: var(--text); font-size: 14px;">{{ $empresa->nombre }}
-                                    </div>
-                                    <div style="font-size: 11px; color: var(--text3); display: flex; gap: 10px;">
-                                        <span>🆔 RUC: {{ $empresa->ruc ?? 'No definido' }}</span>
-                                        <span>📅 {{ $empresa->created_at->format('d/m/Y') }}</span>
+                                    <div style="display: flex; align-items: center; gap: 12px;">
+                                        @if($empresa->logo_path)
+                                            <img src="{{ asset('storage/' . $empresa->logo_path) }}" alt="Logo" style="width: 38px; height: 38px; object-fit: contain; border-radius: 8px; border: 1px solid var(--border); background: white; padding: 2px; flex-shrink: 0;">
+                                        @else
+                                            <div class="brand-icon brand-icon-tj" style="width: 38px; height: 38px; font-size: 15px; border-radius: 8px; flex-shrink: 0;">
+                                                TJ
+                                            </div>
+                                        @endif
+                                        <div>
+                                            <div style="font-weight: 800; color: var(--text); font-size: 14px;">{{ $empresa->nombre }}</div>
+                                            <div style="font-size: 11px; color: var(--text3); display: flex; gap: 10px;">
+                                                <span>🆔 RUC: {{ $empresa->ruc ?? 'No definido' }}</span>
+                                                <span>📅 {{ $empresa->created_at->format('d/m/Y') }}</span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </td>
                                 <td>

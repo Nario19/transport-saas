@@ -103,6 +103,10 @@
                                 <div style="display: flex; gap: 15px; align-items: center;">
                                     @if($empresa->logo_path)
                                         <img src="{{ asset('storage/' . $empresa->logo_path) }}" alt="Logo" style="width: 40px; height: 40px; object-fit: contain; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); padding: 4px; flex-shrink: 0;">
+                                    @else
+                                        <div class="brand-icon brand-icon-tj" style="width: 40px; height: 40px; font-size: 16px; border-radius: 8px; flex-shrink: 0;">
+                                            TJ
+                                        </div>
                                     @endif
                                     <input type="file" id="logo" name="logo" accept="image/*" style="flex: 1; font-size: 12px;">
                                 </div>

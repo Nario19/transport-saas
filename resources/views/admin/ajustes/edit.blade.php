@@ -68,12 +68,16 @@
                                 @if ($empresa->logo_path)
                                     <img src="{{ asset('storage/' . $empresa->logo_path) }}" alt="Logo"
                                         style="width:44px; height:44px; object-fit:contain;
-                                           border-radius:8px; border:1px solid var(--border); flex-shrink:0;">
+                                           border-radius:8px; border:1px solid var(--border); flex-shrink:0; background: white; padding: 2px;">
+                                @else
+                                    <div class="brand-icon brand-icon-tj" style="width:44px; height:44px; font-size:17px; border-radius:10px; flex-shrink:0;">
+                                        TJ
+                                    </div>
                                 @endif
                                 <input type="file" name="logo" accept="image/*">
                             </div>
                             <small style="color:var(--text3); font-size:11px; margin-top:4px; display:block;">
-                                Formatos: JPG, PNG. Máx 2MB.
+                                Formatos: JPG, PNG. Máx 2MB. Si no se sube un logo, se muestra el icono TJ por defecto.
                             </small>
                         </div>
                     </div>

@@ -26,17 +26,19 @@
                 <div style="display: grid; grid-template-columns: 200px 1fr; gap: 30px; align-items: start;">
                     <div style="text-align: center;">
                         <div
-                            style="width: 150px; height: 150px; border-radius: 10px; background: #f1f5f9; margin: 0 auto; display:flex; align-items:center; justify-content:center; overflow:hidden; border: 2px dashed #cbd5e1;">
+                            style="width: 150px; height: 150px; border-radius: 16px; background: var(--bg); margin: 0 auto; display:flex; align-items:center; justify-content:center; overflow:hidden; border: 1.5px solid var(--border);">
                             @if ($empresa->logo_path)
                                 <img src="{{ asset('storage/' . $empresa->logo_path) }}" alt="Logo Empresa"
-                                    style="width: 100%; height: 100%; object-fit: contain;">
+                                    style="width: 100%; height: 100%; object-fit: contain; padding: 6px; background: white;">
                             @else
-                                <span style="color: #94a3b8; font-size: 12px;">Sin Logo</span>
+                                <div class="brand-icon brand-icon-tj" style="width: 80px; height: 80px; font-size: 34px; border-radius: 20px; font-weight: 900; box-shadow: 0 4px 14px rgba(10, 132, 255, 0.35);">
+                                    TJ
+                                </div>
                             @endif
                         </div>
-                        <h4 style="margin-top: 15px; color: var(--text1);">{{ $empresa->nombre }}</h4>
+                        <h4 style="margin-top: 15px; color: var(--text1); font-weight: 800;">{{ $empresa->nombre }}</h4>
                         <span class="pill"
-                            style="background: {{ $empresa->activa ? '#dcfce7' : '#fee2e2' }}; color: {{ $empresa->activa ? '#166534' : '#991b1b' }}">
+                            style="background: {{ $empresa->activa ? '#dcfce7' : '#fee2e2' }}; color: {{ $empresa->activa ? '#166534' : '#991b1b' }}; font-weight: 800;">
                             {{ $empresa->activa ? 'ACTIVA' : 'INACTIVA' }}
                         </span>
                     </div>

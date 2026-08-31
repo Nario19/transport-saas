@@ -84,6 +84,7 @@
                             <th>Vehículo / Flota</th>
                             <th>Concepto / Motivo</th>
                             @if($isMontoIngreso)
+                                <th>Condición / Tipo</th>
                                 <th>Monto Inicial</th>
                                 <th>Cuota 1</th>
                                 <th>Cuota 2</th>
@@ -129,17 +130,68 @@
                                     @endif
                                 </td>
                                 @if($isMontoIngreso)
-                                    <td style="font-weight: 800; color: var(--text);">
-                                        S/ {{ number_format($item->monto_inicial ?? 0, 2) }}
+                                    <td>
+                                        @if(isset($item->es_socio) && $item->es_socio)
+                                            <span class="pill blue" style="font-size: 10px; font-weight: 800; padding: 4px 8px; white-space: nowrap;">
+                                                <i class="fa-solid fa-star"></i> SOCIO DE LA EMPRESA
+                                            </span>
+                                        @else
+                                            <span class="pill gray" style="font-size: 10px; font-weight: 700; padding: 4px 8px; white-space: nowrap;">
+                                                Persona Normal
+                                            </span>
+                                        @endif
                                     </td>
-                                    <td style="font-weight: 800; color: var(--text);">
-                                        S/ {{ number_format($item->cuota_1 ?? 0, 2) }}
+                                    <td>
+                                        <div style="font-weight: 800; color: var(--text); font-size: 13.5px;">
+                                            S/ {{ number_format($item->monto_inicial ?? 0, 2) }}
+                                        </div>
+                                        <div style="font-size: 10.5px; color: var(--text3); margin-top: 2px;">
+                                            @if(isset($item->fecha_monto_inicial) && $item->fecha_monto_inicial)
+                                                <i class="fa-solid fa-calendar-day" style="color: var(--accent); font-size: 9.5px; margin-right: 2px;"></i>
+                                                {{ is_string($item->fecha_monto_inicial) ? \Carbon\Carbon::parse($item->fecha_monto_inicial)->format('d/m/Y') : $item->fecha_monto_inicial->format('d/m/Y') }}
+                                            @else
+                                                <span>—</span>
+                                            @endif
+                                        </div>
                                     </td>
-                                    <td style="font-weight: 800; color: var(--text);">
-                                        S/ {{ number_format($item->cuota_2 ?? 0, 2) }}
+                                    <td>
+                                        <div style="font-weight: 800; color: var(--text); font-size: 13.5px;">
+                                            S/ {{ number_format($item->cuota_1 ?? 0, 2) }}
+                                        </div>
+                                        <div style="font-size: 10.5px; color: var(--text3); margin-top: 2px;">
+                                            @if(isset($item->fecha_cuota_1) && $item->fecha_cuota_1)
+                                                <i class="fa-solid fa-calendar-day" style="color: var(--accent); font-size: 9.5px; margin-right: 2px;"></i>
+                                                {{ is_string($item->fecha_cuota_1) ? \Carbon\Carbon::parse($item->fecha_cuota_1)->format('d/m/Y') : $item->fecha_cuota_1->format('d/m/Y') }}
+                                            @else
+                                                <span>—</span>
+                                            @endif
+                                        </div>
                                     </td>
-                                    <td style="font-weight: 800; color: var(--text);">
-                                        S/ {{ number_format($item->cuota_3 ?? 0, 2) }}
+                                    <td>
+                                        <div style="font-weight: 800; color: var(--text); font-size: 13.5px;">
+                                            S/ {{ number_format($item->cuota_2 ?? 0, 2) }}
+                                        </div>
+                                        <div style="font-size: 10.5px; color: var(--text3); margin-top: 2px;">
+                                            @if(isset($item->fecha_cuota_2) && $item->fecha_cuota_2)
+                                                <i class="fa-solid fa-calendar-day" style="color: var(--accent); font-size: 9.5px; margin-right: 2px;"></i>
+                                                {{ is_string($item->fecha_cuota_2) ? \Carbon\Carbon::parse($item->fecha_cuota_2)->format('d/m/Y') : $item->fecha_cuota_2->format('d/m/Y') }}
+                                            @else
+                                                <span>—</span>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div style="font-weight: 800; color: var(--text); font-size: 13.5px;">
+                                            S/ {{ number_format($item->cuota_3 ?? 0, 2) }}
+                                        </div>
+                                        <div style="font-size: 10.5px; color: var(--text3); margin-top: 2px;">
+                                            @if(isset($item->fecha_cuota_3) && $item->fecha_cuota_3)
+                                                <i class="fa-solid fa-calendar-day" style="color: var(--accent); font-size: 9.5px; margin-right: 2px;"></i>
+                                                {{ is_string($item->fecha_cuota_3) ? \Carbon\Carbon::parse($item->fecha_cuota_3)->format('d/m/Y') : $item->fecha_cuota_3->format('d/m/Y') }}
+                                            @else
+                                                <span>—</span>
+                                            @endif
+                                        </div>
                                     </td>
                                 @else
                                     <td style="font-weight: 800; color: var(--text);">
@@ -148,11 +200,13 @@
                                 @endif
                                 <td style="text-align: center;">
                                     @if($item->estado === 'pagado')
-                                        <span class="pill green" style="font-size: 9px; font-weight: 800;">PAGADO</span>
+                                        <span class="pill green" style="font-size: 10px; font-weight: 800;">PAGADO</span>
                                     @elseif($item->estado === 'exonerado')
-                                        <span class="pill gray" style="font-size: 9px; font-weight: 800;">EXONERADO</span>
+                                        <span style="font-size: 12px; font-weight: 900; color: #1d4ed8; background: #dbeafe; padding: 4px 10px; border-radius: 99px; display: inline-block; letter-spacing: 0.5px;">
+                                            EXONERADO
+                                        </span>
                                     @else
-                                        <span class="pill red" style="font-size: 9px; font-weight: 800;">PENDIENTE</span>
+                                        <span class="pill red" style="font-size: 10px; font-weight: 800;">PENDIENTE</span>
                                     @endif
                                 </td>
                                 <td>
@@ -163,6 +217,10 @@
                                                 @if(($item->monto ?? 0) > 0)
                                                     <div style="font-size: 10px; color: var(--green); font-weight: 600; margin-top: 3px;"><i class="fa-regular fa-clock"></i> Recaudado: S/ {{ number_format($item->monto, 2) }} cobrado</div>
                                                 @endif
+                                            </div>
+                                        @elseif($item->estado === 'exonerado')
+                                            <div style="font-size: 11.5px; color: #1e40af; font-weight: 600;">
+                                                <i class="fa-solid fa-circle-check" style="color: #3b82f6;"></i> Exonerado: {{ $item->motivo_exoneracion ?? 'Socio de la Empresa' }}
                                             </div>
                                         @else
                                             <div style="font-size: 11px;">
@@ -189,7 +247,7 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="{{ $isMontoIngreso ? 10 : 7 }}" style="text-align:center; padding: 40px; color: var(--text3);">No hay registros de obligaciones en este rango.</td></tr>
+                            <tr><td colspan="{{ $isMontoIngreso ? 11 : 7 }}" style="text-align:center; padding: 40px; color: var(--text3);">No hay registros de obligaciones en este rango.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -215,7 +273,7 @@
 
         function toggleFields() {
             if (tipoSelect && tipoSelect.value === 'monto_ingreso') {
-                if (fieldFlota) fieldFlota.style.display = 'none';
+                if (fieldFlota) fieldFlota.style.display = 'block';
                 if (fieldPropietario) fieldPropietario.style.display = 'block';
                 if (fieldDesde) fieldDesde.style.display = 'block';
                 if (fieldHasta) fieldHasta.style.display = 'block';

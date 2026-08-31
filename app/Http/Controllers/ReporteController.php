@@ -490,15 +490,22 @@ class ReporteController extends Controller
                         $item->concepto = 'Ingreso de ' . ($p->es_socio ? 'Socio (Exonerado): ' : 'Propietario: ') . $p->nombre_completo;
                         $item->vehiculo = (object)['numero_flota' => '---', 'placa' => '---'];
                         $item->conductor = null;
+                        $item->propietario = $p;
+                        $item->tipo_persona = $p->tipo_persona ?? 'personal_normal';
+                        $item->es_socio = $p->es_socio;
                         $item->cobrado_at = $p->updated_at ? \Carbon\Carbon::parse($p->updated_at) : today();
                         $item->created_at = $p->created_at ?? today();
                         $item->metodo_pago = 'efectivo';
                         $item->pagoMp = null;
                         $item->motivo_exoneracion = $p->es_socio ? 'Exonerado por ser Socio de la Empresa' : null;
                         $item->monto_inicial = $p->monto_inicial;
+                        $item->fecha_monto_inicial = $p->fecha_monto_inicial;
                         $item->cuota_1 = $p->cuota_1;
+                        $item->fecha_cuota_1 = $p->fecha_cuota_1;
                         $item->cuota_2 = $p->cuota_2;
+                        $item->fecha_cuota_2 = $p->fecha_cuota_2;
                         $item->cuota_3 = $p->cuota_3;
+                        $item->fecha_cuota_3 = $p->fecha_cuota_3;
                         
                         $items->push($item);
                     }
@@ -520,15 +527,22 @@ class ReporteController extends Controller
                             $item->concepto = 'Ingreso de ' . ($p->es_socio ? 'Socio (Exonerado): ' : 'Propietario: ') . $p->nombre_completo;
                             $item->vehiculo = $v;
                             $item->conductor = null;
+                            $item->propietario = $p;
+                            $item->tipo_persona = $p->tipo_persona ?? 'personal_normal';
+                            $item->es_socio = $p->es_socio;
                             $item->cobrado_at = $v->updated_at ? \Carbon\Carbon::parse($v->updated_at) : today();
                             $item->created_at = $v->created_at ?? today();
                             $item->metodo_pago = 'efectivo';
                             $item->pagoMp = null;
                             $item->motivo_exoneracion = $p->es_socio ? 'Exonerado por ser Socio de la Empresa' : null;
                             $item->monto_inicial = $v->monto_inicial;
+                            $item->fecha_monto_inicial = $v->fecha_monto_inicial;
                             $item->cuota_1 = $v->cuota_1;
+                            $item->fecha_cuota_1 = $v->fecha_cuota_1;
                             $item->cuota_2 = $v->cuota_2;
+                            $item->fecha_cuota_2 = $v->fecha_cuota_2;
                             $item->cuota_3 = $v->cuota_3;
+                            $item->fecha_cuota_3 = $v->fecha_cuota_3;
                             
                             $items->push($item);
                         }

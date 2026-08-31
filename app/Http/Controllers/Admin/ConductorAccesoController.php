@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
+use Spatie\Permission\Models\Role;
+
 class ConductorAccesoController extends Controller
 {
     // Crear acceso inicial
@@ -37,12 +39,11 @@ class ConductorAccesoController extends Controller
                 // Si el usuario eliminado pertenece al mismo conductor, lo restauramos
                 $existingUser->restore();
                 $existingUser->update([
-                    'email'    => $placa,
-                    'activo'   => true,
                     'password' => Hash::make($placa),
+                    'activo'   => true,
                 ]);
                 $conductor->update(['primer_ingreso' => true]);
-                return back()->with('success', "Acceso restaurado. Usuario: \"{$placa}\" y la contraseña lo mismo");
+                return back()->with('success', "Acceso restaurado Usuario: \"{$placa}\" y la contraseña lo mismo");
             } else {
                 return back()->with('error', "La placa {$placa} ya está registrada como usuario en el sistema por otro conductor.");
             }
@@ -57,7 +58,16 @@ class ConductorAccesoController extends Controller
             'activo'       => true,
         ]);
 
-        $nuevoUser->assignRole('conductor');
+        $roleConductor = Role::firstOrCreate(['name' => 'conductor', 'guard_name' => 'web']);
+        $roleConductor->syncPermissions([
+            'conductor.dashboard',
+            'conductor.tributos',
+            'conductor.vueltas',
+            'conductor.sanciones',
+            'conductor.perfil',
+        ]);
+
+        $nuevoUser->assignRole($roleConductor);
         $conductor->update(['primer_ingreso' => true]);
 
         return back()->with('success', "Acceso creado Usuario: \"{$placa}\" y la contraseña lo mismo");

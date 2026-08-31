@@ -56,28 +56,15 @@ class DatabaseSeeder extends Seeder
             );
         }
 
-        // 3. Crear Roles Globales
+        // 3. Crear Rol Global Super Admin
         $superAdminRole = Role::updateOrCreate(
             ['name' => 'SUPER_ADMIN', 'guard_name' => 'web']
-        );
-
-        $conductorRole = Role::updateOrCreate(
-            ['name' => 'conductor', 'guard_name' => 'web']
         );
 
         // SUPER_ADMIN — todos los permisos excepto ajustes locales de empresa
         $superAdminRole->syncPermissions(
             Permission::where('name', '!=', 'gestionar ajustes de empresa')->get()
         );
-
-        // CONDUCTOR — solo sus permisos de panel móvil
-        $conductorRole->syncPermissions([
-            'conductor.dashboard',
-            'conductor.tributos',
-            'conductor.vueltas',
-            'conductor.sanciones',
-            'conductor.perfil',
-        ]);
 
         // 4. Crear Usuario Maestro (Super Admin Global)
         $superAdminEmail = env('SUPERADMIN_EMAIL', 'superadmin@transjunin.com');
@@ -104,8 +91,8 @@ class DatabaseSeeder extends Seeder
         $this->command->info('🔑 Super Admin Name:  ' . $superAdminName);
         $this->command->info('🔑 Super Admin Pass:  ' . $superAdminPass);
         $this->command->info('-----------------------------------------');
-        $this->command->info('Permisos creados: ' . count($permissions));
-        $this->command->info('Roles creados: SUPER_ADMIN, conductor');
+        $this->command->info('Permisos del Sistema: ' . count($permissions));
+        $this->command->info('Rol Inicial Creado:   SUPER_ADMIN');
         $this->command->info('=========================================');
     }
 }

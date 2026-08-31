@@ -4,7 +4,6 @@
     $pageTitle = 'Expediente de Propietario';
     $pageSubtitle = 'Detalles legales, vehículos asignados y control de cuotas de ingreso';
     $totalVehiculos = $propietario->vehiculos->count();
-    $totalObligadoGlobal = $propietario->es_socio ? 0 : ($totalVehiculos > 0 ? $totalVehiculos * 600 : 600);
 @endphp
 
 @section('back_url', route('propietarios.index'))
@@ -12,36 +11,31 @@
 @section('content')
     <div class="panel">
         
-        {{-- 1. CABECERA CON PERFIL Y ACCIONES --}}
+        {{-- 1. CABECERA CON PERFIL Y ACCIONES (SIN AVATAR) --}}
         <div class="card-header-actions" style="margin-bottom: 24px;">
-            <div class="flex-h" style="gap: 16px; align-items: center;">
-                <div class="avatar" style="width: 58px; height: 58px; font-size: 22px; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; border-radius: 16px; font-weight: 900; box-shadow: 0 4px 12px rgba(37,99,235,0.25);">
-                    {{ strtoupper(substr($propietario->nombre, 0, 1) . substr($propietario->apellidos, 0, 1)) }}
-                </div>
-                <div class="flex-v" style="gap: 4px;">
-                    <h2 style="font-size: 22px; font-weight: 800; color: var(--text); margin: 0;">
-                        {{ $propietario->nombre }} {{ $propietario->apellidos }}
-                    </h2>
-                    <div class="flex-h" style="gap: 8px; align-items: center; flex-wrap: wrap;">
-                        <span class="pill {{ $propietario->activo ? 'green' : 'red' }}" style="font-weight: 800; font-size: 11px;">
-                            {{ $propietario->activo ? 'VIGENTE' : 'INACTIVO' }}
+            <div class="flex-v" style="gap: 6px;">
+                <h2 style="font-size: 24px; font-weight: 800; color: var(--text); margin: 0;">
+                    {{ $propietario->nombre }} {{ $propietario->apellidos }}
+                </h2>
+                <div class="flex-h" style="gap: 8px; align-items: center; flex-wrap: wrap;">
+                    <span class="pill {{ $propietario->activo ? 'green' : 'red' }}" style="font-weight: 800; font-size: 11px;">
+                        {{ $propietario->activo ? 'VIGENTE' : 'INACTIVO' }}
+                    </span>
+                    @if($propietario->es_socio)
+                        <span class="pill blue" style="font-size: 11px; font-weight: 800; padding: 4px 10px;">
+                            <i class="fa-solid fa-star"></i> SOCIO DE LA EMPRESA (EXONERADO)
                         </span>
-                        @if($propietario->es_socio)
-                            <span class="pill blue" style="font-size: 11px; font-weight: 800; padding: 4px 10px;">
-                                <i class="fa-solid fa-star"></i> SOCIO DE LA EMPRESA (EXONERADO)
-                            </span>
-                        @else
-                            <span class="pill gray" style="font-size: 11px; font-weight: 700; padding: 4px 10px;">
-                                Persona / Tercero Normal
-                            </span>
-                        @endif
-                        @if($propietario->conductor)
-                            <span class="pill gold" style="font-size: 11px; font-weight: 800;">
-                                <i class="fa-solid fa-id-card"></i> SOCIO-CONDUCTOR
-                            </span>
-                        @endif
-                        <span style="font-size: 12.5px; color: var(--text3); font-weight: 600;">ID: #{{ $propietario->id }}</span>
-                    </div>
+                    @else
+                        <span class="pill gray" style="font-size: 11px; font-weight: 700; padding: 4px 10px;">
+                            Persona / Tercero Normal
+                        </span>
+                    @endif
+                    @if($propietario->conductor)
+                        <span class="pill gold" style="font-size: 11px; font-weight: 800;">
+                            <i class="fa-solid fa-id-card"></i> SOCIO-CONDUCTOR
+                        </span>
+                    @endif
+                    <span style="font-size: 12.5px; color: var(--text3); font-weight: 600;">ID: #{{ $propietario->id }}</span>
                 </div>
             </div>
             <div class="flex-h" style="gap: 10px;">
@@ -64,7 +58,7 @@
                     {{ $propietario->es_socio ? 'Socio de la Empresa' : 'Persona Normal' }}
                 </div>
                 <div style="font-size: 11.5px; color: {{ $propietario->es_socio ? 'var(--accent)' : 'var(--text3)' }}; font-weight: 600; margin-top: 4px;">
-                    {{ $propietario->es_socio ? '⭐ Exonerado de Ingreso (S/. 0.00)' : 'Total: S/. 600.00 / vehículo' }}
+                    {{ $propietario->es_socio ? '⭐ Exonerado de Ingreso' : 'Registro de Propietario' }}
                 </div>
             </div>
 
@@ -75,7 +69,7 @@
                     {{ $totalVehiculos }} <span style="font-size: 13px; font-weight: 600; color: var(--text3);">{{ $totalVehiculos === 1 ? 'unidad' : 'unidades' }}</span>
                 </div>
                 <div style="font-size: 11.5px; color: var(--text3); font-weight: 600; margin-top: 4px;">
-                    Obligación: S/. {{ number_format($totalObligadoGlobal, 2) }}
+                    Unidades vinculadas
                 </div>
             </div>
 
@@ -130,11 +124,11 @@
                                     <td>
                                         @if($propietario->es_socio)
                                             <span class="pill blue" style="font-weight: 800; font-size: 11.5px;">
-                                                <i class="fa-solid fa-star"></i> SOCIO DE LA EMPRESA (Exonerado de Ingreso S/. 0.00)
+                                                <i class="fa-solid fa-star"></i> SOCIO DE LA EMPRESA (Exonerado de Ingreso)
                                             </span>
                                         @else
                                             <span class="pill gray" style="font-weight: 700; font-size: 11.5px;">
-                                                Persona / Tercero Normal (Obligado a S/. 600.00 por vehículo)
+                                                Persona / Tercero Normal
                                             </span>
                                         @endif
                                     </td>
@@ -201,14 +195,14 @@
                                 </div>
                                 <div>
                                     <h4 style="color: #1e40af; font-weight: 800; font-size: 16px; margin: 0 0 6px 0;">
-                                        Socio de la Empresa — Totalmente Exonerado
+                                        Socio de la Empresa — Exonerado
                                     </h4>
                                     <p style="color: #1e3a8a; font-size: 13px; margin: 0; line-height: 1.5;">
-                                        Por su condición oficial de <b>Socio de la Empresa</b>, no se genera cobro de monto de ingreso por registrar su vehículo actual ni por ningún vehículo adicional que se le asigne en la flota.
+                                        Por su condición oficial de <b>Socio de la Empresa</b>, no se genera cobro de monto de ingreso por registrar su vehículo actual ni por ningún vehículo adicional que se le asigne.
                                     </p>
                                     <div style="margin-top: 12px; display: flex; gap: 12px; align-items: center;">
                                         <span class="pill blue" style="font-size: 12px; font-weight: 900; background: #dbeafe; color: #1d4ed8; padding: 4px 12px;">
-                                            TOTAL OBLIGADO: S/. 0.00 (EXONERADO)
+                                            EXONERADO (SOCIO)
                                         </span>
                                         <span class="pill green" style="font-size: 12px; font-weight: 800;">
                                             DEUDA: S/. 0.00
@@ -225,7 +219,7 @@
                             <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
                                 <div class="card-title" style="display: flex; align-items: center; gap: 8px;">
                                     <i class="fa-solid fa-hand-holding-dollar" style="color: var(--accent);"></i>
-                                    Control de Monto de Ingreso (Total Obligado: S/. 600.00)
+                                    Control de Monto de Ingreso
                                 </div>
                                 @php
                                     $estado = $propietario->estado_ingreso;
@@ -295,11 +289,8 @@
                                         </tr>
                                         <tr style="background: var(--bg); font-weight: 800;">
                                             <td style="color: var(--text); font-weight: 800;">Total Recaudado</td>
-                                            <td style="color: var(--accent); font-weight: 800; font-size: 14px;">
+                                            <td style="color: var(--accent); font-weight: 800; font-size: 14px;" colspan="2">
                                                 S/. {{ number_format($propietario->monto_ingreso_total, 2) }}
-                                            </td>
-                                            <td>
-                                                <span style="font-size: 11px; color: var(--text3);">de S/. 600.00</span>
                                             </td>
                                         </tr>
                                         @if($propietario->monto_ingreso_deuda > 0)
@@ -319,7 +310,6 @@
                         <div class="flex-v" style="gap: 16px;">
                             <div style="font-size: 15px; font-weight: 800; color: var(--text); display: flex; align-items: center; justify-content: space-between;">
                                 <span><i class="fa-solid fa-hand-holding-dollar" style="color: var(--accent); margin-right: 6px;"></i> Detalle de Monto de Ingreso por Vehículo</span>
-                                <span style="font-size: 12px; color: var(--text3); font-weight: 600;">(S/. 600.00 por cada vehículo asignado)</span>
                             </div>
 
                             @foreach($propietario->vehiculos as $v)
@@ -337,7 +327,7 @@
                                         <div>
                                             @if($v->monto_ingreso_deuda <= 0)
                                                 <span class="pill green" style="font-weight: 800; font-size: 11px;">
-                                                    PAGADO S/. 600.00
+                                                    PAGADO
                                                 </span>
                                             @else
                                                 <span class="pill red" style="font-weight: 800; font-size: 11px;">
@@ -406,11 +396,8 @@
                                                 </tr>
                                                 <tr style="background: var(--bg); font-weight: 800;">
                                                     <td style="color: var(--text); font-weight: 800;">Total Recaudado en Unidad</td>
-                                                    <td style="color: var(--accent); font-weight: 800; font-size: 14px;">
+                                                    <td style="color: var(--accent); font-weight: 800; font-size: 14px;" colspan="2">
                                                         S/. {{ number_format($v->monto_ingreso_total, 2) }}
-                                                    </td>
-                                                    <td>
-                                                        <span style="font-size: 11px; color: var(--text3);">de S/. 600.00</span>
                                                     </td>
                                                 </tr>
                                                 @if($v->monto_ingreso_deuda > 0)
@@ -512,16 +499,12 @@
                 {{-- Resumen Financiero Consolidado --}}
                 <div class="card" style="border-top: 4px solid var(--accent);">
                     <div class="card-header">
-                        <div class="card-title" style="font-size: 14px;">Resumen Consolidado</div>
+                        <div class="card-title" style="font-size: 14px;">Resumen de Ingresos</div>
                     </div>
                     <div class="card-body" style="padding: 16px;">
                         <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed var(--border); font-size: 13px;">
                             <span style="color: var(--text3);">Total Unidades:</span>
                             <span style="font-weight: 800;">{{ $totalVehiculos }}</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed var(--border); font-size: 13px;">
-                            <span style="color: var(--text3);">Total Obligado:</span>
-                            <span style="font-weight: 800; color: var(--text);">S/. {{ number_format($totalObligadoGlobal, 2) }}</span>
                         </div>
                         <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed var(--border); font-size: 13px;">
                             <span style="color: var(--text3);">Total Abonado:</span>

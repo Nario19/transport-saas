@@ -26,24 +26,46 @@
         height: 230px;
         background: #e2e8f0;
     }
-    .driver-marker-pulse {
-        background: #2563eb;
+
+    /* Animación fluida de desplazamiento en hardware GPU */
+    .custom-driver-icon {
+        transition: transform 0.6s linear !important;
+        will-change: transform;
+    }
+
+    .driver-nav-marker {
+        position: relative;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .driver-pulse-ring {
+        position: absolute;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: rgba(37, 99, 235, 0.3);
+        animation: driverRing 2s ease-out infinite;
+    }
+    .driver-arrow-container {
         width: 24px;
         height: 24px;
         border-radius: 50%;
+        background: #2563eb;
         border: 2.5px solid #ffffff;
-        box-shadow: 0 0 10px rgba(37, 99, 235, 0.7);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.35);
         display: flex;
         align-items: center;
         justify-content: center;
         color: white;
         font-size: 11px;
-        animation: markerPulse 1.8s infinite;
+        transition: transform 0.35s ease;
     }
-    @keyframes markerPulse {
-        0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.7); }
-        70% { box-shadow: 0 0 0 12px rgba(37, 99, 235, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
+    @keyframes driverRing {
+        0% { transform: scale(0.6); opacity: 1; }
+        100% { transform: scale(1.6); opacity: 0; }
     }
 
     .cronometro {
@@ -112,7 +134,6 @@
     $flotaNum = $vuelta->vehiculo?->numero_flota ?? '';
 @endphp
 
-{{-- Card Verde con Encabezado, Información en Ruta y Mapa en Vivo --}}
 <div class="en-ruta-hero">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
         <div style="display: flex; align-items: center; gap: 10px;">
@@ -133,7 +154,6 @@
         </div>
     </div>
 
-    {{-- Contenedor del Mapa en Vivo del Conductor --}}
     <div class="map-box">
         <div id="map-conductor"></div>
         <button type="button" onclick="recentrarEnConductor()" 
@@ -144,7 +164,6 @@
     </div>
 </div>
 
-{{-- Cronómetro --}}
 <div class="card" style="margin-bottom: 16px;">
     <div class="card-header" style="padding: 14px 16px; display: flex; justify-content: space-between; align-items: center;">
         <span class="card-title" style="display: flex; align-items: center; font-size: 13px; font-weight: 700; color: var(--text2);">
@@ -157,10 +176,8 @@
     </div>
 </div>
 
-{{-- Info de vuelta: Vehículo / Flota, Paradero de Inicio, Ruta, Salida y Fecha --}}
 <div class="card" style="margin-bottom: 16px;">
     <div class="card-body" style="padding: 16px;">
-        {{-- Vehículo / Flota --}}
         <div class="summary-row" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f1f5f9;">
             <span class="summary-label" style="font-weight:600; color: var(--text2); display: flex; align-items: center; gap: 8px;">
                 <i class="fa-solid fa-bus" style="color: var(--accent); width: 16px;"></i> Vehículo / Flota
@@ -174,8 +191,6 @@
                 @endif
             </span>
         </div>
-
-        {{-- Paradero de Inicio --}}
         <div class="summary-row" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f1f5f9;">
             <span class="summary-label" style="font-weight:600; color: var(--text2); display: flex; align-items: center; gap: 8px;">
                 <i class="fa-solid fa-map-pin" style="color: var(--green); width: 16px;"></i> Paradero de Inicio
@@ -184,8 +199,6 @@
                 {{ $vuelta->paraderoSalida?->nombre ?? ($vuelta->ruta?->origen ?? 'Inicio de Ruta') }}
             </span>
         </div>
-
-        {{-- Ruta --}}
         <div class="summary-row" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f1f5f9;">
             <span class="summary-label" style="font-weight:600; color: var(--text2); display: flex; align-items: center; gap: 8px;">
                 <i class="fa-solid fa-route" style="color: var(--gold); width: 16px;"></i> Ruta
@@ -194,8 +207,6 @@
                 {{ $vuelta->ruta?->nombre ?? 'Sin ruta asignada' }}
             </span>
         </div>
-
-        {{-- Salida --}}
         <div class="summary-row" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f1f5f9;">
             <span class="summary-label" style="font-weight:600; color: var(--text2); display: flex; align-items: center; gap: 8px;">
                 <i class="fa-regular fa-clock" style="color: var(--text3); width: 16px;"></i> Salida
@@ -204,8 +215,6 @@
                 {{ $vuelta->hora_salida }}
             </span>
         </div>
-
-        {{-- Fecha --}}
         <div class="summary-row" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0;">
             <span class="summary-label" style="font-weight:600; color: var(--text2); display: flex; align-items: center; gap: 8px;">
                 <i class="fa-regular fa-calendar" style="color: var(--text3); width: 16px;"></i> Fecha
@@ -217,7 +226,6 @@
     </div>
 </div>
 
-{{-- Selector de Paradero de Llegada --}}
 <div class="card" style="margin-bottom: 16px;">
     <div class="card-header" style="padding: 14px 16px; border-bottom: 1px solid #f8fafc;">
         <span class="card-title" style="font-size:14px; color:#64748b; font-weight: 700;">
@@ -240,8 +248,6 @@
                 @endforeach
             </select>
         </div>
-
-        {{-- Panel Informativo de Coordenadas y Distancia --}}
         <div id="paradero-coords-info" style="margin-top: 12px; display: none; padding: 12px; border-radius: 8px; background: var(--bg); border: 1px solid var(--border); font-size: 13px;">
             <div style="font-weight: 700; color: var(--text2); margin-bottom: 6px;"><i class="fa-solid fa-circle-info" style="color: var(--accent);"></i> Estado del Paradero</div>
             <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
@@ -252,7 +258,6 @@
     </div>
 </div>
 
-{{-- Botón terminar --}}
 <button class="btn-terminar" id="btn-terminar" onclick="confirmarTerminar()">
     <i class="fa-solid fa-flag-checkered"></i> Terminar Vuelta
 </button>
@@ -269,59 +274,61 @@ const UBICACION_URL = '{{ route("conductor.vuelta.ubicacion", [], false) }}';
 const CSRF         = '{{ csrf_token() }}';
 const INICIO_MS    = {{ \Carbon\Carbon::parse($vuelta->fecha->format("Y-m-d") . ' ' . $vuelta->hora_salida)->timestamp * 1000 }};
 const SERVER_AHORA = {{ now()->timestamp * 1000 }};
-
 const RUTA_COLOR   = '{{ $colorRuta }}';
 const RUTA_TRAZADO = @json($rawTrazado);
 const PARADEROS    = @json($paraderosData);
 const FLOTA_NUM    = '{{ $flotaNum }}';
 
-// Cronómetro
 const inicio       = new Date(INICIO_MS);
 const clockOffset  = SERVER_AHORA - Date.now();
 
 function actualizarCronometro() {
     const ahoraAjustado = Date.now() + clockOffset;
     let diff = Math.max(0, Math.floor((ahoraAjustado - INICIO_MS) / 1000));
-    
     if (diff === 0 && (ahoraAjustado > INICIO_MS)) diff = 1;
-
     const hh = String(Math.floor(diff / 3600)).padStart(2, '0');
     let residuo = diff % 3600;
     const mm = String(Math.floor(residuo / 60)).padStart(2, '0');
     const ss = String(residuo % 60).padStart(2, '0');
-    
     document.getElementById('cronometro').textContent = `${hh}:${mm}:${ss}`;
 }
 let cronometroIntervalId = setInterval(actualizarCronometro, 1000);
 actualizarCronometro();
 
-// --- INICIALIZACIÓN OPTIMIZADA DEL MAPA EN VIVO PARA EL CONDUCTOR ---
 let mapConductor = null;
 let driverMarker = null;
 let userHasPanned = false;
+let currentLat = null;
+let currentLng = null;
+let previousLat = null;
+let previousLng = null;
+
+function calcularBearing(lat1, lon1, lat2, lon2) {
+    const toRad = Math.PI / 180;
+    const toDeg = 180 / Math.PI;
+    const dLon = (lon2 - lon1) * toRad;
+    const y = Math.sin(dLon) * Math.cos(lat2 * toRad);
+    const x = Math.cos(lat1 * toRad) * Math.sin(lat2 * toRad) -
+              Math.sin(lat1 * toRad) * Math.cos(lat2 * toRad) * Math.cos(dLon);
+    let brng = Math.atan2(y, x) * toDeg;
+    return (brng + 360) % 360;
+}
 
 function construirTrazadoParaderosJS(paraderosList) {
     const validos = (paraderosList || []).filter(p => p.latitud_a && p.longitud_a);
     if (validos.length === 0) return [];
     if (validos.length === 1) return [[parseFloat(validos[0].latitud_a), parseFloat(validos[0].longitud_a)]];
-
     const origenes = validos.filter(p => p.tipo === 'origen');
     const intermedios = validos.filter(p => p.tipo === 'intermedio');
     const destinos = validos.filter(p => p.tipo === 'destino');
-
     const getCoord = (p) => [parseFloat(p.latitud_a), parseFloat(p.longitud_a)];
-
-    if (origenes.length <= 1 && destinos.length <= 1) {
-        return validos.map(getCoord);
-    }
-
+    if (origenes.length <= 1 && destinos.length <= 1) return validos.map(getCoord);
     const branches = [];
     if (destinos.length > 1 && origenes.length <= 1) {
         const trunk = origenes.length === 1 ? [origenes[0], ...intermedios] : [...intermedios];
         const forkPt = trunk.length > 0 ? trunk[trunk.length - 1] : null;
         const forkCoord = forkPt ? getCoord(forkPt) : null;
         const trunkCoords = trunk.map(getCoord);
-
         branches.push([...trunkCoords, getCoord(destinos[0])]);
         for (let i = 1; i < destinos.length; i++) {
             if (forkCoord) branches.push([forkCoord, getCoord(destinos[i])]);
@@ -329,35 +336,30 @@ function construirTrazadoParaderosJS(paraderosList) {
         }
         return branches;
     }
-
     return validos.map(getCoord);
 }
 
 function inicializarMapaConductor() {
     const mapEl = document.getElementById('map-conductor');
     if (!mapEl) return;
-
-    // Configuración ligera: sin controles pesados, optimizado para móvil
     mapConductor = L.map('map-conductor', {
+        preferCanvas: true,
         zoomControl: false,
         attributionControl: false,
-        fadeAnimation: false,
-        markerZoomAnimation: false
-    }).setView([-12.065, -75.204], 14);
-
+        fadeAnimation: true,
+        markerZoomAnimation: true,
+        inertia: true,
+        inertiaDeceleration: 3000
+    }).setView([-12.065, -75.204], 16);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 18,
-        minZoom: 11
+        minZoom: 11,
+        keepBuffer: 2,
+        updateWhenIdle: true
     }).addTo(mapConductor);
-
-    // Detectar si el usuario mueve el mapa manualmente para no forzar el recentrado de inmediato
-    mapConductor.on('dragstart', () => {
-        userHasPanned = true;
-    });
-
+    mapConductor.on('dragstart', () => { userHasPanned = true; });
     let lineCoords = [];
     let allFlat = [];
-
     if (RUTA_TRAZADO && RUTA_TRAZADO.length > 0) {
         if (Array.isArray(RUTA_TRAZADO[0]) && Array.isArray(RUTA_TRAZADO[0][0])) {
             lineCoords = RUTA_TRAZADO.map(b => b.map(c => [parseFloat(c[0]), parseFloat(c[1])]));
@@ -376,135 +378,115 @@ function inicializarMapaConductor() {
             allFlat = auto;
         }
     }
-
-    // Dibujar el trazado de la ruta
     if (allFlat.length >= 2) {
-        L.polyline(lineCoords, {
-            color: RUTA_COLOR,
-            weight: 5,
-            opacity: 0.85
-        }).addTo(mapConductor);
-
+        L.polyline(lineCoords, { color: RUTA_COLOR, weight: 5, opacity: 0.85 }).addTo(mapConductor);
         mapConductor.fitBounds(L.latLngBounds(allFlat), { padding: [25, 25] });
     }
-
-    // Dibujar paraderos con marcadores ultra ligeros
     (PARADEROS || []).forEach(p => {
         if (p.latitud_a && p.longitud_a) {
             const isEnd = p.tipo === 'destino';
             const isStart = p.tipo === 'origen';
             const markerColor = isStart ? '#22c55e' : (isEnd ? '#ef4444' : RUTA_COLOR);
-
             L.circleMarker([parseFloat(p.latitud_a), parseFloat(p.longitud_a)], {
-                radius: 4.5,
-                fillColor: markerColor,
-                color: '#ffffff',
-                weight: 1.5,
-                opacity: 1,
-                fillOpacity: 0.95
+                radius: 5, fillColor: markerColor, color: '#ffffff', weight: 1.5, opacity: 1, fillOpacity: 0.95
             }).addTo(mapConductor);
         }
     });
-
-    setTimeout(() => {
-        if (mapConductor) mapConductor.invalidateSize();
-    }, 300);
+    setTimeout(() => { if (mapConductor) mapConductor.invalidateSize(); }, 250);
 }
 
 window.recentrarEnConductor = function() {
     userHasPanned = false;
     if (currentLat !== null && currentLng !== null && mapConductor) {
-        mapConductor.setView([currentLat, currentLng], 16, { animate: true });
-    } else if (mapConductor) {
-        mapConductor.locate({ setView: true, maxZoom: 16 });
+        mapConductor.panTo([currentLat, currentLng], { animate: true, duration: 0.6 });
     }
 };
 
-// --- GEOLOCALIZACIÓN DEL PARADERO EN TIEMPO REAL ---
-let currentLat = null;
-let currentLng = null;
+function actualizarPosicionConductorEnMapa(lat, lng, heading) {
+    if (!mapConductor) return;
+    if (!driverMarker) {
+        const driverIcon = L.divIcon({
+            html: `
+                <div class="driver-nav-marker">
+                    <div class="driver-pulse-ring"></div>
+                    <div class="driver-arrow-container" id="driver-arrow-icon">
+                        <i class="fa-solid fa-location-arrow" style="transform:rotate(-45deg);"></i>
+                    </div>
+                </div>
+            `,
+            className: 'custom-driver-icon',
+            iconSize: [32, 32],
+            iconAnchor: [16, 16]
+        });
+        driverMarker = L.marker([lat, lng], { icon: driverIcon, zIndexOffset: 1000 }).addTo(mapConductor);
+        if (!userHasPanned) mapConductor.setView([lat, lng], 16, { animate: true });
+    } else {
+        driverMarker.setLatLng([lat, lng]);
+        let angle = heading;
+        if (angle === null || angle === undefined || isNaN(angle)) {
+            if (previousLat !== null && previousLng !== null) {
+                const dist = calcularDistanciaMetros(previousLat, previousLng, lat, lng);
+                if (dist > 1.5) angle = calcularBearing(previousLat, previousLng, lat, lng);
+            }
+        }
+        if (angle !== null && angle !== undefined && !isNaN(angle)) {
+            const arrowEl = document.getElementById('driver-arrow-icon');
+            if (arrowEl) arrowEl.style.transform = `rotate(${angle}deg)`;
+        }
+        if (!userHasPanned) mapConductor.panTo([lat, lng], { animate: true, duration: 0.6, easeLinearity: 0.3 });
+    }
+    previousLat = lat;
+    previousLng = lng;
+}
 
 window.verificarGPSParaderoSeleccionado = function() {
     const selectEl = document.getElementById('paradero_llegada_id');
     const infoPanel = document.getElementById('paradero-coords-info');
-    
-    if (!selectEl.value) {
-        infoPanel.style.display = 'none';
-        return;
-    }
-
+    if (!selectEl.value) { infoPanel.style.display = 'none'; return; }
     const opt = selectEl.options[selectEl.selectedIndex];
-    const latA = parseFloat(opt.getAttribute('data-lat-a'));
-    const lngA = parseFloat(opt.getAttribute('data-lng-a'));
-    const latB = parseFloat(opt.getAttribute('data-lat-b'));
-    const lngB = parseFloat(opt.getAttribute('data-lng-b'));
+    const latA = parseFloat(opt.getAttribute('data-lat-a')), lngA = parseFloat(opt.getAttribute('data-lng-a'));
+    const latB = parseFloat(opt.getAttribute('data-lat-b')), lngB = parseFloat(opt.getAttribute('data-lng-b'));
     const tolerance = parseInt(opt.getAttribute('data-tolerancia')) || 30;
-
     infoPanel.style.display = 'block';
-
     if (isNaN(latA) || isNaN(lngA)) {
         const badge = document.getElementById('info-badge');
-        badge.textContent = 'PERMITIDO';
-        badge.style.background = 'var(--green)';
+        badge.textContent = 'PERMITIDO'; badge.style.background = 'var(--green)';
         document.getElementById('info-dist-text').textContent = 'Este paradero no exige validación de GPS.';
-        document.getElementById('info-dist-text').style.color = 'var(--text)';
         return;
     }
-
     if (currentLat === null || currentLng === null) {
         const badge = document.getElementById('info-badge');
-        badge.textContent = 'ESPERANDO GPS';
-        badge.style.background = 'var(--orange)';
-        document.getElementById('info-dist-text').textContent = 'Obteniendo señal de GPS de tu celular...';
-        document.getElementById('info-dist-text').style.color = 'var(--text)';
+        badge.textContent = 'ESPERANDO GPS'; badge.style.background = 'var(--orange)';
+        document.getElementById('info-dist-text').textContent = 'Obteniendo señal GPS...';
         return;
     }
-
     const check = isPointWithinSegmentJS(currentLat, currentLng, latA, lngA, isNaN(latB) ? latA : latB, isNaN(lngB) ? lngA : lngB, tolerance);
-    
-    const badge = document.getElementById('info-badge');
-    const distText = document.getElementById('info-dist-text');
-
+    const badge = document.getElementById('info-badge'), distText = document.getElementById('info-dist-text');
     if (check.within) {
-        badge.textContent = 'DENTRO DE RANGO';
-        badge.style.background = '#22c55e';
-        distText.textContent = `Distancia: ${check.distance.toFixed(1)} metros. ¡Puedes terminar!`;
-        distText.style.color = '#22c55e';
+        badge.textContent = 'DENTRO DE RANGO'; badge.style.background = '#22c55e';
+        distText.textContent = `Distancia: ${check.distance.toFixed(1)} metros.`;
     } else {
-        badge.textContent = 'FUERA DE RANGO';
-        badge.style.background = '#ef4444';
-        distText.textContent = `Distancia: ${check.distance.toFixed(1)} metros. Acércate más.`;
-        distText.style.color = '#ef4444';
+        badge.textContent = 'FUERA DE RANGO'; badge.style.background = '#ef4444';
+        distText.textContent = `Distancia: ${check.distance.toFixed(1)} metros.`;
     }
 };
 
 function isPointWithinSegmentJS(latP, lngP, latA, lngA, latB, lngB, toleranceMeters) {
     const latRef = (latA + latB) / 2;
     const degToRad = Math.PI / 180;
-    
     const scaleX = Math.cos(latRef * degToRad);
-    
-    const dy = latB - latA;
-    const dx = (lngB - lngA) * scaleX;
-    
-    const dyp = latP - latA;
-    const dxp = (lngP - lngA) * scaleX;
-    
+    const dy = latB - latA, dx = (lngB - lngA) * scaleX;
+    const dyp = latP - latA, dxp = (lngP - lngA) * scaleX;
     const ab2 = (dx * dx) + (dy * dy);
     if (ab2 === 0) {
         const dist = calcularDistanciaMetros(latP, lngP, latA, lngA);
-        return { within: dist <= toleranceMeters, distance: dist, tolerance: toleranceMeters };
+        return { within: dist <= toleranceMeters, distance: dist };
     }
-    
     const ap_ab = (dxp * dx) + (dyp * dy);
-    let t = ap_ab / ab2;
-    t = Math.max(0, Math.min(1, t));
-    
-    const latProj = latA + t * dy;
-    const lngProj = lngA + t * (lngB - lngA);
-    
+    let t = Math.max(0, Math.min(1, ap_ab / ab2));
+    const latProj = latA + t * dy, lngProj = lngA + t * (lngB - lngA);
     const distance = calcularDistanciaMetros(latP, lngP, latProj, lngProj);
-    return { within: distance <= toleranceMeters, distance: distance, tolerance: toleranceMeters };
+    return { within: distance <= toleranceMeters, distance: distance };
 }
 
 let terminando = false;
@@ -572,7 +554,12 @@ async function terminarVuelta(paraderoLlegadaId) {
     } catch (_) {}
 
     if (lat === null || lng === null) {
-        alert('No se pudo verificar tu ubicación de llegada. Asegúrate de tener activado el GPS de tu celular y vuelve a intentarlo.');
+        Swal.fire({
+            title: 'GPS no detectado',
+            text: 'No se pudo verificar tu ubicación de llegada. Asegúrate de tener activado el GPS de tu celular y vuelve a intentarlo.',
+            icon: 'error',
+            confirmButtonColor: 'var(--accent)'
+        });
         document.getElementById('btn-terminar').disabled = false;
         document.getElementById('terminando-msg').classList.add('hidden');
         terminando = false;
@@ -601,131 +588,59 @@ async function terminarVuelta(paraderoLlegadaId) {
                 window.location.href = data.redirect;
             });
         } else {
-            alert('❌ ' + (data.error || 'Error al terminar vuelta'));
+            Swal.fire({
+                title: 'No se pudo finalizar',
+                text: data.error || 'Error al terminar vuelta.',
+                icon: 'error',
+                confirmButtonColor: 'var(--red)'
+            });
             document.getElementById('btn-terminar').disabled = false;
             document.getElementById('terminando-msg').classList.add('hidden');
             terminando = false;
         }
     } catch (e) {
-        alert('❌ Error de conexión al servidor.');
+        Swal.fire({
+            title: 'Error de Conexión',
+            text: 'No se pudo contactar con el servidor. Verifica tu conexión a internet.',
+            icon: 'error',
+            confirmButtonColor: 'var(--accent)'
+        });
         document.getElementById('btn-terminar').disabled = false;
         document.getElementById('terminando-msg').classList.add('hidden');
         terminando = false;
     }
 }
 
-// --- GPS BACKGROUND WATCHING Y ACTUALIZACIÓN VISUAL DEL CONDUCTOR ---
-let lastLat = null;
-let lastLng = null;
-let lastSendTime = 0;
-let watchId = null;
-
+let lastLat = null, lastLng = null, lastSendTime = 0, watchId = null;
 function calcularDistanciaMetros(lat1, lon1, lat2, lon2) {
     const R = 6371000;
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-              Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
-}
-
-function actualizarPosicionConductorEnMapa(lat, lng) {
-    if (!mapConductor) return;
-
-    if (!driverMarker) {
-        const driverIcon = L.divIcon({
-            html: `<div class="driver-marker-pulse"><i class="fa-solid fa-location-arrow" style="font-size:11px; transform:rotate(-45deg);"></i></div>`,
-            className: 'custom-driver-icon',
-            iconSize: [24, 24],
-            iconAnchor: [12, 12]
-        });
-
-        driverMarker = L.marker([lat, lng], { icon: driverIcon, zIndexOffset: 1000 }).addTo(mapConductor);
-        driverMarker.bindTooltip(`<b>Tú</b> (Vehículo ${FLOTA_NUM})`, { direction: 'top', offset: [0, -10] });
-
-        if (!userHasPanned) {
-            mapConductor.setView([lat, lng], 16);
-        }
-    } else {
-        // Actualizar coordenadas sin recrear objetos (bajo consumo de CPU y batería)
-        driverMarker.setLatLng([lat, lng]);
-        if (!userHasPanned) {
-            mapConductor.panTo([lat, lng], { animate: true, duration: 0.5 });
-        }
-    }
+    const dLat = (lat2 - lat1) * Math.PI / 180, dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
 function iniciarRastreoGPS() {
     if (terminando) return;
-
-    if (!navigator.geolocation) {
-        console.warn("Geolocalización no soportada");
-        return;
-    }
-
-    watchId = navigator.geolocation.watchPosition(
-        async (pos) => {
-            if (terminando) {
-                if (watchId) navigator.geolocation.clearWatch(watchId);
-                return;
-            }
-
-            const lat = pos.coords.latitude;
-            const lng = pos.coords.longitude;
-            const ahora = Date.now();
-
-            currentLat = lat;
-            currentLng = lng;
-
-            // Actualizar visualmente en el mapa en vivo del conductor
-            actualizarPosicionConductorEnMapa(lat, lng);
-
-            if (typeof verificarGPSParaderoSeleccionado === 'function') {
-                verificarGPSParaderoSeleccionado();
-            }
-
-            // Filtro inteligente para no saturar la red ni gastar batería
-            if (lastLat !== null && lastLng !== null) {
-                const distancia = calcularDistanciaMetros(lastLat, lastLng, lat, lng);
-                const tiempoTranscurrido = (ahora - lastSendTime) / 1000;
-
-                if (distancia < 10 && tiempoTranscurrido < 20) {
-                    return;
-                }
-            }
-
-            lastLat = lat;
-            lastLng = lng;
-            lastSendTime = ahora;
-
-            try {
-                const resp = await fetch(UBICACION_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
-                    body: JSON.stringify({ latitud: lat, longitud: lng })
-                });
-                const data = await resp.json();
-                if (data.ok) {
-                    console.log("GPS en ruta enviado:", lat, lng);
-                }
-            } catch (err) {
-                console.error("Error enviando ubicación en segundo plano:", err);
-            }
-        },
-        (err) => {
-            console.error("Error capturando GPS en segundo plano:", err);
-        },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-    );
+    if (!navigator.geolocation) return;
+    watchId = navigator.geolocation.watchPosition(async (pos) => {
+        if (terminando) { if (watchId) navigator.geolocation.clearWatch(watchId); return; }
+        const lat = pos.coords.latitude, lng = pos.coords.longitude, heading = pos.coords.heading, ahora = Date.now();
+        currentLat = lat; currentLng = lng;
+        actualizarPosicionConductorEnMapa(lat, lng, heading);
+        if (typeof verificarGPSParaderoSeleccionado === 'function') verificarGPSParaderoSeleccionado();
+        if (lastLat !== null && lastLng !== null) {
+            if (calcularDistanciaMetros(lastLat, lastLng, lat, lng) < 10 && (ahora - lastSendTime) < 20000) return;
+        }
+        lastLat = lat; lastLng = lng; lastSendTime = ahora;
+        try {
+            await fetch(UBICACION_URL, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF }, body: JSON.stringify({ latitud: lat, longitud: lng }) });
+        } catch (_) {}
+    }, null, { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 });
 }
 
-// Iniciar mapa y rastreo al cargar la pantalla
 document.addEventListener('DOMContentLoaded', () => {
     inicializarMapaConductor();
     iniciarRastreoGPS();
 });
 </script>
 @endsection
-

@@ -163,35 +163,78 @@
     </div>
 
     <script>
-        // Inicializamos el índice basándonos en la cantidad de paraderos existentes
         let paraderoIndex = {{ $ruta->paraderos->count() }};
+
+        function reindexarFilas() {
+            const tbody = document.querySelector('#tablaParaderos tbody');
+            const rows = tbody.querySelectorAll('tr');
+            rows.forEach((tr, idx) => {
+                const idInput = tr.querySelector('input[name*="[id]"]');
+                const nombreInput = tr.querySelector('input[name*="[nombre]"]');
+                const tipoSelect = tr.querySelector('select[name*="[tipo]"]');
+                if (idInput) idInput.name = `paraderos[${idx}][id]`;
+                if (nombreInput) nombreInput.name = `paraderos[${idx}][nombre]`;
+                if (tipoSelect) tipoSelect.name = `paraderos[${idx}][tipo]`;
+            });
+            paraderoIndex = rows.length;
+        }
+
+        function eliminarFila(btn) {
+            btn.closest('tr').remove();
+            reindexarFilas();
+        }
 
         function agregarFila() {
             const tbody = document.querySelector('#tablaParaderos tbody');
             const tr = document.createElement('tr');
             tr.innerHTML = `
-            <td>
-                <div class="field" style="gap:0">
-                    <input type="text" name="paraderos[${paraderoIndex}][nombre]" required placeholder="Nombre del punto...">
-                </div>
-            </td>
-            <td>
-                <div class="field" style="gap:0">
-                    <select name="paraderos[${paraderoIndex}][tipo]" required>
-                        <option value="intermedio">Intermedio</option>
-                        <option value="origen">Origen / Destino</option>
-                        <option value="destino">Destino / Origen</option>
-                    </select>
-                </div>
-            </td>
-            <td style="text-align: center;">
-                <button type="button" onclick="this.closest('tr').remove()" class="action-icon delete-icon" style="border:none; background:none;">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </td>
-        `;
-            tbody.appendChild(tr);
+                <td>
+                    <div class="field" style="gap:0">
+                        <input type="text" name="paraderos[${paraderoIndex}][nombre]" required placeholder="Nombre del punto...">
+                    </div>
+                </td>
+                <td>
+                    <div class="field" style="gap:0">
+                        <select name="paraderos[${paraderoIndex}][tipo]" required>
+                            <option value="intermedio">Intermedio</option>
+                            <option value="origen">Origen / Destino</option>
+                            <option value="destino">Destino / Origen</option>
+                        </select>
+                    </div>
+                </td>
+                <td style="text-align: center;">
+                    <button type="button" onclick="eliminarFila(this)" class="action-icon delete-icon" style="border:none; background:none;">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </td>
+            `;
+            
+            // Si existe un destino, insertarlo antes del último destino
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            let destinoRow = null;
+            for (let i = rows.length - 1; i >= 0; i--) {
+                const select = rows[i].querySelector('select[name*="[tipo]"]');
+                if (select && select.value === 'destino') {
+                    destinoRow = rows[i];
+                    break;
+                }
+            }
+
+            if (destinoRow) {
+                tbody.insertBefore(tr, destinoRow);
+            } else {
+                tbody.appendChild(tr);
+            }
+
             paraderoIndex++;
+            reindexarFilas();
+            
+            const input = tr.querySelector('input[name*="[nombre]"]');
+            if (input) input.focus();
         }
+
+        document.getElementById('formRuta').addEventListener('submit', () => {
+            reindexarFilas();
+        });
     </script>
 @endsection

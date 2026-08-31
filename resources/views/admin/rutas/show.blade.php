@@ -311,13 +311,25 @@
         const customColor = '{{ $ruta->color ?? "#3b82f6" }}';
 
         let lineCoords = [];
+        let allFlatCoords = [];
+
         if (customTrazado && customTrazado.length > 0) {
-            lineCoords = customTrazado.map(coord => [parseFloat(coord[0]), parseFloat(coord[1])]);
+            // Verificar si es multi-rama (bifurcaciones)
+            if (Array.isArray(customTrazado[0]) && Array.isArray(customTrazado[0][0])) {
+                lineCoords = customTrazado.map(branch => branch.map(coord => [parseFloat(coord[0]), parseFloat(coord[1])]));
+                customTrazado.forEach(branch => {
+                    branch.forEach(coord => allFlatCoords.push([parseFloat(coord[0]), parseFloat(coord[1])]));
+                });
+            } else {
+                lineCoords = customTrazado.map(coord => [parseFloat(coord[0]), parseFloat(coord[1])]);
+                allFlatCoords = lineCoords;
+            }
         } else {
             lineCoords = latlngs;
+            allFlatCoords = latlngs;
         }
 
-        if (lineCoords.length >= 2) {
+        if (allFlatCoords.length >= 2) {
             L.polyline(lineCoords, {
                 color: customColor,
                 weight: 4,
@@ -325,7 +337,7 @@
                 dashArray: '5, 10'
             }).addTo(map);
 
-            const bounds = L.latLngBounds(lineCoords);
+            const bounds = L.latLngBounds(allFlatCoords);
             map.fitBounds(bounds, { padding: [30, 30] });
         } else if (latlngs.length === 1) {
             map.setView(latlngs[0], 15);

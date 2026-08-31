@@ -179,24 +179,40 @@
                 </div>
             </div>
 
+            <div id="editor-ramas-container" style="margin-bottom: 14px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <label style="font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase;">
+                        Ramas / Bifurcaciones:
+                    </label>
+                    <button type="button" onclick="dividirTrazadoEditor()" class="btn-secondary" style="padding: 3px 8px; font-size: 10.5px; font-weight: 700; border-radius: 6px; background: var(--accent-l, #eff6ff); color: var(--accent, #3b82f6); border-color: transparent; cursor: pointer;" title="Bifurcar o dividir el trazado hacia otro destino/origen">
+                        <i class="fa-solid fa-code-fork"></i> + Dividir
+                    </button>
+                </div>
+                <div id="editor-ramas-pills" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
+            </div>
+
             <div style="font-size: 11px; color: var(--text3); margin-bottom: 15px; padding: 10px; background: var(--bg); border-radius: 8px; line-height: 1.5; border: 1px dashed var(--border);">
                 <i class="fa-solid fa-info-circle" style="color: var(--accent); margin-right: 3px;"></i> <b>Instrucciones:</b><br>
                 • Haz <b>clic</b> en el mapa o trazo para agregar puntos.<br>
                 • <b>Arrastra</b> los puntos para moverlos.<br>
                 • Haz <b>doble clic</b> en un punto para eliminarlo.<br>
+                • Usa <b>+ Dividir</b> para bifurcar hacia otro destino u origen.<br>
                 • Usa <b>Deshacer</b> o <kbd style="font-size:10px; background:var(--bg2); padding:1px 4px; border-radius:4px; border:1px solid var(--border);">Ctrl+Z</kbd> si te equivocas.
             </div>
 
             <div style="display: flex; flex-direction: column; gap: 8px;">
                 <div style="display: flex; gap: 6px;">
-                    <button type="button" class="btn-secondary" id="btn-editor-undo" onclick="deshacerTrazadoEditor()" style="flex: 1; padding: 10px 6px; font-size: 11px; font-weight: 700; border-radius: 8px; cursor: pointer; transition: all 0.2s;" title="Deshacer último cambio (Ctrl+Z)">
+                    <button type="button" class="btn-secondary" id="btn-editor-undo" onclick="deshacerTrazadoEditor()" style="flex: 1; padding: 10px 4px; font-size: 11px; font-weight: 700; border-radius: 8px; cursor: pointer; transition: all 0.2s;" title="Deshacer último cambio (Ctrl+Z)">
                         <i class="fa-solid fa-rotate-left"></i> Deshacer
                     </button>
-                    <button type="button" class="btn-secondary" onclick="limpiarTrazadoEditor()" style="flex: 1; padding: 10px 6px; font-size: 11px; font-weight: 700; border-radius: 8px; cursor: pointer;" title="Borrar todos los puntos">
+                    <button type="button" class="btn-secondary" onclick="dividirTrazadoEditor()" style="flex: 1; padding: 10px 4px; font-size: 11px; font-weight: 700; border-radius: 8px; cursor: pointer;" title="Bifurcar hacia otro destino/origen">
+                        <i class="fa-solid fa-code-fork"></i> Dividir
+                    </button>
+                    <button type="button" class="btn-secondary" onclick="limpiarTrazadoEditor()" style="flex: 1; padding: 10px 4px; font-size: 11px; font-weight: 700; border-radius: 8px; cursor: pointer;" title="Borrar puntos de la rama actual">
                         <i class="fa-solid fa-trash-can"></i> Limpiar
                     </button>
-                    <button type="button" class="btn-secondary" onclick="autocompletarTrazadoEditor()" style="flex: 1; padding: 10px 6px; font-size: 11px; font-weight: 700; border-radius: 8px; cursor: pointer;" title="Unir paraderos con líneas rectas">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i> Auto-unir
+                    <button type="button" class="btn-secondary" onclick="autocompletarTrazadoEditor()" style="flex: 1; padding: 10px 4px; font-size: 11px; font-weight: 700; border-radius: 8px; cursor: pointer;" title="Unir paraderos con líneas rectas">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Auto
                     </button>
                 </div>
                 <button type="button" class="btn-primary" onclick="guardarTrazadoEditor()" style="width: 100%; padding: 12px; font-size: 12px; font-weight: 800; border-radius: 8px; cursor: pointer;">
@@ -565,17 +581,36 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     };
 
-    // --- VARIABLES DEL EDITOR ---
+    // --- VARIABLES DEL EDITOR MULTI-RAMA ---
     let editorMode = false;
     let editorRutaId = null;
-    let editorCoordinates = [];
+    let editorBranches = [[]]; // Array de ramas: [ [[lat, lng], ...], ... ]
+    let activeBranchIdx = 0;   // Rama activa seleccionada
     let editorMarkers = [];
     let editorPolyline = null;
     let editorColor = '#3b82f6';
     let editorHistory = [];
 
+    function getEditorLatLngs() {
+        if (editorBranches.length === 1) {
+            return editorBranches[0];
+        }
+        return editorBranches;
+    }
+
+    function getAllEditorFlatPoints() {
+        const flat = [];
+        editorBranches.forEach(b => {
+            b.forEach(pt => flat.push(pt));
+        });
+        return flat;
+    }
+
     function pushEditorHistory() {
-        editorHistory.push(JSON.parse(JSON.stringify(editorCoordinates)));
+        editorHistory.push({
+            branches: JSON.parse(JSON.stringify(editorBranches)),
+            activeIdx: activeBranchIdx
+        });
         if (editorHistory.length > 40) {
             editorHistory.shift();
         }
@@ -585,9 +620,11 @@ document.addEventListener('DOMContentLoaded', function() {
     window.deshacerTrazadoEditor = function() {
         if (!editorMode || editorHistory.length === 0) return;
         const prev = editorHistory.pop();
-        editorCoordinates = prev;
-        editorPolyline.setLatLngs(editorCoordinates);
+        editorBranches = prev.branches;
+        activeBranchIdx = Math.min(prev.activeIdx ?? 0, Math.max(0, editorBranches.length - 1));
+        if (editorPolyline) editorPolyline.setLatLngs(getEditorLatLngs());
         actualizarVerticeMarkers();
+        actualizarPanelRamas();
         actualizarBotonDeshacer();
     };
 
@@ -599,6 +636,72 @@ document.addEventListener('DOMContentLoaded', function() {
             btnUndo.style.opacity = hasHistory ? '1' : '0.4';
             btnUndo.style.cursor = hasHistory ? 'pointer' : 'not-allowed';
         }
+    }
+
+    window.dividirTrazadoEditor = function() {
+        if (!editorMode) return;
+        pushEditorHistory();
+
+        const currentBranch = editorBranches[activeBranchIdx] || [];
+        let newBranch = [];
+
+        // Si la rama actual tiene puntos, comenzar la bifurcación conectándola al último punto
+        if (currentBranch.length > 0) {
+            const lastPt = currentBranch[currentBranch.length - 1];
+            newBranch.push([...lastPt]);
+        }
+
+        editorBranches.push(newBranch);
+        activeBranchIdx = editorBranches.length - 1;
+
+        if (editorPolyline) editorPolyline.setLatLngs(getEditorLatLngs());
+        actualizarVerticeMarkers();
+        actualizarPanelRamas();
+        actualizarBotonDeshacer();
+    };
+
+    window.seleccionarRamaEditor = function(idx) {
+        if (!editorMode || idx < 0 || idx >= editorBranches.length) return;
+        activeBranchIdx = idx;
+        actualizarVerticeMarkers();
+        actualizarPanelRamas();
+    };
+
+    window.eliminarRamaEditor = function(idx, e) {
+        if (e) e.stopPropagation();
+        if (!editorMode) return;
+        if (editorBranches.length <= 1) {
+            limpiarTrazadoEditor();
+            return;
+        }
+        pushEditorHistory();
+        editorBranches.splice(idx, 1);
+        if (activeBranchIdx >= editorBranches.length) {
+            activeBranchIdx = editorBranches.length - 1;
+        }
+        if (editorPolyline) editorPolyline.setLatLngs(getEditorLatLngs());
+        actualizarVerticeMarkers();
+        actualizarPanelRamas();
+        actualizarBotonDeshacer();
+    };
+
+    function actualizarPanelRamas() {
+        const pills = document.getElementById('editor-ramas-pills');
+        if (!pills) return;
+
+        let html = '';
+        editorBranches.forEach((b, idx) => {
+            const isAct = (idx === activeBranchIdx);
+            const count = b.length;
+            html += `
+                <div onclick="seleccionarRamaEditor(${idx})" style="display:flex; align-items:center; gap:5px; padding:4px 9px; border-radius:8px; font-size:11px; font-weight:800; cursor:pointer; background:${isAct ? editorColor : 'var(--bg2)'}; color:${isAct ? '#ffffff' : 'var(--text)'}; border: 1.5px solid ${isAct ? editorColor : 'var(--border)'}; transition:all 0.15s;">
+                    <i class="fa-solid fa-code-branch" style="font-size:10px;"></i>
+                    <span>Rama ${idx + 1} (${count} pts)</span>
+                    ${editorBranches.length > 1 ? `<button type="button" onclick="eliminarRamaEditor(${idx}, event)" title="Eliminar esta bifurcación" style="background:none; border:none; color:${isAct ? '#ffffff' : 'var(--red)'}; cursor:pointer; font-size:12px; line-height:1; padding:0 0 0 4px;">&times;</button>` : ''}
+                </div>
+            `;
+        });
+        pills.innerHTML = html;
     }
 
     // Atajo de teclado Ctrl+Z para deshacer cambios en el editor
@@ -625,15 +728,26 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         if (Array.isArray(rawTrazado) && rawTrazado.length > 0) {
-            editorCoordinates = rawTrazado.map(coord => [parseFloat(coord[0]), parseFloat(coord[1])]);
+            // Si es un array de ramas (bifurcaciones)
+            if (Array.isArray(rawTrazado[0]) && Array.isArray(rawTrazado[0][0])) {
+                editorBranches = rawTrazado.map(b => b.map(c => [parseFloat(c[0]), parseFloat(c[1])]));
+            } else {
+                editorBranches = [ rawTrazado.map(c => [parseFloat(c[0]), parseFloat(c[1])]) ];
+            }
         } else {
-            editorCoordinates = [];
+            const paraderosCoords = [];
             ruta.paraderos.forEach(p => {
                 if (p.latitud_a && p.longitud_a) {
-                    editorCoordinates.push([parseFloat(p.latitud_a), parseFloat(p.longitud_a)]);
+                    paraderosCoords.push([parseFloat(p.latitud_a), parseFloat(p.longitud_a)]);
                 }
             });
+            editorBranches = [ paraderosCoords ];
         }
+
+        if (editorBranches.length === 0) {
+            editorBranches = [[]];
+        }
+        activeBranchIdx = 0;
 
         // Limpiar capas del mapa temporales
         Object.keys(rutaPolylines).forEach(rId => {
@@ -644,7 +758,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         if (editorPolyline) map.removeLayer(editorPolyline);
-        editorPolyline = L.polyline(editorCoordinates, {
+        editorPolyline = L.polyline(getEditorLatLngs(), {
             color: editorColor,
             weight: 8, // Grosor mayor en modo edición para facilitar clics
             opacity: 0.9,
@@ -657,19 +771,37 @@ document.addEventListener('DOMContentLoaded', function() {
             L.DomEvent.stopPropagation(e);
 
             const clickLatLng = e.latlng;
-            const segmentIdx = getClosestSegmentIndex(clickLatLng, editorCoordinates);
+            let bestBranchIdx = activeBranchIdx;
+            let bestSegmentIdx = -1;
+            let minDistance = Infinity;
+
+            editorBranches.forEach((branch, bIdx) => {
+                for (let i = 0; i < branch.length - 1; i++) {
+                    const p1 = branch[i];
+                    const p2 = branch[i + 1];
+                    const dist = distToSegment([clickLatLng.lat, clickLatLng.lng], p1, p2);
+                    if (dist < minDistance) {
+                        minDistance = dist;
+                        bestBranchIdx = bIdx;
+                        bestSegmentIdx = i;
+                    }
+                }
+            });
             
-            if (segmentIdx !== -1) {
+            if (bestSegmentIdx !== -1) {
                 pushEditorHistory();
+                activeBranchIdx = bestBranchIdx;
                 const newPoint = [clickLatLng.lat, clickLatLng.lng];
-                editorCoordinates.splice(segmentIdx + 1, 0, newPoint);
+                editorBranches[bestBranchIdx].splice(bestSegmentIdx + 1, 0, newPoint);
                 
-                editorPolyline.setLatLngs(editorCoordinates);
+                editorPolyline.setLatLngs(getEditorLatLngs());
                 actualizarVerticeMarkers();
+                actualizarPanelRamas();
             }
         });
 
         actualizarVerticeMarkers();
+        actualizarPanelRamas();
 
         document.getElementById('editor-ruta-nombre').textContent = ruta.nombre;
         document.getElementById('editor-color-picker').value = editorColor;
@@ -681,17 +813,13 @@ document.addEventListener('DOMContentLoaded', function() {
             editorColor = e.target.value;
             document.getElementById('editor-color-hex').textContent = editorColor;
             editorPolyline.setStyle({ color: editorColor });
-            editorMarkers.forEach(m => {
-                const el = m.getElement();
-                if (el) {
-                    const circle = el.querySelector('div');
-                    if (circle) circle.style.background = editorColor;
-                }
-            });
+            actualizarVerticeMarkers();
+            actualizarPanelRamas();
         };
 
-        if (editorCoordinates.length >= 2) {
-            map.fitBounds(editorPolyline.getBounds(), { padding: [40, 40] });
+        const flatPoints = getAllEditorFlatPoints();
+        if (flatPoints.length >= 2) {
+            map.fitBounds(L.latLngBounds(flatPoints), { padding: [40, 40] });
         }
 
         map.on('click', onMapClickForEditor);
@@ -701,33 +829,17 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!editorMode) return;
         pushEditorHistory();
         const coords = [e.latlng.lat, e.latlng.lng];
-        editorCoordinates.push(coords);
+        if (!editorBranches[activeBranchIdx]) {
+            editorBranches[activeBranchIdx] = [];
+        }
+        editorBranches[activeBranchIdx].push(coords);
         
-        editorPolyline.setLatLngs(editorCoordinates);
+        editorPolyline.setLatLngs(getEditorLatLngs());
         actualizarVerticeMarkers();
+        actualizarPanelRamas();
     }
 
     // --- AYUDANTES GEOMÉTRICOS PARA SEGMENTOS (ESTILO VECTORIAL) ---
-    function getClosestSegmentIndex(clickLatLng, points) {
-        const lat = clickLatLng.lat;
-        const lng = clickLatLng.lng;
-        let minDistance = Infinity;
-        let closestIndex = -1;
-
-        for (let i = 0; i < points.length - 1; i++) {
-            const p1 = points[i];
-            const p2 = points[i + 1];
-
-            const dist = distToSegment([lat, lng], p1, p2);
-            if (dist < minDistance) {
-                minDistance = dist;
-                closestIndex = i;
-            }
-        }
-
-        return closestIndex;
-    }
-
     function distToSegment(p, v, w) {
         const l2 = dist2(v, w);
         if (l2 === 0) return dist2(p, v);
@@ -744,52 +856,75 @@ document.addEventListener('DOMContentLoaded', function() {
         editorMarkers.forEach(m => map.removeLayer(m));
         editorMarkers = [];
 
-        editorCoordinates.forEach((coords, idx) => {
-            const marker = L.marker(coords, {
-                draggable: true,
-                icon: L.divIcon({
-                    html: `<div style="background:${editorColor}; width:12px; height:12px; border-radius:50%; border:2px solid white; box-shadow:0 0 4px rgba(0,0,0,0.5);"></div>`,
-                    className: 'vertex-icon',
-                    iconSize: [12, 12],
-                    iconAnchor: [6, 6]
-                })
-            }).addTo(map);
+        editorBranches.forEach((branch, bIdx) => {
+            const isBranchActive = (bIdx === activeBranchIdx);
+            const branchColor = isBranchActive ? editorColor : '#94a3b8';
 
-            marker.bindTooltip((idx + 1).toString(), { permanent: true, direction: 'top', className: 'vertex-tooltip' });
+            branch.forEach((coords, idx) => {
+                const marker = L.marker(coords, {
+                    draggable: true,
+                    icon: L.divIcon({
+                        html: `<div style="background:${branchColor}; width:${isBranchActive ? '13px' : '10px'}; height:${isBranchActive ? '13px' : '10px'}; border-radius:50%; border:2px solid white; box-shadow:0 0 4px rgba(0,0,0,0.5);"></div>`,
+                        className: 'vertex-icon',
+                        iconSize: [13, 13],
+                        iconAnchor: [6, 6]
+                    })
+                }).addTo(map);
 
-            marker.on('dragstart', function() {
-                pushEditorHistory();
+                const label = editorBranches.length > 1 ? `R${bIdx + 1}.${idx + 1}` : (idx + 1).toString();
+                marker.bindTooltip(label, { permanent: true, direction: 'top', className: 'vertex-tooltip' });
+
+                marker.on('click', function(e) {
+                    L.DomEvent.stopPropagation(e);
+                    if (activeBranchIdx !== bIdx) {
+                        activeBranchIdx = bIdx;
+                        actualizarVerticeMarkers();
+                        actualizarPanelRamas();
+                    }
+                });
+
+                marker.on('dragstart', function() {
+                    pushEditorHistory();
+                    if (activeBranchIdx !== bIdx) {
+                        activeBranchIdx = bIdx;
+                        actualizarPanelRamas();
+                    }
+                });
+
+                marker.on('drag', function(e) {
+                    branch[idx] = [e.target.getLatLng().lat, e.target.getLatLng().lng];
+                    editorPolyline.setLatLngs(getEditorLatLngs());
+                });
+
+                marker.on('dragend', function() {
+                    actualizarVerticeMarkers();
+                    actualizarPanelRamas();
+                });
+
+                marker.on('dblclick', function() {
+                    pushEditorHistory();
+                    branch.splice(idx, 1);
+                    editorPolyline.setLatLngs(getEditorLatLngs());
+                    actualizarVerticeMarkers();
+                    actualizarPanelRamas();
+                });
+
+                editorMarkers.push(marker);
             });
-
-            marker.on('drag', function(e) {
-                editorCoordinates[idx] = [e.target.getLatLng().lat, e.target.getLatLng().lng];
-                editorPolyline.setLatLngs(editorCoordinates);
-            });
-
-            marker.on('dragend', function() {
-                actualizarVerticeMarkers();
-            });
-
-            marker.on('dblclick', function() {
-                pushEditorHistory();
-                editorCoordinates.splice(idx, 1);
-                editorPolyline.setLatLngs(editorCoordinates);
-                actualizarVerticeMarkers();
-            });
-
-            editorMarkers.push(marker);
         });
     }
 
     window.limpiarTrazadoEditor = function() {
         if (!editorMode) return;
-        if (editorCoordinates.length > 0) {
+        if (editorBranches.some(b => b.length > 0)) {
             pushEditorHistory();
         }
-        editorCoordinates = [];
+        editorBranches = [[]];
+        activeBranchIdx = 0;
         editorPolyline.setLatLngs([]);
         editorMarkers.forEach(m => map.removeLayer(m));
         editorMarkers = [];
+        actualizarPanelRamas();
     };
 
     window.autocompletarTrazadoEditor = function() {
@@ -798,16 +933,19 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!ruta) return;
 
         pushEditorHistory();
-        editorCoordinates = [];
+        const coords = [];
         ruta.paraderos.forEach(p => {
             if (p.latitud_a && p.longitud_a) {
-                editorCoordinates.push([parseFloat(p.latitud_a), parseFloat(p.longitud_a)]);
+                coords.push([parseFloat(p.latitud_a), parseFloat(p.longitud_a)]);
             }
         });
-        editorPolyline.setLatLngs(editorCoordinates);
+        editorBranches = [coords];
+        activeBranchIdx = 0;
+        editorPolyline.setLatLngs(getEditorLatLngs());
         actualizarVerticeMarkers();
+        actualizarPanelRamas();
         
-        if (editorCoordinates.length >= 2) {
+        if (coords.length >= 2) {
             map.fitBounds(editorPolyline.getBounds(), { padding: [40, 40] });
         }
     };
@@ -820,6 +958,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const saveUrl = `/admin/rutas/${editorRutaId}/trazado`;
 
+        const cleanBranches = editorBranches.filter(b => b.length > 0);
+        const payloadTrazado = (cleanBranches.length === 1) ? cleanBranches[0] : cleanBranches;
+
         try {
             const response = await fetch(saveUrl, {
                 method: 'POST',
@@ -828,17 +969,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     'X-CSRF-TOKEN': CSRF
                 },
                 body: JSON.stringify({
-                    trazado: editorCoordinates,
+                    trazado: payloadTrazado,
                     color: editorColor
                 })
             });
 
             const resData = await response.json();
             if (resData.success) {
-                ruta.trazado = [...editorCoordinates];
+                ruta.trazado = payloadTrazado;
                 ruta.color = editorColor;
 
-                alert('Trazado guardado correctamente.');
+                alert('Trazado guardado correctamente con sus bifurcaciones.');
                 salirEditor();
             } else {
                 alert('Error al guardar el trazado: ' + (resData.error || 'Intente nuevamente.'));
@@ -852,7 +993,8 @@ document.addEventListener('DOMContentLoaded', function() {
     window.salirEditor = function() {
         editorMode = false;
         editorRutaId = null;
-        editorCoordinates = [];
+        editorBranches = [[]];
+        activeBranchIdx = 0;
         editorHistory = [];
         editorMarkers.forEach(m => map.removeLayer(m));
         editorMarkers = [];

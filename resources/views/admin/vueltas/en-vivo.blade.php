@@ -231,7 +231,8 @@
                         <th>Estado</th>
                         <th>Vuelta</th>
                         <th>G Salida</th>
-                        <th style="text-align: right; padding-right: 24px;">G Llegada</th>
+                        <th>G Llegada</th>
+                        <th style="text-align: right; padding-right: 24px;">Terminar Vuelta</th>
                     </tr>
                 </thead>
 
@@ -328,7 +329,7 @@
                                 @endif
                             </td>
 
-                            <td style="text-align: right; padding-right: 24px;">
+                            <td>
                                 @if($v->estado === 'activa')
                                     @if($v->lat_actual && $v->lng_actual)
                                         <a href="https://maps.google.com/?q={{ $v->lat_actual }},{{ $v->lng_actual }}"
@@ -352,12 +353,25 @@
                                 @endif
                             </td>
 
+                            <td style="text-align: right; padding-right: 24px;">
+                                @if($v->estado === 'activa')
+                                    <button type="button" 
+                                            onclick="forzarTerminarVuelta({{ $v->id }}, '{{ addslashes($v->conductor?->nombre_completo ?? 'Conductor') }}', '{{ $v->vehiculo?->numero_flota ?? $v->vehiculo?->placa }}', '{{ addslashes($v->ruta?->nombre ?? '') }}')"
+                                            style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; border: none; padding: 7px 12px; border-radius: 8px; font-weight: 700; font-size: 11px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; box-shadow: 0 2px 6px rgba(220, 38, 38, 0.25); transition: all 0.2s;"
+                                            title="Forzar terminación de vuelta (Admin Superpoderes)">
+                                        <i class="fa-solid fa-flag-checkered"></i> Terminar
+                                    </button>
+                                @else
+                                    <span style="font-size:14px;color:var(--text3);">—</span>
+                                @endif
+                            </td>
+
                         </tr>
 
                     @empty
 
                     <tr id="empty-row">
-                        <td colspan="10" style="text-align:center;padding:80px;">
+                        <td colspan="11" style="text-align:center;padding:80px;">
                             <div style="font-weight:800; color:var(--text); font-size:18px;">
                                 No hay conductores en ruta ahora
                             </div>
@@ -1137,7 +1151,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (vueltas.length === 0) {
             tbody.innerHTML = `
                 <tr id="empty-row">
-                    <td colspan="10" style="text-align:center;padding:80px;">
+                    <td colspan="11" style="text-align:center;padding:80px;">
                         <div style="font-size:40px; margin-bottom: 15px;">🏁</div>
                         <div style="font-weight:800; color:var(--text); font-size:18px;">No hay actividad coincidente ahora</div>
                         <div style="font-size:14px;color:var(--text3); margin-top: 5px;">Revisa tu filtro o espera a que inicien nuevas vueltas.</div>
@@ -1239,7 +1253,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <a href="https://maps.google.com/?q=${v.lat_salida},${v.lng_salida}" target="_blank" class="btn-secondary" style="font-size:10px; padding: 5px 10px; text-decoration: none;">🛫 Salida</a>
                         ` : '—'}
                     </td>
-                    <td style="text-align: right; padding-right: 24px;">
+                    <td>
                         ${isActive ? (
                             (v.lat_actual && v.lng_actual) ? `
                                 <a href="https://maps.google.com/?q=${v.lat_actual},${v.lng_actual}" target="_blank" class="btn-secondary" style="font-size:10px; padding: 5px 10px; text-decoration: none; background: var(--green); color: white;">📍 En vivo</a>
@@ -1249,6 +1263,18 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <a href="https://maps.google.com/?q=${v.latitud_fin},${v.longitud_fin}" target="_blank" class="btn-secondary" style="font-size:10px; padding: 5px 10px; text-decoration: none; background: var(--accent); color: white;">🏁 Llegada</a>
                             ` : '—'
                         )}
+                    </td>
+                    <td style="text-align: right; padding-right: 24px;">
+                        ${isActive ? `
+                            <button type="button" 
+                                    onclick="forzarTerminarVuelta(${v.id}, '${v.conductor.replace(/'/g, "\\'")}', '${v.flota || v.vehiculo}', '${(v.ruta || '').replace(/'/g, "\\'")}')"
+                                    style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; border: none; padding: 7px 12px; border-radius: 8px; font-weight: 700; font-size: 11px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; box-shadow: 0 2px 6px rgba(220, 38, 38, 0.25); transition: all 0.2s;"
+                                    title="Forzar terminación de vuelta (Admin Superpoderes)">
+                                <i class="fa-solid fa-flag-checkered"></i> Terminar
+                            </button>
+                        ` : `
+                            <span style="font-size:14px;color:var(--text3);">—</span>
+                        `}
                     </td>
                 </tr>
             `;
@@ -1414,6 +1440,74 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(() => {
             map.invalidateSize();
         }, 100);
+    };
+
+    window.forzarTerminarVuelta = function(vueltaId, conductor, flota, ruta) {
+        Swal.fire({
+            title: '¿Forzar Terminación de Vuelta?',
+            html: `
+                <div style="text-align: left; background: var(--bg); padding: 14px; border-radius: 10px; margin: 15px 0; font-size: 13px; line-height: 1.6; border: 1px solid var(--border);">
+                    <div>👤 <b>Conductor:</b> ${conductor}</div>
+                    <div>🚍 <b>Vehículo / Flota:</b> #${flota}</div>
+                    <div>🛣️ <b>Ruta:</b> ${ruta}</div>
+                </div>
+                <div style="font-size: 12px; color: #ef4444; font-weight: 700; background: var(--red-l); padding: 8px 12px; border-radius: 8px;">
+                    <i class="fa-solid fa-bolt"></i> <b>Superpoderes de Admin:</b> Esta acción completará la vuelta inmediatamente en el sistema sin requerir validación de GPS ni presencia en el paradero.
+                </div>
+            `,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: 'var(--text3)',
+            confirmButtonText: '<i class="fa-solid fa-flag-checkered"></i> Sí, Terminar Vuelta Ahora',
+            cancelButtonText: 'Cancelar',
+            reverseButtons: true
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'Finalizando vuelta...',
+                    text: 'Procesando cierre administrativo en tiempo real...',
+                    allowOutsideClick: false,
+                    didOpen: () => { Swal.showLoading(); }
+                });
+
+                try {
+                    const response = await fetch(`/admin/vueltas/en-vivo/${vueltaId}/forzar-terminar`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': CSRF,
+                            'Accept': 'application/json'
+                        }
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: '¡Vuelta Finalizada!',
+                            text: data.message || 'La vuelta ha sido terminada correctamente.',
+                            confirmButtonColor: 'var(--green)',
+                            timer: 2000
+                        });
+                        actualizarDatos();
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: data.error || 'No se pudo finalizar la vuelta.',
+                            confirmButtonColor: 'var(--red)'
+                        });
+                    }
+                } catch (err) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error de Conexión',
+                        text: 'Hubo un error al comunicarse con el servidor.',
+                        confirmButtonColor: 'var(--red)'
+                    });
+                }
+            }
+        });
     };
 
     // --- INICIO ---

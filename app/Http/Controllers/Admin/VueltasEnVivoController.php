@@ -127,6 +127,41 @@ class VueltasEnVivoController extends Controller
         ]);
     }
 
+    public function forzarTerminar(Vuelta $vuelta, \App\Services\VueltaService $vueltaService)
+    {
+        if ($vuelta->empresa_id !== auth()->user()->empresa_id) {
+            return response()->json(['success' => false, 'error' => 'No autorizado para gestionar esta vuelta.'], 403);
+        }
+
+        if ($vuelta->estado !== 'activa') {
+            return response()->json(['success' => false, 'error' => 'Esta vuelta ya no se encuentra activa.'], 422);
+        }
+
+        try {
+            // Determinar coordenadas finales (posición GPS actual si existe, o salida)
+            $latFin = $vuelta->lat_actual ?? $vuelta->latitud;
+            $lngFin = $vuelta->lng_actual ?? $vuelta->longitud;
+
+            // Determinar paradero de llegada si aún no está fijado
+            $paraderoLlegadaId = $vuelta->paradero_llegada_id;
+            if (!$paraderoLlegadaId && $vuelta->ruta) {
+                $destino = $vuelta->ruta->paraderos()->where('tipo', 'destino')->first();
+                $paraderoLlegadaId = $destino?->id;
+            }
+
+            $duracion = $vueltaService->terminarVuelta($vuelta, $latFin, $lngFin, $paraderoLlegadaId);
+
+            return response()->json([
+                'success'  => true,
+                'message'  => "La vuelta #{$vuelta->numero_vuelta} fue finalizada con éxito (Duración: {$duracion} min).",
+                'duracion' => $duracion,
+            ]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Error forzando término de vuelta: ' . $e->getMessage());
+            return response()->json(['success' => false, 'error' => 'Error al finalizar la vuelta en el servidor.'], 500);
+        }
+    }
+
     public function guardarTrazado(\App\Models\Ruta $ruta, Request $request)
     {
         if ($ruta->empresa_id !== auth()->user()->empresa_id) {
@@ -149,3 +184,4 @@ class VueltasEnVivoController extends Controller
         ]);
     }
 }
+

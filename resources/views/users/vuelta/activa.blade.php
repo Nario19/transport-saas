@@ -633,7 +633,23 @@ function iniciarRastreoGPS() {
         }
         lastLat = lat; lastLng = lng; lastSendTime = ahora;
         try {
-            await fetch(UBICACION_URL, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF }, body: JSON.stringify({ latitud: lat, longitud: lng }) });
+            const resp = await fetch(UBICACION_URL, { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF }, 
+                body: JSON.stringify({ latitud: lat, longitud: lng }) 
+            });
+            if (resp.status === 404) {
+                if (watchId) navigator.geolocation.clearWatch(watchId);
+                Swal.fire({
+                    title: 'Vuelta Finalizada',
+                    text: 'Esta vuelta ha sido dada por finalizada por la administración.',
+                    icon: 'info',
+                    confirmButtonColor: 'var(--accent)',
+                    confirmButtonText: 'Aceptar'
+                }).then(() => {
+                    window.location.href = '{{ route("conductor.vuelta.iniciar", [], false) }}';
+                });
+            }
         } catch (_) {}
     }, null, { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 });
 }

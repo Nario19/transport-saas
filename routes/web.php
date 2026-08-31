@@ -228,6 +228,7 @@ Route::middleware(['auth', 'empresa.activa', 'admin.configurado'])
 
         Route::get('/vueltas/en-vivo',          [VueltasEnVivoController::class, 'index'])->name('vueltas.en-vivo');
         Route::get('/api/vueltas-activas', [VueltasEnVivoController::class, 'activas'])->name('vueltas.api.activas');
+        Route::post('/vueltas/en-vivo/{vuelta}/forzar-terminar', [VueltasEnVivoController::class, 'forzarTerminar'])->name('vueltas.forzar-terminar');
         Route::post('/rutas/{ruta}/trazado',    [VueltasEnVivoController::class, 'guardarTrazado'])->name('rutas.trazado.guardar');
     });
 

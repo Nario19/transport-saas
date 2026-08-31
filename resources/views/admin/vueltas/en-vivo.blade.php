@@ -181,17 +181,21 @@
 
             <div style="font-size: 11px; color: var(--text3); margin-bottom: 15px; padding: 10px; background: var(--bg); border-radius: 8px; line-height: 1.5; border: 1px dashed var(--border);">
                 <i class="fa-solid fa-info-circle" style="color: var(--accent); margin-right: 3px;"></i> <b>Instrucciones:</b><br>
-                • Haz <b>clic</b> en el mapa para agregar puntos.<br>
-                • <b>Arrastra</b> los puntos para reacomodarlos.<br>
-                • Haz <b>doble clic</b> en un punto para eliminarlo.
+                • Haz <b>clic</b> en el mapa o trazo para agregar puntos.<br>
+                • <b>Arrastra</b> los puntos para moverlos.<br>
+                • Haz <b>doble clic</b> en un punto para eliminarlo.<br>
+                • Usa <b>Deshacer</b> o <kbd style="font-size:10px; background:var(--bg2); padding:1px 4px; border-radius:4px; border:1px solid var(--border);">Ctrl+Z</kbd> si te equivocas.
             </div>
 
             <div style="display: flex; flex-direction: column; gap: 8px;">
                 <div style="display: flex; gap: 6px;">
-                    <button type="button" class="btn-secondary" onclick="limpiarTrazadoEditor()" style="flex: 1; padding: 10px; font-size: 11px; font-weight: 700; border-radius: 8px; cursor: pointer;">
+                    <button type="button" class="btn-secondary" id="btn-editor-undo" onclick="deshacerTrazadoEditor()" style="flex: 1; padding: 10px 6px; font-size: 11px; font-weight: 700; border-radius: 8px; cursor: pointer; transition: all 0.2s;" title="Deshacer último cambio (Ctrl+Z)">
+                        <i class="fa-solid fa-rotate-left"></i> Deshacer
+                    </button>
+                    <button type="button" class="btn-secondary" onclick="limpiarTrazadoEditor()" style="flex: 1; padding: 10px 6px; font-size: 11px; font-weight: 700; border-radius: 8px; cursor: pointer;" title="Borrar todos los puntos">
                         <i class="fa-solid fa-trash-can"></i> Limpiar
                     </button>
-                    <button type="button" class="btn-secondary" onclick="autocompletarTrazadoEditor()" style="flex: 1; padding: 10px; font-size: 11px; font-weight: 700; border-radius: 8px; cursor: pointer;" title="Unir paraderos con líneas rectas">
+                    <button type="button" class="btn-secondary" onclick="autocompletarTrazadoEditor()" style="flex: 1; padding: 10px 6px; font-size: 11px; font-weight: 700; border-radius: 8px; cursor: pointer;" title="Unir paraderos con líneas rectas">
                         <i class="fa-solid fa-wand-magic-sparkles"></i> Auto-unir
                     </button>
                 </div>
@@ -548,6 +552,42 @@ document.addEventListener('DOMContentLoaded', function() {
     let editorMarkers = [];
     let editorPolyline = null;
     let editorColor = '#3b82f6';
+    let editorHistory = [];
+
+    function pushEditorHistory() {
+        editorHistory.push(JSON.parse(JSON.stringify(editorCoordinates)));
+        if (editorHistory.length > 40) {
+            editorHistory.shift();
+        }
+        actualizarBotonDeshacer();
+    }
+
+    window.deshacerTrazadoEditor = function() {
+        if (!editorMode || editorHistory.length === 0) return;
+        const prev = editorHistory.pop();
+        editorCoordinates = prev;
+        editorPolyline.setLatLngs(editorCoordinates);
+        actualizarVerticeMarkers();
+        actualizarBotonDeshacer();
+    };
+
+    function actualizarBotonDeshacer() {
+        const btnUndo = document.getElementById('btn-editor-undo');
+        if (btnUndo) {
+            const hasHistory = editorHistory.length > 0;
+            btnUndo.disabled = !hasHistory;
+            btnUndo.style.opacity = hasHistory ? '1' : '0.4';
+            btnUndo.style.cursor = hasHistory ? 'pointer' : 'not-allowed';
+        }
+    }
+
+    // Atajo de teclado Ctrl+Z para deshacer cambios en el editor
+    document.addEventListener('keydown', function(e) {
+        if (editorMode && (e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'Z')) {
+            e.preventDefault();
+            deshacerTrazadoEditor();
+        }
+    });
 
     window.activarEditorTrazado = function(rutaId) {
         const ruta = rutasTrazados.find(r => r.id === rutaId);
@@ -556,6 +596,8 @@ document.addEventListener('DOMContentLoaded', function() {
         editorMode = true;
         editorRutaId = rutaId;
         editorColor = ruta.color || '#3b82f6';
+        editorHistory = [];
+        actualizarBotonDeshacer();
         
         if (ruta.trazado && ruta.trazado.length > 0) {
             editorCoordinates = ruta.trazado.map(coord => [parseFloat(coord[0]), parseFloat(coord[1])]);
@@ -593,6 +635,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const segmentIdx = getClosestSegmentIndex(clickLatLng, editorCoordinates);
             
             if (segmentIdx !== -1) {
+                pushEditorHistory();
                 const newPoint = [clickLatLng.lat, clickLatLng.lng];
                 editorCoordinates.splice(segmentIdx + 1, 0, newPoint);
                 
@@ -631,6 +674,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function onMapClickForEditor(e) {
         if (!editorMode) return;
+        pushEditorHistory();
         const coords = [e.latlng.lat, e.latlng.lng];
         editorCoordinates.push(coords);
         
@@ -688,6 +732,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
             marker.bindTooltip((idx + 1).toString(), { permanent: true, direction: 'top', className: 'vertex-tooltip' });
 
+            marker.on('dragstart', function() {
+                pushEditorHistory();
+            });
+
             marker.on('drag', function(e) {
                 editorCoordinates[idx] = [e.target.getLatLng().lat, e.target.getLatLng().lng];
                 editorPolyline.setLatLngs(editorCoordinates);
@@ -698,6 +746,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
 
             marker.on('dblclick', function() {
+                pushEditorHistory();
                 editorCoordinates.splice(idx, 1);
                 editorPolyline.setLatLngs(editorCoordinates);
                 actualizarVerticeMarkers();
@@ -709,6 +758,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     window.limpiarTrazadoEditor = function() {
         if (!editorMode) return;
+        if (editorCoordinates.length > 0) {
+            pushEditorHistory();
+        }
         editorCoordinates = [];
         editorPolyline.setLatLngs([]);
         editorMarkers.forEach(m => map.removeLayer(m));
@@ -720,6 +772,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const ruta = rutasTrazados.find(r => r.id === editorRutaId);
         if (!ruta) return;
 
+        pushEditorHistory();
         editorCoordinates = [];
         ruta.paraderos.forEach(p => {
             if (p.latitud_a && p.longitud_a) {
@@ -775,6 +828,7 @@ document.addEventListener('DOMContentLoaded', function() {
         editorMode = false;
         editorRutaId = null;
         editorCoordinates = [];
+        editorHistory = [];
         editorMarkers.forEach(m => map.removeLayer(m));
         editorMarkers = [];
         

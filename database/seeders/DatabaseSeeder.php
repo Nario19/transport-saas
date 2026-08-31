@@ -80,13 +80,17 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // 4. Crear Usuario Maestro (Super Admin Global)
+        $superAdminEmail = env('SUPERADMIN_EMAIL', 'superadmin@transjunin.com');
+        $superAdminPass  = env('SUPERADMIN_PASSWORD', 'password');
+        $superAdminName  = env('SUPERADMIN_NAME', 'Super Admin');
+
         $superAdminUser = User::updateOrCreate(
-            ['email' => 'superadmin@transjunin.com'],
+            ['email' => $superAdminEmail],
             [
                 'empresa_id'   => null, // Global
                 'conductor_id' => null,
-                'name'         => 'Super Admin',
-                'password'     => Hash::make(env('SUPERADMIN_PASSWORD', 'password')),
+                'name'         => $superAdminName,
+                'password'     => Hash::make($superAdminPass),
                 'activo'       => true,
             ]
         );
@@ -96,9 +100,9 @@ class DatabaseSeeder extends Seeder
         $this->command->info('=========================================');
         $this->command->info('✅ BASE DE DATOS INICIALIZADA CORRECTAMENTE');
         $this->command->info('=========================================');
-        $this->command->info('🔑 Super Admin Email: superadmin@transjunin.com');
-        $defaultPass = env('SUPERADMIN_PASSWORD', 'password');
-        $this->command->info('🔑 Password: ' . $defaultPass);
+        $this->command->info('🔑 Super Admin Email: ' . $superAdminEmail);
+        $this->command->info('🔑 Super Admin Name:  ' . $superAdminName);
+        $this->command->info('🔑 Super Admin Pass:  ' . $superAdminPass);
         $this->command->info('-----------------------------------------');
         $this->command->info('Permisos creados: ' . count($permissions));
         $this->command->info('Roles creados: SUPER_ADMIN, conductor');

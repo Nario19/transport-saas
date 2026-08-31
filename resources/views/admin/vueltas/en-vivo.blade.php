@@ -444,8 +444,13 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             let latlngs = [];
-            if (ruta.trazado && ruta.trazado.length > 0) {
-                latlngs = ruta.trazado.map(coord => [parseFloat(coord[0]), parseFloat(coord[1])]);
+            let rawTrazado = ruta.trazado;
+            if (typeof rawTrazado === 'string') {
+                try { rawTrazado = JSON.parse(rawTrazado); } catch(e) { rawTrazado = []; }
+            }
+
+            if (Array.isArray(rawTrazado) && rawTrazado.length > 0) {
+                latlngs = rawTrazado.map(coord => [parseFloat(coord[0]), parseFloat(coord[1])]);
             } else {
                 ruta.paraderos.forEach(paradero => {
                     if (paradero.latitud_a && paradero.longitud_a) {
@@ -503,6 +508,21 @@ document.addEventListener('DOMContentLoaded', function() {
             rutasTrazados.forEach(r => {
                 visibleRoutes[r.id] = rutaIds.includes(r.id);
             });
+
+            // Ajustar vista del mapa a las rutas seleccionadas
+            const boundsCoords = [];
+            rutasTrazados.filter(r => rutaIds.includes(r.id)).forEach(r => {
+                let coords = r.trazado;
+                if (typeof coords === 'string') {
+                    try { coords = JSON.parse(coords); } catch(e) { coords = []; }
+                }
+                if (Array.isArray(coords) && coords.length > 0) {
+                    coords.forEach(c => boundsCoords.push([parseFloat(c[0]), parseFloat(c[1])]));
+                }
+            });
+            if (boundsCoords.length >= 2) {
+                map.fitBounds(L.latLngBounds(boundsCoords), { padding: [40, 40] });
+            }
         }
 
         renderRutasTrazados();
@@ -599,8 +619,13 @@ document.addEventListener('DOMContentLoaded', function() {
         editorHistory = [];
         actualizarBotonDeshacer();
         
-        if (ruta.trazado && ruta.trazado.length > 0) {
-            editorCoordinates = ruta.trazado.map(coord => [parseFloat(coord[0]), parseFloat(coord[1])]);
+        let rawTrazado = ruta.trazado;
+        if (typeof rawTrazado === 'string') {
+            try { rawTrazado = JSON.parse(rawTrazado); } catch(e) { rawTrazado = []; }
+        }
+
+        if (Array.isArray(rawTrazado) && rawTrazado.length > 0) {
+            editorCoordinates = rawTrazado.map(coord => [parseFloat(coord[0]), parseFloat(coord[1])]);
         } else {
             editorCoordinates = [];
             ruta.paraderos.forEach(p => {

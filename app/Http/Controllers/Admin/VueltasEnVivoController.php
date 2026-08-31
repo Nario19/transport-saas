@@ -38,11 +38,18 @@ class VueltasEnVivoController extends Controller
             }])
             ->get()
             ->map(function ($r) {
+                $trazado = $r->trazado;
+                if (is_string($trazado)) {
+                    $trazado = json_decode($trazado, true);
+                }
+
                 return [
                     'id' => $r->id,
                     'nombre' => $r->nombre,
                     'origen' => $r->origen,
                     'destino' => $r->destino,
+                    'trazado' => $trazado ?? [],
+                    'color' => $r->color ?? '#3b82f6',
                     'paraderos' => $r->paraderos->map(function ($p) {
                         return [
                             'nombre' => $p->nombre,

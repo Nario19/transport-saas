@@ -40,9 +40,10 @@ class Propietario extends Model implements Auditable
         'cuota_2','fecha_cuota_2','cuota_3','fecha_cuota_3'
     ];
 
-    public function empresa()   { return $this->belongsTo(Empresa::class); }
-    public function vehiculos() { return $this->hasMany(Vehiculo::class); }
-    public function conductor() { return $this->hasOne(Conductor::class); }
+    public function empresa()     { return $this->belongsTo(Empresa::class); }
+    public function vehiculos()   { return $this->hasMany(Vehiculo::class); }
+    public function conductor()   { return $this->hasOne(Conductor::class, 'dni', 'dni'); }
+    public function conductores() { return $this->hasMany(Conductor::class, 'propietario_id'); }
 
     public function scopeDeEmpresa($q)
     {

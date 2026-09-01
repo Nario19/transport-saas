@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Empresa;
 use App\Models\Propietario;
 use App\Models\Vehiculo;
+use App\Models\Conductor;
 use Spatie\Permission\Models\Role;
 
 class PropietarioMontoIngresoTest extends TestCase
@@ -150,5 +151,65 @@ class PropietarioMontoIngresoTest extends TestCase
         $response->assertSee('Juan Quispe');
         $response->assertSee('Control de Monto de Ingreso');
         $response->assertDontSee('Obligación: S/. 1,800.00');
+    }
+
+    public function test_propietario_con_conductor_contratado_no_se_marca_como_conductor_en_el_padron(): void
+    {
+        // 1. Crear Propietario que solo es dueño (NO es conductor)
+        $propietario = Propietario::create([
+            'empresa_id' => $this->empresa->id,
+            'nombre' => 'Duenio Solo',
+            'apellidos' => 'Empresario',
+            'dni' => '11223344',
+            'tipo_persona' => 'socio',
+            'activo' => true,
+        ]);
+
+        // 2. Asignarle un conductor contratado (otro DNI)
+        Conductor::create([
+            'empresa_id' => $this->empresa->id,
+            'propietario_id' => $propietario->id, // Propietario responsable
+            'nombre' => 'Chofer',
+            'apellidos' => 'Contratado',
+            'dni' => '99887766', // DNI diferente
+            'primer_ingreso' => false,
+            'estado' => 'activo',
+        ]);
+
+        $this->assertNull($propietario->conductor);
+
+        $response = $this->actingAs($this->admin)->get(route('propietarios.index'));
+        $response->assertStatus(200);
+        $response->assertSee('Duenio Solo');
+        // Debe mostrar NO en la columna de conductor
+        $response->assertSee('NO');
+    }
+
+    public function test_socio_conductor_registrado_con_casilla_se_marca_como_conductor_si(): void
+    {
+        // Registrar con la casilla es_conductor = 1
+        $response = $this->actingAs($this->admin)->post(route('propietarios.store'), [
+            'nombre' => 'Alberto',
+            'apellidos' => 'Socio Chofer',
+            'dni' => '55667788',
+            'tipo_persona' => 'socio',
+            'telefono' => '987654321',
+            'es_conductor' => 1,
+            'tipo_licencia' => 'A-IIA',
+            'licencia_vence' => '2028-12-31',
+            'conductor_estado' => 'activo',
+        ]);
+
+        $response->assertRedirect(route('propietarios.index'));
+
+        $propietario = Propietario::where('dni', '55667788')->first();
+        $this->assertNotNull($propietario);
+        $this->assertNotNull($propietario->conductor);
+        $this->assertEquals('55667788', $propietario->conductor->dni);
+
+        $responseIndex = $this->actingAs($this->admin)->get(route('propietarios.index'));
+        $responseIndex->assertStatus(200);
+        $responseIndex->assertSee('Alberto');
+        $responseIndex->assertSee('SÍ');
     }
 }

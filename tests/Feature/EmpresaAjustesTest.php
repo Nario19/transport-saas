@@ -115,4 +115,36 @@ class EmpresaAjustesTest extends TestCase
         $this->assertEquals(5.00, (float) $tributo->monto);
         $this->assertNotEquals(24.00, (float) $tributo->monto);
     }
+
+    public function test_superadmin_puede_eliminar_empresa_y_desactivar_sus_accesos(): void
+    {
+        $empresaABorrar = Empresa::create([
+            'nombre' => 'Empresa Para Eliminar SAC',
+            'ruc' => '20999999999',
+            'plan' => 'basico',
+            'tributo_diario' => 10.00,
+            'activa' => true,
+        ]);
+
+        $usuarioAsociado = User::create([
+            'empresa_id' => $empresaABorrar->id,
+            'name' => 'Admin Empresa A Borrar',
+            'email' => 'admin_borrar@empresa.com',
+            'password' => bcrypt('password123'),
+            'activo' => true,
+        ]);
+
+        $response = $this->actingAs($this->superadmin)->delete(route('superadmin.empresas.destroy', $empresaABorrar->id));
+
+        $response->assertRedirect(route('superadmin.empresas.index'));
+        $response->assertSessionHas('success');
+
+        // Verificar Soft Delete
+        $this->assertSoftDeleted('empresas', [
+            'id' => $empresaABorrar->id,
+        ]);
+        $this->assertSoftDeleted('users', [
+            'id' => $usuarioAsociado->id,
+        ]);
+    }
 }

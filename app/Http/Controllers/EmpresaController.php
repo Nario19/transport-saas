@@ -199,18 +199,22 @@ class EmpresaController extends Controller
     }
 
     /**
-     * Eliminación (Soft Delete si lo tienes configurado en el modelo).
+     * Eliminación de empresa (Soft Delete) y desactivación de sus accesos.
      */
     public function destroy(Empresa $empresa)
     {
-        // Validar si tiene usuarios antes de borrar (opcional)
-        if ($empresa->users()->count() > 0) {
-            return back()->with('error', 'No se puede eliminar una empresa con usuarios activos.');
-        }
+        return \Illuminate\Support\Facades\DB::transaction(function () use ($empresa) {
+            $nombre = $empresa->nombre;
 
-        $empresa->delete();
+            // Desactivar y eliminar (soft-delete) los usuarios asociados
+            $empresa->users()->update(['activo' => false]);
+            $empresa->users()->delete();
 
-        return redirect()->route('superadmin.empresas.index')
-            ->with('success', 'La empresa ha sido eliminada del sistema.');
+            // Eliminar (soft-delete) la empresa
+            $empresa->delete();
+
+            return redirect()->route('superadmin.empresas.index')
+                ->with('success', "La empresa \"{$nombre}\" ha sido eliminada del sistema.");
+        });
     }
 }

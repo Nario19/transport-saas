@@ -107,9 +107,22 @@
 
                                         {{-- Botón Editar --}}
                                         <a href="{{ route('superadmin.empresas.edit', $empresa->id) }}" class="btn-secondary"
+                                            title="Editar Empresa"
                                             style="padding: 8px 12px; border-radius: 10px; text-decoration: none; display: inline-flex; justify-content: center; align-items: center;">
                                             <i class="fa-solid fa-gear"></i>
                                         </a>
+
+                                        {{-- Botón Eliminar con SweetAlert --}}
+                                        <button type="button" class="btn-danger"
+                                            onclick="confirmarEliminarEmpresa('{{ $empresa->id }}', '{{ addslashes($empresa->nombre) }}')"
+                                            title="Eliminar Empresa"
+                                            style="padding: 8px 12px; border-radius: 10px; display: inline-flex; justify-content: center; align-items: center; background: #dc2626; color: white; border: none; cursor: pointer;">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                        <form id="form-delete-{{ $empresa->id }}" action="{{ route('superadmin.empresas.destroy', $empresa->id) }}" method="POST" style="display: none;">
+                                            @csrf
+                                            @method('DELETE')
+                                        </form>
                                     </div>
                                 </td>
                             </tr>
@@ -120,3 +133,26 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+<script>
+    function confirmarEliminarEmpresa(id, nombre) {
+        Swal.fire({
+            title: '¿Seguro que desea eliminar?',
+            text: `Se eliminará la empresa "${nombre}" y se suspenderán todos sus accesos.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: '<i class="fa-solid fa-trash"></i> Sí, eliminar',
+            cancelButtonText: 'Cancelar',
+            reverseButtons: true,
+            borderRadius: '16px'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('form-delete-' + id).submit();
+            }
+        });
+    }
+</script>
+@endpush

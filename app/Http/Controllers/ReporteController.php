@@ -163,7 +163,8 @@ class ReporteController extends Controller
 
         // Vueltas por día
         $porDiaQuery = Vuelta::where('empresa_id', $user->empresa_id)
-            ->whereBetween('fecha', [$desde->toDateString(), $hasta->toDateString()]);
+            ->whereDate('fecha', '>=', $desde)
+            ->whereDate('fecha', '<=', $hasta);
 
         if ($flota) {
             $porDiaQuery->whereHas('vehiculo', function ($vQ) use ($flota) {
@@ -182,7 +183,7 @@ class ReporteController extends Controller
                 return $q->where('numero_flota', $flota);
             })
             ->withCount(['vueltas' => function ($q) use ($desde, $hasta) {
-                $q->whereBetween('fecha', [$desde, $hasta]);
+                $q->whereDate('fecha', '>=', $desde)->whereDate('fecha', '<=', $hasta);
             }])
             ->with(['conductor'])
             ->orderByDesc('vueltas_count')
@@ -190,7 +191,8 @@ class ReporteController extends Controller
 
         // Vueltas por ruta
         $porRutaQuery = Vuelta::where('empresa_id', $user->empresa_id)
-            ->whereBetween('fecha', [$desde->toDateString(), $hasta->toDateString()])
+            ->whereDate('fecha', '>=', $desde)
+            ->whereDate('fecha', '<=', $hasta)
             ->whereNotNull('ruta_id');
 
         if ($flota) {
@@ -207,7 +209,8 @@ class ReporteController extends Controller
 
         // Detalle individual de vueltas (con paginación para evitar sobrecarga)
         $detalleQuery = Vuelta::where('empresa_id', $user->empresa_id)
-            ->whereBetween('fecha', [$desde->toDateString(), $hasta->toDateString()]);
+            ->whereDate('fecha', '>=', $desde)
+            ->whereDate('fecha', '<=', $hasta);
 
         if ($flota) {
             $detalleQuery->whereHas('vehiculo', function ($vQ) use ($flota) {

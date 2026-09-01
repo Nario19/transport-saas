@@ -51,7 +51,7 @@ class Tributo extends Model implements Auditable
             ->get();
 
         $empresa = \App\Models\Empresa::find($empresaId);
-        $montoDiario = $empresa->tributo_diario ?? 24.00;
+        $montoDiario = (float) ($empresa?->tributo_diario ?? 0.00);
         $generados   = 0;
 
         for ($i = 0; $i < $diasAtras; $i++) {

@@ -41,7 +41,7 @@
                     </div>
                         <div class="form-group">
                             <label>Monto (S/)</label>
-                            <input type="number" name="monto" value="24.00" step="0.50" class="form-control"
+                            <input type="number" name="monto" value="{{ old('monto', auth()->user()->empresa?->tributo_diario ?? '0.00') }}" step="0.50" min="0" class="form-control"
                                 required>
                         
                         @error('monto')

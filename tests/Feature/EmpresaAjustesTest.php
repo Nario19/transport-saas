@@ -6,6 +6,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use App\Models\User;
 use App\Models\Empresa;
+use App\Models\Vehiculo;
+use App\Models\Tributo;
 use Spatie\Permission\Models\Role;
 
 class EmpresaAjustesTest extends TestCase
@@ -82,5 +84,35 @@ class EmpresaAjustesTest extends TestCase
         $this->empresa->refresh();
 
         $this->assertFalse((bool) $this->empresa->activa);
+    }
+
+    public function test_empresa_con_tributo_personalizado_de_5_soles_genera_tributos_exactos_de_5_soles(): void
+    {
+        // 1. Crear empresa con tributo diario de 5.00
+        $empresa5 = Empresa::create([
+            'nombre' => 'Empresa Cinco Soles SAC',
+            'ruc' => '20555555555',
+            'plan' => 'basico',
+            'tributo_diario' => 5.00,
+            'activa' => true,
+        ]);
+
+        $vehiculo = Vehiculo::create([
+            'empresa_id' => $empresa5->id,
+            'placa' => 'CIN-500',
+            'numero_flota' => 50,
+            'marca' => 'Toyota',
+            'modelo' => 'Hiace',
+            'estado' => 'activo',
+        ]);
+
+        // 2. Generar tributos diarios
+        Tributo::ensureGenerados($empresa5->id);
+
+        // 3. El monto generado debe ser estrictamente 5.00 y NUNCA 24.00
+        $tributo = Tributo::where('vehiculo_id', $vehiculo->id)->first();
+        $this->assertNotNull($tributo);
+        $this->assertEquals(5.00, (float) $tributo->monto);
+        $this->assertNotEquals(24.00, (float) $tributo->monto);
     }
 }

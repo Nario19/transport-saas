@@ -128,58 +128,60 @@ class EmpresaController extends Controller
     {
         $data = $request->validated();
 
-        if ($request->hasFile('logo')) {
-            // Borrar logo anterior si existe
-            if ($empresa->logo_path) {
-                Storage::disk('public')->delete($empresa->logo_path);
+        return \Illuminate\Support\Facades\DB::transaction(function () use ($request, $data, $empresa) {
+            $logoPath = $empresa->logo_path;
+            if ($request->hasFile('logo')) {
+                // Borrar logo anterior si existe
+                if ($empresa->logo_path) {
+                    Storage::disk('public')->delete($empresa->logo_path);
+                }
+                $logoPath = $request->file('logo')->store('logos', 'public');
             }
-            $data['logo_path'] = $request->file('logo')->store('logos', 'public');
-        }
 
-        // Convertir 'activa' a boolean si está presente
-        if (isset($data['activa'])) {
-            $data['activa'] = (bool) $data['activa'];
-        }
+            // Filtrar datos exclusivos de la empresa para su actualización
+            $empresaData = collect($data)
+                ->except(['admin_name', 'admin_email', 'admin_password', 'admin_password_confirmation', 'logo'])
+                ->toArray();
 
-        $empresa->update($data);
-
-        // Actualizar el administrador principal de la empresa
-        $request->validate([
-            'admin_name'     => 'nullable|string|max:255',
-            'admin_email'    => 'nullable|email',
-            'admin_password' => 'nullable|string|min:6|confirmed',
-        ]);
-
-        $prefijo = 'e' . $empresa->id . '_';
-        $admin = \App\Models\User::role($prefijo . 'ADMIN')->first();
-
-        if ($admin) {
-            $adminData = [];
-            if ($request->filled('admin_name')) {
-                $adminData['name'] = $request->admin_name;
+            if ($request->hasFile('logo')) {
+                $empresaData['logo_path'] = $logoPath;
             }
-            if ($request->filled('admin_email')) {
-                // Verificar si el email cambió y no está en uso por otro
-                if ($request->admin_email !== $admin->email) {
+
+            if (isset($data['activa'])) {
+                $empresaData['activa'] = (bool) $data['activa'];
+            }
+
+            $empresa->update($empresaData);
+
+            // Actualizar el administrador principal de la empresa si se enviaron datos
+            $prefijo = 'e' . $empresa->id . '_';
+            $admin = \App\Models\User::role($prefijo . 'ADMIN')->first();
+
+            if ($admin) {
+                $adminData = [];
+                if (!empty($data['admin_name'])) {
+                    $adminData['name'] = $data['admin_name'];
+                }
+                if (!empty($data['admin_email']) && $data['admin_email'] !== $admin->email) {
                     $request->validate([
                         'admin_email' => 'unique:users,email,' . $admin->id,
                     ], [
                         'admin_email.unique' => 'El correo electrónico ya está registrado en el sistema.',
                     ]);
-                    $adminData['email'] = $request->admin_email;
+                    $adminData['email'] = $data['admin_email'];
+                }
+                if (!empty($data['admin_password'])) {
+                    $adminData['password'] = \Illuminate\Support\Facades\Hash::make($data['admin_password']);
+                }
+
+                if (!empty($adminData)) {
+                    $admin->update($adminData);
                 }
             }
-            if ($request->filled('admin_password')) {
-                $adminData['password'] = \Illuminate\Support\Facades\Hash::make($request->admin_password);
-            }
-            
-            if (!empty($adminData)) {
-                $admin->update($adminData);
-            }
-        }
 
-        return redirect()->route('superadmin.empresas.index')
-            ->with('success', 'Información de la empresa y su administrador actualizada.');
+            return redirect()->route('superadmin.empresas.index')
+                ->with('success', "Empresa \"{$empresa->nombre}\" actualizada correctamente.");
+        });
     }
 
     /**

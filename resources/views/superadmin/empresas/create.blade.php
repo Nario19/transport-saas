@@ -92,7 +92,7 @@
 
                             <div class="field">
                                 <label for="tributo_diario">Tributo Diario Base (S/) *</label>
-                                <input type="number" step="0.01" id="tributo_diario" name="tributo_diario" value="24.00" required>
+                                <input type="number" step="0.01" min="0" id="tributo_diario" name="tributo_diario" value="{{ old('tributo_diario', '0.00') }}" placeholder="Ej: 5.00" required>
                                 @error('tributo_diario')
                                     <small style="color: var(--red); font-weight: 700;">{{ $message }}</small>
                                 @enderror

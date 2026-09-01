@@ -75,7 +75,7 @@ class TributoOperacionManualTest extends TestCase
         ]);
     }
 
-    public function test_cajero_puede_cobrar_tributo_manualmente_en_efectivo_y_actualizar_saldo(): void
+    public function test_cajero_puede_cobrar_tributo_en_efectivo_letra_normal(): void
     {
         $tributo = Tributo::create([
             'empresa_id' => $this->empresa->id,
@@ -99,7 +99,7 @@ class TributoOperacionManualTest extends TestCase
         $this->assertNotNull($tributo->cobrado_at);
     }
 
-    public function test_cajero_puede_cobrar_tributo_manualmente_con_yape_o_plin(): void
+    public function test_cajero_puede_cobrar_tributo_en_efectivo_morado_yape_digital(): void
     {
         $tributo = Tributo::create([
             'empresa_id' => $this->empresa->id,

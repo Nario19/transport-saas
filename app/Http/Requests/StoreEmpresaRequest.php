@@ -22,14 +22,18 @@ class StoreEmpresaRequest extends FormRequest
      */
     public function rules(): array
     {
-        // Dynamic catch-all for validated() behavior
-        $keys = array_keys($this->all());
-        $rules = [];
-        foreach ($keys as $key) {
-            if (!in_array($key, ['_token', '_method'])) {
-                $rules[$key] = 'nullable';
-            }
-        }
-        return $rules;
+        return [
+            'nombre'                => 'required|string|max:120',
+            'ruc'                   => 'required|string|size:11|unique:empresas,ruc',
+            'razon_social'          => 'nullable|string|max:150',
+            'telefono'              => 'nullable|string|max:20',
+            'direccion'             => 'nullable|string|max:255',
+            'plan'                  => 'required|string|in:basico,pro,enterprise',
+            'tributo_diario'        => 'required|numeric|min:0',
+            'logo'                  => 'nullable|image|max:2048',
+            'admin_name'            => 'required|string|max:100',
+            'admin_email'           => 'required|email|max:150|unique:users,email',
+            'password'              => 'required|string|min:6|confirmed',
+        ];
     }
 }

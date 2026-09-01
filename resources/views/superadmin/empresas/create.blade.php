@@ -14,6 +14,21 @@
                 <div class="card-title"><i class="fa-solid fa-city"></i> Datos Maestros de la Empresa</div>
             </div>
             <div class="card-body">
+                @if ($errors->any())
+                    <div class="alert red" style="margin-bottom: 20px;">
+                        <ul style="margin: 0; padding-left: 20px;">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+                @if (session('error'))
+                    <div class="alert red" style="margin-bottom: 20px;">
+                        {{ session('error') }}
+                    </div>
+                @endif
+
                 <form action="{{ route('superadmin.empresas.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     

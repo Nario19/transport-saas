@@ -43,62 +43,71 @@ class EmpresaController extends Controller
     {
         $data = $request->validated();
 
-        // Validar datos del administrador
-        $request->validate([
-            'admin_name'  => 'required|string|max:255',
-            'admin_email' => 'required|email|unique:users,email',
-            'password'    => 'required|string|min:6|confirmed',
-        ]);
+        return \Illuminate\Support\Facades\DB::transaction(function () use ($request, $data) {
+            $logoPath = null;
+            if ($request->hasFile('logo')) {
+                $logoPath = $request->file('logo')->store('logos', 'public');
+            }
 
-        if ($request->hasFile('logo')) {
-            $data['logo_path'] = $request->file('logo')->store('logos', 'public');
-        }
+            // Filtrar datos exclusivos de la empresa para su creación (evitar columna inexistente 'logo')
+            $empresaData = collect($data)
+                ->except(['admin_name', 'admin_email', 'password', 'password_confirmation', 'logo'])
+                ->toArray();
 
-        // Filtrar datos exclusivos de la empresa para su creación
-        $empresaData = collect($data)->except(['admin_name', 'admin_email', 'password', 'password_confirmation'])->toArray();
-        $empresa = Empresa::create($empresaData);
+            if ($logoPath) {
+                $empresaData['logo_path'] = $logoPath;
+            }
 
-        // Crear los roles correspondientes para la nueva empresa
-        $prefijo = 'e' . $empresa->id . '_';
-        
-        $adminRole = \Spatie\Permission\Models\Role::updateOrCreate(
-            ['name' => $prefijo . 'ADMIN', 'guard_name' => 'web']
-        );
+            $empresa = Empresa::create($empresaData);
 
-        \Spatie\Permission\Models\Role::updateOrCreate(
-            ['name' => $prefijo . 'OPERADOR', 'guard_name' => 'web']
-        );
+            // Crear los roles correspondientes para la nueva empresa
+            $prefijo = 'e' . $empresa->id . '_';
+            
+            $adminRole = \Spatie\Permission\Models\Role::firstOrCreate(
+                ['name' => $prefijo . 'ADMIN', 'guard_name' => 'web']
+            );
 
-        // Asignar permisos al rol de Administrador de esta empresa
-        $adminRole->syncPermissions([
-            'ver dashboard',
-            'ver vehiculos',
-            'ver conductores',
-            'ver propietarios',
-            'ver rutas',
-            'ver vueltas',
-            'ver tributos',
-            'ver sanciones',
-            'ver reportes',
-            'gestionar usuarios',
-            'gestionar roles',
-            'gestionar ajustes de empresa',
-            'gestionar backups',
-        ]);
+            \Spatie\Permission\Models\Role::firstOrCreate(
+                ['name' => $prefijo . 'OPERADOR', 'guard_name' => 'web']
+            );
 
-        // Crear el usuario administrador asociado a la empresa
-        $user = \App\Models\User::create([
-            'empresa_id'   => $empresa->id,
-            'name'         => $request->admin_name,
-            'email'        => $request->admin_email,
-            'password'     => \Illuminate\Support\Facades\Hash::make($request->password),
-            'activo'       => true,
-        ]);
+            // Permisos base del Administrador de esta empresa
+            $permisos = [
+                'ver dashboard',
+                'ver vehiculos',
+                'ver conductores',
+                'ver propietarios',
+                'ver rutas',
+                'ver vueltas',
+                'ver tributos',
+                'ver sanciones',
+                'ver reportes',
+                'gestionar usuarios',
+                'gestionar roles',
+                'gestionar ajustes de empresa',
+                'gestionar backups',
+            ];
 
-        $user->syncRoles([$adminRole]);
+            foreach ($permisos as $p) {
+                \Spatie\Permission\Models\Permission::firstOrCreate(['name' => $p, 'guard_name' => 'web']);
+            }
 
-        return redirect()->route('superadmin.empresas.index')
-            ->with('success', 'Empresa y su usuario Administrador registrados correctamente.');
+            $adminRole->syncPermissions($permisos);
+
+            // Crear el usuario administrador asociado a la empresa
+            $user = \App\Models\User::create([
+                'empresa_id'   => $empresa->id,
+                'name'         => $data['admin_name'],
+                'email'        => $data['admin_email'],
+                'password'     => \Illuminate\Support\Facades\Hash::make($data['password']),
+                'activo'       => true,
+            ]);
+
+            $user->syncRoles([$adminRole]);
+
+            return redirect()->route('superadmin.empresas.index')
+                ->with('success', "Empresa \"{$empresa->nombre}\" y su usuario Administrador registrados correctamente.");
+        });
     }
 
     /**

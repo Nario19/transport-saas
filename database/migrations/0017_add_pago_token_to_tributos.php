@@ -13,7 +13,9 @@ return new class extends Migration
             $table->string('token_pago', 64)->nullable()->unique()->after('observaciones');
         });
 
-        DB::statement("ALTER TABLE tributos MODIFY COLUMN metodo_pago ENUM('efectivo','yape','plin','transferencia','mercadopago') NULL");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE tributos MODIFY COLUMN metodo_pago ENUM('efectivo','yape','plin','transferencia','mercadopago') NULL");
+        }
     }
 
     public function down(): void
@@ -21,6 +23,8 @@ return new class extends Migration
         Schema::table('tributos', function (Blueprint $table) {
             $table->dropColumn('token_pago');
         });
-        DB::statement("ALTER TABLE tributos MODIFY COLUMN metodo_pago ENUM('efectivo','yape','plin','transferencia') NULL");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE tributos MODIFY COLUMN metodo_pago ENUM('efectivo','yape','plin','transferencia') NULL");
+        }
     }
 };

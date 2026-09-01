@@ -64,7 +64,8 @@ class ReporteController extends Controller
 
         // Resumen por día
         $porDiaQuery = Tributo::where('empresa_id', $user->empresa_id)
-            ->whereBetween('fecha', [$desde->toDateString(), $hasta->toDateString()]);
+            ->whereDate('fecha', '>=', $desde->toDateString())
+            ->whereDate('fecha', '<=', $hasta->toDateString());
 
         if ($flota) {
             $porDiaQuery->whereHas('vehiculo', function ($vQ) use ($flota) {
@@ -87,7 +88,8 @@ class ReporteController extends Controller
 
         // Detalle de todos los registros en el rango (para la tabla detallada)
         $detalle = Tributo::where('empresa_id', $user->empresa_id)
-            ->whereBetween('fecha', [$desde->toDateString(), $hasta->toDateString()])
+            ->whereDate('fecha', '>=', $desde->toDateString())
+            ->whereDate('fecha', '<=', $hasta->toDateString())
             ->when($flota, function ($q) use ($flota) {
                 return $q->whereHas('vehiculo', function ($vQ) use ($flota) {
                     $vQ->where('numero_flota', $flota);
@@ -101,7 +103,8 @@ class ReporteController extends Controller
 
         // Resumen por método de pago
         $porMetodoQuery = Tributo::where('empresa_id', $user->empresa_id)
-            ->whereBetween('fecha', [$desde->toDateString(), $hasta->toDateString()])
+            ->whereDate('fecha', '>=', $desde->toDateString())
+            ->whereDate('fecha', '<=', $hasta->toDateString())
             ->where('estado', 'pagado');
 
         if ($flota) {

@@ -66,20 +66,19 @@ class Tributo extends Model implements Auditable
                     continue;
                 }
 
-                $creado = self::firstOrCreate(
-                    [
-                        'empresa_id'  => $empresaId,
-                        'vehiculo_id' => $vehiculo->id,
-                        'fecha'       => $fecha->toDateString(),
-                    ],
-                    [
+                $existe = self::where('vehiculo_id', $vehiculo->id)
+                    ->whereDate('fecha', $fecha)
+                    ->exists();
+
+                if (!$existe) {
+                    self::create([
+                        'empresa_id'   => $empresaId,
+                        'vehiculo_id'  => $vehiculo->id,
                         'conductor_id' => $vehiculo->conductor_id,
+                        'fecha'        => $fecha->toDateString(),
                         'monto'        => $montoDiario,
                         'estado'       => 'pendiente',
-                    ]
-                );
-
-                if ($creado->wasRecentlyCreated) {
+                    ]);
                     $generados++;
                 }
             }

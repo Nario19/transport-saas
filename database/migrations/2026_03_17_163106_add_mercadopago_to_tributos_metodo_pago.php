@@ -12,7 +12,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        DB::statement("ALTER TABLE tributos MODIFY COLUMN metodo_pago ENUM('efectivo', 'yape', 'plin', 'transferencia', 'mercadopago') NULL");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE tributos MODIFY COLUMN metodo_pago ENUM('efectivo', 'yape', 'plin', 'transferencia', 'mercadopago') NULL");
+        }
     }
 
     /**
@@ -20,6 +22,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::statement("ALTER TABLE tributos MODIFY COLUMN metodo_pago ENUM('efectivo', 'yape', 'plin', 'transferencia') NULL");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE tributos MODIFY COLUMN metodo_pago ENUM('efectivo', 'yape', 'plin', 'transferencia') NULL");
+        }
     }
 };

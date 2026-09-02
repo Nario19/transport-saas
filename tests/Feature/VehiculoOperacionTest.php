@@ -153,4 +153,26 @@ class VehiculoOperacionTest extends TestCase
         $this->assertEquals('Plateado', $vehiculo->color);
         $this->assertEquals('mantenimiento', $vehiculo->estado);
     }
+
+    public function test_admin_puede_registrar_vehiculo_con_anio_fabricacion_futuro_proximo(): void
+    {
+        $proximoAnio = (int) date('Y') + 1;
+
+        $response = $this->actingAs($this->admin)->post(route('vehiculos.store'), [
+            'placa' => 'W9Z-888',
+            'numero_flota' => 88,
+            'marca' => 'Toyota',
+            'modelo' => 'Hiace',
+            'anio' => $proximoAnio,
+            'estado' => 'activo',
+            'propietario_id' => $this->propietario->id,
+        ]);
+
+        $response->assertSessionHasNoErrors();
+        $response->assertRedirect(route('vehiculos.index'));
+        $this->assertDatabaseHas('vehiculos', [
+            'placa' => 'W9Z-888',
+            'anio' => $proximoAnio,
+        ]);
+    }
 }

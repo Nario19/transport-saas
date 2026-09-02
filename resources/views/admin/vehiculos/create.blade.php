@@ -77,7 +77,7 @@
                                 <select name="anio" id="anio" required>
                                     <option value="">-- Seleccionar --</option>
                                     @php
-                                        $anioActual = date('Y');
+                                        $anioActual = date('Y') + 1;
                                         $anioInicio = 1990;
                                     @endphp
                                     @for ($i = $anioActual; $i >= $anioInicio; $i--)

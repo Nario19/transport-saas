@@ -37,11 +37,11 @@ class StoreVehiculoRequest extends FormRequest
             'modelo'             => 'nullable|string|max:50',
             'color'              => 'nullable|string|max:30',
             'anio' => [
-                        'required',
-                        'integer',
-                        'min:1990',
-                        'max:' . date('Y'), // No permite años futuros
-                    ],            
+                'required',
+                'integer',
+                'min:1990',
+                'max:' . (date('Y') + 1), // Permite año actual y el siguiente
+            ],            
             'soat_vence'         => 'nullable|date',
             'rev_tecnica_vence'  => 'nullable|date',
             'tarjeta_prop_vence' => 'nullable|date',

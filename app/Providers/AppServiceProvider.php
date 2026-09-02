@@ -26,5 +26,18 @@ class AppServiceProvider extends ServiceProvider
 
         // Usar el partial personalizado para toda la paginación de la app
         Paginator::defaultView('partials.pagination');
+
+        // Garantizar acceso global a Super Admin y administradores de empresa a alertas y ajustes
+        \Illuminate\Support\Facades\Gate::before(function ($user, $ability) {
+            if ($user->hasRole('SUPER_ADMIN')) {
+                return true;
+            }
+            if ($user->roles->contains(fn($r) => str_ends_with($r->name, '_ADMIN') || $r->name === 'ADMIN')) {
+                if (in_array($ability, ['gestionar alertas', 'gestionar ajustes de empresa'])) {
+                    return true;
+                }
+            }
+            return null;
+        });
     }
 }

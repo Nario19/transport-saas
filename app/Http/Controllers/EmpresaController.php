@@ -86,6 +86,7 @@ class EmpresaController extends Controller
                 'gestionar roles',
                 'gestionar ajustes de empresa',
                 'gestionar backups',
+                'gestionar alertas',
             ];
 
             foreach ($permisos as $p) {

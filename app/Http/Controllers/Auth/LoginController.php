@@ -96,8 +96,13 @@ class LoginController extends Controller
         if ($user->hasRole('conductor')) {
             return redirect()->route('conductor.dashboard');
         }
+
+        // 3. Propietario — panel propio
+        if ($user->hasRole('propietario')) {
+            return redirect()->route('propietario.dashboard');
+        }
  
-        // 3. Admin / Operador — redirigir a la primera ruta que tenga permiso
+        // 4. Admin / Operador — redirigir a la primera ruta que tenga permiso
         // El orden define la prioridad: si tiene 'ver dashboard' va al dashboard,
         // si no tiene ese permiso pero sí 'ver vehiculos' va a vehículos, etc.
         $rutasPorPermiso = [

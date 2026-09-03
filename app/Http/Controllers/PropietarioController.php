@@ -18,7 +18,7 @@ class PropietarioController extends Controller
         $user = Auth::user();
     
         $query = Propietario::where('empresa_id', $user->empresa_id)
-            ->with(['conductor.user'])
+            ->with(['conductor.user', 'user'])
             ->withCount('vehiculos');
     
         // ── Búsqueda libre ────────────────────────────────────────

@@ -79,6 +79,7 @@
                             <th>DNI / RUC</th>
                             <th>Contacto / Dirección</th>
                             <th style="text-align: center;">Unidades</th>
+                            <th style="text-align: center;">Acceso Móvil</th>
                             <th style="text-align: center;">Conductor?</th>
                             <th style="text-align: center;">Monto de Ingreso</th>
                             <th class="col-status">Estado</th>
@@ -113,11 +114,26 @@
                                     </span>
                                 </td>
                                 <td style="text-align: center;">
+                                    @if($p->user)
+                                        @if($p->user->activo)
+                                            <span class="pill green" style="font-size: 10px; font-weight: 800;" title="Usuario: {{ $p->user->email }}">
+                                                <i class="fa-solid fa-mobile-screen-button"></i> SÍ
+                                            </span>
+                                        @else
+                                            <span class="pill red" style="font-size: 10px; font-weight: 800;" title="Acceso suspendido">
+                                                <i class="fa-solid fa-power-off"></i> SUSP.
+                                            </span>
+                                        @endif
+                                    @else
+                                        <span class="pill gray" style="font-size: 10px; opacity: 0.6;">NO</span>
+                                    @endif
+                                </td>
+                                <td style="text-align: center;">
                                     @if($p->conductor)
                                         <div class="flex-v" style="gap:4px; align-items:center;">
                                             <span class="pill gold" style="font-size: 10px; font-weight: 800;">SÍ</span>
                                             @if($p->conductor->tiene_acceso)
-                                                <i class="fa-solid fa-mobile-screen-button" style="font-size: 11px; color: var(--green);" title="Tiene acceso a la App"></i>
+                                                <i class="fa-solid fa-mobile-screen-button" style="font-size: 11px; color: var(--green);" title="Tiene acceso como chofer"></i>
                                             @endif
                                         </div>
                                     @else

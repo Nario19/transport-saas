@@ -140,6 +140,24 @@ class PropietarioPortalTest extends TestCase
         $dashboardResponse->assertSee('ABC-123');
     }
 
+    public function test_propietario_inicia_sesion_desde_formulario_login_con_dni(): void
+    {
+        // 1. Crear acceso
+        $this->actingAs($this->admin)->post(route('propietarios.acceso.store', $this->propietario->id));
+        auth()->logout();
+
+        // 2. Propietario inicia sesión con DNI en el formulario de login público
+        $response = $this->post('/login', [
+            'email'    => '12345678',
+            'password' => '12345678',
+        ]);
+
+        $response->assertSessionHasNoErrors();
+        // Redirige al panel del propietario (y luego forzar cambio si primer ingreso)
+        $response->assertRedirect(route('propietario.dashboard'));
+        $this->assertAuthenticated();
+    }
+
     public function test_aislamiento_y_seguridad_de_rutas_para_el_propietario(): void
     {
         $this->propietario->update(['primer_ingreso' => false]);

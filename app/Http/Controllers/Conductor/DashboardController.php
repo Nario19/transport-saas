@@ -72,7 +72,16 @@ class DashboardController extends Controller
 
         // Puntos de control registrados
         $puntosControl = \App\Models\PuntoControl::where('empresa_id', $user->empresa_id)->orderBy('nombre')->get();
- 
+
+        // Alertas configuradas por el Admin y disponibles para que el conductor las reporte (con check visible)
+        $alertasDisponibles = \App\Models\AlertaOperativo::where('empresa_id', $user->empresa_id)
+            ->where('visible_conductor', true)
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->unique(function ($item) {
+                return $item->titulo . '|' . $item->punto;
+            });
+
         return view('users.conductor.dashboard', compact(
             'conductor',
             'tributoHoy',
@@ -83,6 +92,7 @@ class DashboardController extends Controller
             'alertas',
             'alertasOperativos',
             'puntosControl',
+            'alertasDisponibles',
         ));
     }
 }

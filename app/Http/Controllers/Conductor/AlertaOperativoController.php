@@ -21,7 +21,7 @@ class AlertaOperativoController extends Controller
      */
 
     /**
-     * Reportar un operativo (Conductor).
+     * Reportar un operativo o alerta (Conductor).
      */
     public function store(Request $request)
     {
@@ -32,16 +32,65 @@ class AlertaOperativoController extends Controller
             return response()->json(['error' => 'No tienes un perfil de conductor asociado.'], 403);
         }
 
+        $empresaId = $conductor->empresa_id;
+
+        // Opción 1: El conductor reportó una alerta de la lista configurada por el Administrador
+        if ($request->filled('alerta_id')) {
+            $base = AlertaOperativo::where('empresa_id', $empresaId)
+                ->where('visible_conductor', true)
+                ->find($request->alerta_id);
+
+            if (!$base) {
+                return response()->json(['message' => 'Esta alerta no está disponible actualmente.'], 422);
+            }
+
+            // Evitar duplicados activos idénticos
+            $existeActivo = AlertaOperativo::where('empresa_id', $empresaId)
+                ->where('titulo', $base->titulo)
+                ->where('punto', $base->punto)
+                ->where('estado', 'activo')
+                ->where('expires_at', '>', now())
+                ->exists();
+
+            if ($existeActivo) {
+                return response()->json(['message' => "Ya existe un reporte activo para {$base->titulo}."], 200);
+            }
+
+            $alerta = AlertaOperativo::create([
+                'empresa_id'        => $empresaId,
+                'conductor_id'      => $conductor->id,
+                'user_id'           => null,
+                'titulo'            => $base->titulo,
+                'punto'             => $base->punto,
+                'mensaje'           => $base->mensaje,
+                'tipo'              => $base->tipo,
+                'visible_conductor' => true,
+                'estado'            => 'activo',
+                'expires_at'        => now()->addMinutes(45),
+            ]);
+
+            try {
+                broadcast(new AlertaOperativoCreada($alerta))->toOthers();
+            } catch (\Exception $e) {}
+
+            return response()->json([
+                'success' => true,
+                'message' => "Alerta '{$alerta->titulo}' reportada a todos los compañeros.",
+                'alerta'  => $alerta
+            ]);
+        }
+
+        // Opción 2: El conductor seleccionó un punto de control
         $request->validate([
             'punto' => [
                 'required',
                 'string',
-                Rule::exists('puntos_control', 'nombre')->where('empresa_id', $conductor->empresa_id)
+                Rule::exists('puntos_control', 'nombre')->where('empresa_id', $empresaId)
             ],
         ]);
 
         // Evitar duplicados activos en el mismo punto para la misma empresa
-        $existeActivo = AlertaOperativo::where('empresa_id', $conductor->empresa_id)
+        $existeActivo = AlertaOperativo::where('empresa_id', $empresaId)
             ->where('punto', $request->punto)
             ->where('estado', 'activo')
             ->where('expires_at', '>', now())
@@ -52,20 +101,26 @@ class AlertaOperativoController extends Controller
         }
 
         $alerta = AlertaOperativo::create([
-            'empresa_id'   => $conductor->empresa_id,
-            'conductor_id' => $conductor->id,
-            'user_id'      => null,
-            'punto'        => $request->punto,
-            'estado'       => 'activo',
-            'expires_at'   => now()->addMinutes(20),
+            'empresa_id'        => $empresaId,
+            'conductor_id'      => $conductor->id,
+            'user_id'           => null,
+            'titulo'            => '🚨 Control Policial / Operativo',
+            'punto'             => $request->punto,
+            'mensaje'           => 'Fiscalización reportada en ruta.',
+            'tipo'              => 'Operativo / Control',
+            'visible_conductor' => true,
+            'estado'            => 'activo',
+            'expires_at'        => now()->addMinutes(30),
         ]);
 
         // Transmitir evento en tiempo real
-        broadcast(new AlertaOperativoCreada($alerta))->toOthers();
+        try {
+            broadcast(new AlertaOperativoCreada($alerta))->toOthers();
+        } catch (\Exception $e) {}
 
         return response()->json([
             'success' => true,
-            'message' => "Operativo reportado en el {$alerta->punto} correctamente.",
+            'message' => "Operativo reportado en {$alerta->punto} correctamente.",
             'alerta'  => $alerta
         ]);
     }
@@ -89,7 +144,9 @@ class AlertaOperativoController extends Controller
 
         if ($alerta->estado === 'activo') {
             $alerta->update(['estado' => 'finalizado']);
-            broadcast(new AlertaOperativoFinalizada($alerta))->toOthers();
+            try {
+                broadcast(new AlertaOperativoFinalizada($alerta))->toOthers();
+            } catch (\Exception $e) {}
         }
 
         return response()->json([
@@ -215,6 +272,53 @@ class AlertaOperativoController extends Controller
         }
 
         return back()->with('success', 'La alerta se marcó como finalizada.');
+    }
+
+    /**
+     * Re-emitir una alerta existente / del historial (Administrador).
+     */
+    public function adminReemitir(AlertaOperativo $alerta, Request $request)
+    {
+        $empresaId = auth()->user()->empresa_id;
+        if ($alerta->empresa_id !== $empresaId) {
+            abort(403, 'Acceso no autorizado.');
+        }
+
+        $duracion = (int) $request->input('duracion_minutos', 60);
+        if ($duracion <= 0) $duracion = 60;
+
+        $nuevaAlerta = AlertaOperativo::create([
+            'empresa_id'        => $empresaId,
+            'conductor_id'      => null,
+            'user_id'           => auth()->id(),
+            'titulo'            => $alerta->titulo,
+            'punto'             => $alerta->punto,
+            'mensaje'           => $alerta->mensaje,
+            'tipo'              => $alerta->tipo,
+            'visible_conductor' => $alerta->visible_conductor,
+            'estado'            => 'activo',
+            'expires_at'        => now()->addMinutes($duracion),
+        ]);
+
+        try {
+            broadcast(new AlertaOperativoCreada($nuevaAlerta))->toOthers();
+        } catch (\Exception $e) {}
+
+        return back()->with('success', "Alerta '{$nuevaAlerta->titulo}' emitida de nuevo a la flota.");
+    }
+
+    /**
+     * Eliminar una alerta del historial (Administrador).
+     */
+    public function adminDestroy(AlertaOperativo $alerta)
+    {
+        if ($alerta->empresa_id !== auth()->user()->empresa_id) {
+            abort(403, 'Acceso no autorizado.');
+        }
+
+        $alerta->delete();
+
+        return back()->with('success', 'Alerta eliminada del historial.');
     }
 
     /**

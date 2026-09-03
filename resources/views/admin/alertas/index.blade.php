@@ -306,11 +306,14 @@
                 </div>
             </div>
 
-            {{-- HISTORIAL RECIENTE --}}
+            {{-- HISTORIAL DE ALERTAS Y CATÁLOGO PARA RE-EMITIR --}}
             <div class="card">
-                <div class="card-header">
-                    <span class="card-title" style="font-size: 13.5px; font-weight: 800;">
-                        <i class="fa-solid fa-clock-rotate-left" style="color:var(--text3); margin-right:5px;"></i> Historial Reciente de Alertas
+                <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+                    <span class="card-title" style="font-size: 14px; font-weight: 800;">
+                        <i class="fa-solid fa-clock-rotate-left" style="color:var(--text3); margin-right:5px;"></i> Historial de Alertas Emitidas (Catálogo de Re-emisión)
+                    </span>
+                    <span style="font-size: 11px; color: var(--text3); font-weight: 600;">
+                        Usa el botón <b>"Emitir de nuevo"</b> para reactivar cualquier alerta al instante
                     </span>
                 </div>
                 <div class="card-body" style="padding: 0;">
@@ -318,43 +321,88 @@
                         <table class="tbl tbl-modern">
                             <thead>
                                 <tr>
-                                    <th>Alerta</th>
+                                    <th>Alerta / Indicaciones</th>
                                     <th>Ubicación</th>
-                                    <th>Emisor</th>
-                                    <th>Fecha y Hora</th>
-                                    <th>Estado</th>
+                                    <th>Emisor y Fecha</th>
+                                    <th style="text-align:center;">Opción para Chofer</th>
+                                    <th class="col-actions" style="text-align:right;">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse($historial as $alerta)
                                     <tr>
                                         <td>
-                                            <div style="font-weight: 700; font-size: 12.5px;">{{ $alerta->titulo ?: 'Control / Operativo' }}</div>
+                                            <div style="font-weight: 800; font-size: 13px; color: var(--text); display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                                                <span class="pill" style="background: #e0f2fe; color: #0369a1; font-size: 10px; font-weight: 800; padding: 2px 6px;">
+                                                    {{ strtoupper($alerta->tipo ?: 'ALERTA') }}
+                                                </span>
+                                                {{ $alerta->titulo ?: 'Control / Operativo' }}
+                                            </div>
                                             @if($alerta->mensaje)
-                                                <div style="font-size: 11px; color: var(--text3); margin-top: 1px;">{{ Str::limit($alerta->mensaje, 40) }}</div>
+                                                <div style="font-size: 11.5px; color: var(--text2); margin-top: 2px; max-width: 260px; line-height: 1.3;">
+                                                    {{ $alerta->mensaje }}
+                                                </div>
                                             @endif
                                         </td>
-                                        <td style="font-weight: 600; font-size: 12px;">{{ $alerta->punto ?: 'General' }}</td>
-                                        <td style="font-size: 11.5px;">
-                                            @if($alerta->conductor)
-                                                Conductor: {{ $alerta->conductor->nombre_completo }}
-                                            @else
-                                                Admin: {{ $alerta->user?->name ?? 'Sistema' }}
-                                            @endif
+                                        <td style="font-weight: 700; font-size: 12px; color: var(--text2);">
+                                            {{ $alerta->punto ?: 'Ubicación General' }}
                                         </td>
-                                        <td style="font-size: 11.5px;">{{ $alerta->created_at->format('d/m/Y h:i A') }}</td>
-                                        <td>
-                                            @if($alerta->estado === 'finalizado')
-                                                <span class="pill green" style="font-size: 10px; font-weight:800; padding:2px 6px;">Retirado</span>
-                                            @else
-                                                <span class="pill gray" style="font-size: 10px; font-weight:800; padding:2px 6px;">Expirado</span>
-                                            @endif
+                                        <td style="font-size: 11px; color: var(--text3);">
+                                            <div>
+                                                @if($alerta->conductor)
+                                                    Chofer: <b>{{ $alerta->conductor->nombre_completo }}</b>
+                                                @else
+                                                    Admin: <b>{{ $alerta->user?->name ?? 'Sistema' }}</b>
+                                                @endif
+                                            </div>
+                                            <div style="margin-top: 2px;">{{ $alerta->created_at->format('d/m/Y h:i A') }}</div>
+                                        </td>
+                                        <td style="text-align: center;">
+                                            <form action="{{ route('admin.alertas.toggle-visibilidad', $alerta) }}" method="POST" style="display: inline;">
+                                                @csrf
+                                                @if($alerta->visible_conductor)
+                                                    <button type="submit" class="pill green" style="border: none; cursor: pointer; font-size: 10.5px; font-weight: 800; padding: 4px 8px; display: inline-flex; align-items: center; gap: 4px;" title="Disponible para que el chofer la reporte. Clic para ocultar.">
+                                                        <i class="fa-solid fa-eye"></i> Visible
+                                                    </button>
+                                                @else
+                                                    <button type="submit" class="pill gray" style="border: none; cursor: pointer; font-size: 10.5px; font-weight: 800; padding: 4px 8px; display: inline-flex; align-items: center; gap: 4px;" title="Oculta para el chofer. Clic para ponerla disponible.">
+                                                        <i class="fa-solid fa-eye-slash"></i> Oculta
+                                                    </button>
+                                                @endif
+                                            </form>
+                                        </td>
+                                        <td class="col-actions" style="text-align: right; white-space: nowrap;">
+                                            <div style="display: inline-flex; align-items: center; gap: 6px;">
+                                                {{-- Formulario de Re-emisión --}}
+                                                <form action="{{ route('admin.alertas.reemitir', $alerta) }}" method="POST" style="display: inline-flex; align-items: center; gap: 4px;">
+                                                    @csrf
+                                                    <select name="duracion_minutos" style="font-size: 11px; padding: 4px 6px; border-radius: 6px; border: 1px solid var(--border); font-weight: 700; background: var(--bg); color: var(--text);">
+                                                        <option value="30">30m</option>
+                                                        <option value="60" selected>1h</option>
+                                                        <option value="120">2h</option>
+                                                        <option value="240">4h</option>
+                                                        <option value="1440">24h</option>
+                                                    </select>
+                                                    <button type="submit" class="btn-primary" style="font-size: 11.5px; padding: 5px 10px; font-weight: 800; border-radius: 6px; background: #2563eb; display: inline-flex; align-items: center; gap: 4px;" title="Emitir esta alerta de nuevo">
+                                                        <i class="fa-solid fa-bolt"></i> Emitir de nuevo
+                                                    </button>
+                                                </form>
+
+                                                {{-- Eliminar del historial --}}
+                                                <form action="{{ route('admin.alertas.destroy', $alerta) }}" method="POST" style="display: inline;" onsubmit="return confirm('¿Eliminar esta alerta del historial?')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" style="background: none; border: none; color: var(--red); cursor: pointer; padding: 6px; font-size: 13px;" title="Eliminar registro">
+                                                        <i class="fa-solid fa-trash-can"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
                                         <td colspan="5" style="text-align:center; padding:30px; color:var(--text3); font-size:12px;">
-                                            Sin registros anteriores.
+                                            Sin alertas anteriores registradas.
                                         </td>
                                     </tr>
                                 @endforelse

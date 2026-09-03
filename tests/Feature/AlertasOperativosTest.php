@@ -144,4 +144,34 @@ class AlertasOperativosTest extends TestCase
             'id' => $tipo->id,
         ]);
     }
+
+    public function test_admin_puede_reemitir_alerta_desde_el_historial(): void
+    {
+        $alertaPrevia = AlertaOperativo::create([
+            'empresa_id' => $this->empresa->id,
+            'user_id' => $this->admin->id,
+            'titulo' => 'Control Policial Prevención',
+            'punto' => 'Control Policial El Tambo',
+            'mensaje' => 'Revisión exhaustiva',
+            'tipo' => 'Operativo / Control',
+            'visible_conductor' => true,
+            'estado' => 'finalizado',
+            'expires_at' => now()->subHour(),
+        ]);
+
+        $response = $this->actingAs($this->admin)->post(route('admin.alertas.reemitir', $alertaPrevia->id), [
+            'duracion_minutos' => 120,
+        ]);
+
+        $response->assertSessionHasNoErrors();
+        $response->assertRedirect();
+
+        $this->assertDatabaseHas('alertas_operativos', [
+            'empresa_id' => $this->empresa->id,
+            'titulo' => 'Control Policial Prevención',
+            'punto' => 'Control Policial El Tambo',
+            'mensaje' => 'Revisión exhaustiva',
+            'estado' => 'activo',
+        ]);
+    }
 }

@@ -11,15 +11,24 @@ class ForzarCambioPassword
         /** @var \App\Models\User $user */
         $user = $request->user();
  
-        if (!$user || !$user->hasRole('conductor')) {
+        if (!$user) {
             return $next($request);
         }
  
-        $conductor = $user->conductor;
- 
-        // Si es primer ingreso y no está ya en la ruta de cambio
-        if ($conductor?->primer_ingreso && !$request->is('conductor/cambiar-password*')) {
-            return redirect()->route('conductor.cambiar-password');
+        // 1. Conductor
+        if ($user->hasRole('conductor')) {
+            $conductor = $user->conductor;
+            if ($conductor?->primer_ingreso && !$request->is('conductor/cambiar-password*')) {
+                return redirect()->route('conductor.cambiar-password');
+            }
+        }
+
+        // 2. Propietario
+        if ($user->hasRole('propietario')) {
+            $propietario = $user->propietario;
+            if ($propietario?->primer_ingreso && !$request->is('propietario/cambiar-password*')) {
+                return redirect()->route('propietario.cambiar-password');
+            }
         }
  
         return $next($request);

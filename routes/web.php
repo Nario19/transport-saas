@@ -40,6 +40,9 @@ Route::get('/', function () {
     if ($user->hasRole('conductor')) {
         return redirect()->route('conductor.dashboard');
     }
+    if ($user->hasRole('propietario')) {
+        return redirect()->route('propietario.dashboard');
+    }
     if ($user->hasRole('SUPER_ADMIN')) {
         return redirect()->route('superadmin.dashboard');
     }
@@ -121,6 +124,26 @@ Route::middleware(['auth', 'empresa.activa', 'role:conductor', 'forzar.password'
         Route::get('/operativos/activos', [\App\Http\Controllers\Conductor\AlertaOperativoController::class, 'getActivosApi'])->name('operativos.activos.api');
     });
 
+// ── Panel Propietario ─────────────────────────────────────────────
+Route::middleware(['auth', 'empresa.activa', 'role:propietario', 'forzar.password'])
+    ->prefix('propietario')
+    ->name('propietario.')
+    ->group(function () {
+        Route::get('/dashboard', [\App\Http\Controllers\Propietario\DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/vueltas',   [\App\Http\Controllers\Propietario\VueltaController::class, 'index'])->name('vueltas');
+        Route::get('/tributos',  [\App\Http\Controllers\Propietario\TributoController::class, 'index'])->name('tributos');
+        Route::get('/sanciones', [\App\Http\Controllers\Propietario\SancionController::class, 'index'])->name('sanciones');
+        Route::get('/datos',     [\App\Http\Controllers\Propietario\DatosController::class, 'index'])->name('datos');
+        Route::get('/perfil',    [\App\Http\Controllers\Propietario\PerfilController::class, 'index'])->name('perfil');
+
+        Route::get('/cambiar-password',  [\App\Http\Controllers\Propietario\PerfilController::class, 'cambiarPassword'])
+            ->name('cambiar-password')
+            ->withoutMiddleware('forzar.password');
+        Route::post('/cambiar-password', [\App\Http\Controllers\Propietario\PerfilController::class, 'guardarPassword'])
+            ->name('cambiar-password.store')
+            ->withoutMiddleware('forzar.password');
+    });
+
 // ── Panel Super Admin ─────────────────────────────────────────────
 Route::middleware(['auth', 'empresa.activa', 'role:SUPER_ADMIN'])
     ->prefix('superadmin')
@@ -191,6 +214,10 @@ Route::middleware(['auth', 'empresa.activa', 'admin.configurado'])
         Route::get('/propietarios/{propietario}',      [PropietarioController::class, 'show'])->name('propietarios.show');
         Route::put('/propietarios/{propietario}',      [PropietarioController::class, 'update'])->name('propietarios.update');
         Route::delete('/propietarios/{propietario}',   [PropietarioController::class, 'destroy'])->name('propietarios.destroy');
+        Route::post('/propietarios/{propietario}/acceso',         [\App\Http\Controllers\Admin\PropietarioAccesoController::class, 'store'])->name('propietarios.acceso.store');
+        Route::post('/propietarios/{propietario}/acceso/toggle',  [\App\Http\Controllers\Admin\PropietarioAccesoController::class, 'toggle'])->name('propietarios.acceso.toggle');
+        Route::delete('/propietarios/{propietario}/acceso',       [\App\Http\Controllers\Admin\PropietarioAccesoController::class, 'destroy'])->name('propietarios.acceso.destroy');
+        Route::post('/propietarios/{propietario}/reset-password', [\App\Http\Controllers\Admin\PropietarioAccesoController::class, 'resetPassword'])->name('propietarios.acceso.reset');
     });
 
     Route::middleware('permission:ver vehiculos')->group(function () {

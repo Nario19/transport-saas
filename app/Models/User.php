@@ -21,7 +21,8 @@ class User extends Authenticatable implements Auditable
  
     protected $fillable = [
         'empresa_id',
-        'conductor_id',   // ← nuevo
+        'conductor_id',
+        'propietario_id',
         'name',
         'email',
         'password',
@@ -36,8 +37,9 @@ class User extends Authenticatable implements Auditable
     ];
  
     // ── Relaciones ──
-    public function empresa()   { return $this->belongsTo(Empresa::class); }
-    public function conductor() { return $this->belongsTo(Conductor::class); }  // ← nuevo
+    public function empresa()     { return $this->belongsTo(Empresa::class); }
+    public function conductor()   { return $this->belongsTo(Conductor::class); }
+    public function propietario() { return $this->belongsTo(Propietario::class); }
  
     // ── Helpers ──
     public function getInicialesAttribute(): string

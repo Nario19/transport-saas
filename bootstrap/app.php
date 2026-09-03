@@ -44,17 +44,16 @@ return Application::configure(basePath: dirname(__DIR__))
                         ->with('error', 'Debes iniciar sesión para continuar.');
                 }
  
-                // Conductor en ruta de admin → redirigir a su panel limpiamente
-                if ($user->hasRole('conductor') && !$request->is('conductor/*')) {
+                // Conductor en otra ruta → redirigir a su panel limpiamente
+                if ($user->hasRole('conductor')) {
                     return redirect()->route('conductor.dashboard');
                 }
- 
-                // No conductor en ruta de conductor → login
-                if (!$user->hasRole('conductor') && $request->is('conductor/*')) {
-                    return redirect()->route('login')
-                        ->with('error', 'No tienes acceso a esa sección.');
+
+                // Propietario en otra ruta → redirigir a su panel limpiamente
+                if ($user->hasRole('propietario')) {
+                    return redirect()->route('propietario.dashboard');
                 }
- 
+
                 // SUPER_ADMIN → su panel
                 if ($user->hasRole('SUPER_ADMIN')) {
                     return redirect()->route('superadmin.dashboard')

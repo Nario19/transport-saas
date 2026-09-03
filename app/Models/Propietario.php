@@ -15,7 +15,7 @@ class Propietario extends Model implements Auditable
 
     protected $fillable = [
         'empresa_id', 'nombre', 'apellidos', 'dni', 'tipo_persona', 'telefono',
-        'telefono_alt', 'email', 'direccion', 'activo', 'notas',
+        'telefono_alt', 'email', 'direccion', 'activo', 'primer_ingreso', 'notas',
         'monto_inicial', 'fecha_monto_inicial',
         'cuota_1', 'fecha_cuota_1',
         'cuota_2', 'fecha_cuota_2',
@@ -23,6 +23,7 @@ class Propietario extends Model implements Auditable
     ];
     protected $casts = [
         'activo'              => 'boolean',
+        'primer_ingreso'      => 'boolean',
         'monto_inicial'       => 'float',
         'cuota_1'             => 'float',
         'cuota_2'             => 'float',
@@ -41,6 +42,7 @@ class Propietario extends Model implements Auditable
     ];
 
     public function empresa()     { return $this->belongsTo(Empresa::class); }
+    public function user()        { return $this->hasOne(User::class); }
     public function vehiculos()   { return $this->hasMany(Vehiculo::class); }
     public function conductor()   { return $this->hasOne(Conductor::class, 'dni', 'dni'); }
     public function conductores() { return $this->hasMany(Conductor::class, 'propietario_id'); }

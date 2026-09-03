@@ -273,5 +273,88 @@
             </div>
         @endif
 
+        {{-- 4. ACCESO A LA APLICACIÓN MÓVIL / WEB (DNI) --}}
+        <div class="card" style="border-top: 4px solid var(--accent);">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <div class="card-title"><i class="fa-solid fa-mobile-screen-button"></i> Acceso Móvil / Web de Propietario</div>
+                @if($propietario->user)
+                    <span class="pill {{ $propietario->user->activo ? 'green' : 'red' }}">
+                        {{ $propietario->user->activo ? 'HABILITADO' : 'SUSPENDIDO' }}
+                    </span>
+                @else
+                    <span class="pill gray">SIN ACCESO</span>
+                @endif
+            </div>
+            <div class="card-body">
+                @if($propietario->user)
+                    <div style="display: flex; flex-direction: column; gap: 14px;">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; background: var(--bg); padding: 14px; border-radius: 10px;">
+                            <div>
+                                <span style="font-size: 11px; text-transform: uppercase; color: var(--text3); font-weight: 700;">Usuario (DNI)</span>
+                                <div class="mono" style="font-size: 15px; font-weight: 800; color: var(--text);">
+                                    {{ $propietario->user->email }}
+                                </div>
+                            </div>
+                            <div>
+                                <span style="font-size: 11px; text-transform: uppercase; color: var(--text3); font-weight: 700;">Estado Contraseña</span>
+                                <div style="font-size: 13px; font-weight: 700; color: {{ $propietario->primer_ingreso ? 'var(--orange)' : 'var(--green)' }};">
+                                    {{ $propietario->primer_ingreso ? '🔑 Clave inicial (Pendiente de cambio)' : '✅ Clave personalizada' }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <form method="POST" action="{{ route('propietarios.acceso.toggle', $propietario->id) }}">
+                                @csrf
+                                <button type="submit" class="btn-secondary {{ $propietario->user->activo ? 'text-red' : 'text-green' }}">
+                                    @if($propietario->user->activo)
+                                        <i class="fa-solid fa-power-off"></i> Suspender Acceso
+                                    @else
+                                        <i class="fa-solid fa-circle-play"></i> Activar Acceso
+                                    @endif
+                                </button>
+                            </form>
+
+                            <form method="POST" action="{{ route('propietarios.acceso.reset', $propietario->id) }}" onsubmit="return confirm('¿Reiniciar la contraseña del propietario a su DNI?')">
+                                @csrf
+                                <button type="submit" class="btn-secondary">
+                                    <i class="fa-solid fa-key"></i> Reiniciar Contraseña a DNI
+                                </button>
+                            </form>
+
+                            <form method="POST" action="{{ route('propietarios.acceso.destroy', $propietario->id) }}" onsubmit="return confirm('¿Eliminar por completo las credenciales de este propietario?')">
+                                @csrf @method('DELETE')
+                                <button type="submit" class="btn-danger btn-sm" style="border-radius: 8px;">
+                                    <i class="fa-solid fa-trash"></i> Eliminar Acceso
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                @else
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <div style="background: var(--bg); padding: 14px; border-radius: 10px; border: 1px dashed var(--border);">
+                            <div style="font-size: 13px; font-weight: 700; margin-bottom: 4px;">Habilitar Cuenta para Propietario</div>
+                            <div style="font-size: 12px; color: var(--text2);">
+                                Se generará el acceso utilizando su <b>DNI ({{ $propietario->dni ?? 'Sin DNI' }})</b> como usuario y contraseña inicial. Podrá consultar sus vueltas, tributos, sanciones y monto de ingreso desde su celular.
+                            </div>
+                        </div>
+
+                        @if(!empty($propietario->dni))
+                            <form method="POST" action="{{ route('propietarios.acceso.store', $propietario->id) }}">
+                                @csrf
+                                <button type="submit" class="btn-primary" style="width: 100%; justify-content: center; display: inline-flex; align-items: center; gap: 8px;">
+                                    <i class="fa-solid fa-mobile-screen-button"></i> Habilitar Acceso con DNI
+                                </button>
+                            </form>
+                        @else
+                            <div style="color: var(--red); font-size: 12.5px; font-weight: 700;">
+                                <i class="fa-solid fa-triangle-exclamation"></i> Para habilitar el acceso primero registra el DNI del propietario.
+                            </div>
+                        @endif
+                    </div>
+                @endif
+            </div>
+        </div>
+
     </div>
 @endsection

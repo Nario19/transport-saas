@@ -1107,6 +1107,97 @@
     @endif
 
     @stack('scripts')
+
+    @php
+        $vueltaActivaGlobal = null;
+        if (Auth::check() && Auth::user()->conductor) {
+            $vueltaActivaGlobal = \App\Models\Vuelta::where('conductor_id', Auth::user()->conductor->id)
+                ->where('estado', 'activa')
+                ->latest()
+                ->first();
+        }
+    @endphp
+
+    @if($vueltaActivaGlobal)
+    <script>
+    (function() {
+        const UBICACION_URL = '{{ route("conductor.vuelta.ubicacion", [], false) }}';
+        const CSRF = '{{ csrf_token() }}';
+        let globalCapacitorWatcherId = null;
+        let globalWebWatchId = null;
+        let globalLastLat = null, globalLastLng = null, globalLastSendTime = 0;
+
+        function calcularDistanciaMetrosGlobal(lat1, lon1, lat2, lon2) {
+            const R = 6371000;
+            const dLat = (lat2 - lat1) * Math.PI / 180, dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        }
+
+        async function enviarUbicacionGlobal(lat, lng) {
+            const ahora = Date.now();
+            if (globalLastLat !== null && globalLastLng !== null) {
+                if (calcularDistanciaMetrosGlobal(globalLastLat, globalLastLng, lat, lng) < 10 && (ahora - globalLastSendTime) < 20000) {
+                    return;
+                }
+            }
+            globalLastLat = lat;
+            globalLastLng = lng;
+            globalLastSendTime = ahora;
+
+            try {
+                await fetch(UBICACION_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
+                    body: JSON.stringify({ latitud: lat, longitud: lng })
+                });
+            } catch (_) {}
+        }
+
+        async function iniciarCapacitorGpsGlobal() {
+            try {
+                if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.BackgroundGeolocation) {
+                    const BackgroundGeolocation = window.Capacitor.Plugins.BackgroundGeolocation;
+                    globalCapacitorWatcherId = await BackgroundGeolocation.addWatcher(
+                        {
+                            backgroundMessage: "Transmitiendo vuelta en vivo...",
+                            backgroundTitle: "TransJunín Conductor",
+                            requestPermissions: true,
+                            stale: false,
+                            distanceFilter: 15
+                        },
+                        function (location, error) {
+                            if (!error && location) {
+                                enviarUbicacionGlobal(location.latitude, location.longitude);
+                            }
+                        }
+                    );
+                }
+            } catch (_) {}
+        }
+
+        function iniciarWebGpsGlobal() {
+            if (!navigator.geolocation) return;
+            globalWebWatchId = navigator.geolocation.watchPosition(
+                (pos) => {
+                    enviarUbicacionGlobal(pos.coords.latitude, pos.coords.longitude);
+                },
+                null,
+                { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+            );
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Solo activar el rastreador global si no estamos en activa.blade.php (para evitar duplicados)
+            if (!document.getElementById('map-conductor')) {
+                iniciarCapacitorGpsGlobal();
+                iniciarWebGpsGlobal();
+            }
+        });
+    })();
+    </script>
+    @endif
+
     <script>
         @if(session('success'))
             Swal.fire({

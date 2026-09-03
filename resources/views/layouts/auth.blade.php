@@ -45,12 +45,12 @@
     <div class="auth-container">
         <div class="auth-card">
             <div class="auth-logo">
-                <div class="brand-icon" style="width:48px; height:48px; font-size:20px;">TJ</div>
+                <img src="{{ asset('images/logo.svg') }}" alt="Flota+" style="height: 48px; max-width: 220px; object-fit: contain;">
             </div>
 
             <div style="text-align:center; margin-bottom:24px;">
                 <h1 style="font-size:20px; font-weight:800;">@yield('auth_title')</h1>
-                <p style="color:var(--text3); font-size:13px; margin-top:4px;">TransJunín Plataforma SaaS</p>
+                <p style="color:var(--text3); font-size:13px; margin-top:4px;">Flota+ Plataforma SaaS</p>
             </div>
 
             {{-- ALERTAS DE SESIÓN --}}

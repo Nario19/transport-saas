@@ -1,6 +1,6 @@
 {
   "appId": "com.transjunin.conductor",
-  "appName": "TransJunin Conductor",
+  "appName": "Flota+ Conductor",
   "webDir": "public",
   "server": {
     "url": "https://www.transjunin.com",

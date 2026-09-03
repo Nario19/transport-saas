@@ -50,7 +50,7 @@
 
         {{-- Descarga de App Android --}}
         <div style="margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--border); text-align: center;">
-            <a href="/descargas/TransJunin.apk" download 
+            <a href="/descargas/FlotaPlus.apk" download="FlotaPlus.apk" 
                style="width: 100%; justify-content: center; padding: 12px 16px; font-size: 12.5px; font-weight: 800; letter-spacing: 0.3px; border-radius: 10px; display: inline-flex; align-items: center; gap: 9px; text-decoration: none; color: #065f46; background: #ecfdf5; border: 1.5px solid #a7f3d0; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.2s ease-in-out;"
                onmouseover="this.style.background='#d1fae5'; this.style.borderColor='#6ee7b7';"
                onmouseout="this.style.background='#ecfdf5'; this.style.borderColor='#a7f3d0';">

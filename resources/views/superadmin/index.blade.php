@@ -2,7 +2,7 @@
 
 @php
     $pageTitle = 'Dashboard Maestro';
-    $pageSubtitle = 'Resumen global de la plataforma TransJunín';
+    $pageSubtitle = 'Resumen global de la plataforma Flota+';
 @endphp
 
 @section('content')

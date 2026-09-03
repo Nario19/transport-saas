@@ -19,13 +19,13 @@
                     @else
                         <div
                             class="brand-icon brand-icon-modern {{ auth()->user()->hasRole('SUPER_ADMIN') ? 'brand-icon-sa' : 'brand-icon-tj' }}">
-                            {{ auth()->user()->hasRole('SUPER_ADMIN') ? 'SA' : 'TJ' }}
+                            {{ auth()->user()->hasRole('SUPER_ADMIN') ? 'SA' : 'F+' }}
                         </div>
                     @endif
 
                     <div style="overflow: hidden;">
                         <div class="brand-name brand-name-modern">
-                            {{ auth()->user()->hasRole('SUPER_ADMIN') ? 'Panel Maestro' : Auth::user()->empresa->nombre ?? 'TransJunín' }}
+                            {{ auth()->user()->hasRole('SUPER_ADMIN') ? 'Panel Maestro' : Auth::user()->empresa->nombre ?? 'Flota+' }}
                         </div>
                         <div class="brand-sub brand-sub-modern">
                             {{ auth()->user()->hasRole('SUPER_ADMIN') ? 'Administración Global' : 'Gestión de Flota' }}
@@ -189,7 +189,7 @@
                 </button>
                 <div style="display: flex; flex-direction: column; justify-content: center;">
                     <div class="tb-title tb-title-modern" id="topTitle" style="line-height: 1.2;">
-                        {{ $pageTitle ?? 'TransJunín' }}
+                        {{ $pageTitle ?? 'Flota+' }}
                     </div>
                     <div class="tb-crumb tb-crumb-modern" id="topCrumb" style="line-height: 1.2; margin-top: 2px;">
                         {{ $pageSubtitle ?? 'Huancayo, Perú' }}
@@ -271,7 +271,7 @@
                 Swal.fire({
                     title: '¡Paso Inicial Requerido! 🚀',
                     html: `<div style="text-align: left; font-size: 14px; line-height: 1.6; color: var(--text2);">
-                        ¡Bienvenido a <b>TransJunín</b>! Antes de registrar vehículos o conductores, el sistema necesita una configuración básica:
+                        ¡Bienvenido a <b>Flota+</b>! Antes de registrar vehículos o conductores, el sistema necesita una configuración básica:
                         <br><br>
                         <i class="fa-solid fa-check-circle" style="color: var(--green);"></i> <b>Monto del Tributo Diario:</b> Es el cargo que se generará automáticamente a cada unidad.
                         <br><br>

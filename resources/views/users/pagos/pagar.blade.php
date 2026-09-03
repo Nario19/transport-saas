@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pagar {{ $tipo === 'sancion' ? 'Sanción' : 'Tributo' }} — TransJunín</title>
+    <title>Pagar {{ $tipo === 'sancion' ? 'Sanción' : 'Tributo' }} — Flota+</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -210,8 +210,8 @@
 <body>
     <div class="container">
         <div class="logo-bar">
-            <div class="logo-icon">TJ</div>
-            <div class="logo-name">TransJunín</div>
+            <div class="logo-icon">F+</div>
+            <div class="logo-name">Flota+</div>
             <div class="logo-sub">Sistema de cobro {{ $tipo === 'sancion' ? 'de sanciones' : 'de tributos' }}</div>
         </div>
 

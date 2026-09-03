@@ -4,17 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'TransJunín — SaaS')</title>
+    <title>@yield('title', 'Flota+ — SaaS de Transporte')</title>
     @php
         $logoFavicon = Auth::check() && Auth::user()->empresa && Auth::user()->empresa->logo_path
             ? asset('storage/' . Auth::user()->empresa->logo_path)
-            : null;
+            : asset('images/logo-icon.svg');
     @endphp
-    @if ($logoFavicon)
-        <link rel="icon" href="{{ $logoFavicon }}">
-    @else
-        <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='25' fill='%230040DD'/><text x='50%' y='55%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='46' font-weight='900' fill='white'>TJ</text></svg>">
-    @endif
+    <link rel="icon" type="image/svg+xml" href="{{ $logoFavicon }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

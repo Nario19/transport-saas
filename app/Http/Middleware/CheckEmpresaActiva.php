@@ -41,7 +41,7 @@ class CheckEmpresaActiva
             $request->session()->invalidate();
             $request->session()->regenerateToken();
             return redirect()->route('login')
-                ->with('error', 'Su empresa se encuentra suspendida. Contacte con el soporte técnico de TransJunín.');
+                ->with('error', 'Su empresa se encuentra suspendida. Contacte con el soporte técnico de Flota+.');
         }
  
         return $next($request);

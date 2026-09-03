@@ -7,7 +7,7 @@
     <div class="conductor-av">👤</div>
     <div>
         <div class="conductor-hero-name">Registro de Rostro</div>
-        <div class="conductor-hero-sub">Seguridad Biométrica TransJunín</div>
+        <div class="conductor-hero-sub">Seguridad Biométrica Flota+</div>
     </div>
 </div>
 

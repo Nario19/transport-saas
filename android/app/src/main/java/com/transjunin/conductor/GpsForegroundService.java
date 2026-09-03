@@ -164,7 +164,7 @@ public class GpsForegroundService extends Service implements LocationListener {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
                 CHANNEL_ID,
-                "TransJunín GPS En Vivo",
+                "Flota+ GPS En Vivo",
                 NotificationManager.IMPORTANCE_LOW
             );
             channel.setDescription("Servicio de telemetría satelital continua en segundo plano");
@@ -185,7 +185,7 @@ public class GpsForegroundService extends Service implements LocationListener {
         );
 
         return new NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("TransJunín Conductor")
+            .setContentTitle("Flota+ Conductor")
             .setContentText(text)
             .setSmallIcon(R.mipmap.ic_launcher)
             .setContentIntent(pendingIntent)

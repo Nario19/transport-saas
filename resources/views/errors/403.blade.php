@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Acceso Restringido — TransJunín')
+@section('title', 'Acceso Restringido — Flota+')
 
 @section('body_content')
     <div
@@ -41,7 +41,7 @@
                 {{-- INFORMACIÓN ADICIONAL --}}
                 <p
                     style="color: var(--text3); font-size: 11px; margin-top: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">
-                    TransJunín SaaS — Control de Seguridad
+                    Flota+ SaaS — Control de Seguridad
                 </p>
             </div>
         </div>

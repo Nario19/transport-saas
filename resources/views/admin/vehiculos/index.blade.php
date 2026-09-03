@@ -359,8 +359,8 @@
 
         function abrirQrGpsModal(placa, flota) {
             const serverUrl = 'https://www.transjunin.com/api/gps/traccar';
-            // Traccar Client espera el formato URL directo: https://server/api/gps/traccar?id=PLACA
-            const traccarUrl = serverUrl + '?id=' + encodeURIComponent(placa);
+            // Configuración optimizada de alta precisión para flotas de transporte
+            const traccarUrl = serverUrl + '?id=' + encodeURIComponent(placa) + '&distance=20&angle=30&stationaryHeartbeat=60&accuracy=high&buffer=true';
 
             // Generar URL para código QR estándar legible por el scanner de Traccar
             const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=' + encodeURIComponent(traccarUrl);

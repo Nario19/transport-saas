@@ -30,7 +30,7 @@
 
     <div style="display: grid; grid-template-columns: 1fr 1.6fr; gap: 24px; align-items: start;">
         
-        {{-- COLUMNA 1: FORMULARIO REGISTRO & PUNTOS DE CONTROL --}}
+        {{-- COLUMNA 1: FORMULARIO REGISTRO & OPCIONES PREDEFINIDAS --}}
         <div style="display: flex; flex-direction: column; gap: 20px;">
             
             {{-- EMITIR ALERTA PERSONALIZADA --}}
@@ -55,21 +55,28 @@
                         </div>
 
                         {{-- Tipo de Alerta & Duración --}}
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                        <div style="display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 12px; margin-bottom: 16px;">
                             <div class="field">
                                 <label style="font-weight:700; font-size:12.5px; color:var(--text); margin-bottom:6px; display:block;">Tipo de Alerta</label>
                                 <select name="tipo" class="form-control" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); font-size:12.5px; font-weight:700; color:var(--text); background:var(--bg);">
-                                    <option value="operativo">🚨 Operativo / Control</option>
-                                    <option value="desvio">🚧 Desvío / Obras</option>
-                                    <option value="urgente">⚠️ Urgente / Tránsito Cerrado</option>
-                                    <option value="informativa">ℹ️ Aviso General</option>
+                                    <option value="Operativo / Control">🚨 Operativo / Control</option>
+                                    <option value="Desvío / Obras">🚧 Desvío / Obras</option>
+                                    <option value="Urgente / Tránsito Cerrado">⚠️ Urgente / Tránsito Cerrado</option>
+                                    <option value="Aviso General">ℹ️ Aviso General</option>
+                                    @if(isset($tiposAlerta) && $tiposAlerta->count() > 0)
+                                        <optgroup label="Mis Tipos Personalizados">
+                                            @foreach($tiposAlerta as $t)
+                                                <option value="{{ $t->nombre }}">🔔 {{ $t->nombre }}</option>
+                                            @endforeach
+                                        </optgroup>
+                                    @endif
                                 </select>
                             </div>
                             <div class="field">
                                 <label style="font-weight:700; font-size:12.5px; color:var(--text); margin-bottom:6px; display:block;">Duración Activa</label>
                                 <select name="duracion_minutos" class="form-control" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); font-size:12.5px; font-weight:700; color:var(--text); background:var(--bg);">
                                     <option value="30">30 minutos</option>
-                                    <option value="60" selected>1 hora (Recomendado)</option>
+                                    <option value="60" selected>1 hora</option>
                                     <option value="120">2 horas</option>
                                     <option value="240">4 horas</option>
                                     <option value="480">8 horas</option>
@@ -119,7 +126,46 @@
                 </div>
             </div>
 
-            {{-- GESTIÓN DE PUNTOS DE CONTROL --}}
+            {{-- GESTIÓN DE TIPOS DE ALERTA PREDEFINIDOS --}}
+            <div class="card">
+                <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+                    <span class="card-title" style="font-size: 13.5px; font-weight: 800;">
+                        <i class="fa-solid fa-tags" style="color:var(--accent); margin-right:5px;"></i> Tipos de Alerta Predefinidos
+                    </span>
+                </div>
+                <div class="card-body" style="padding: 16px 20px;">
+                    <form action="{{ route('admin.tipos-alerta.store') }}" method="POST" style="margin-bottom: 14px; display: flex; gap: 8px;">
+                        @csrf
+                        <div class="field" style="margin: 0; flex: 1;">
+                            <input type="text" name="nombre" placeholder="Ej: Continental / SUTRAN / Fiscalización" required class="form-control" style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); font-size:12.5px; font-weight:700; height: 38px;">
+                        </div>
+                        <button type="submit" class="btn-primary" style="height: 38px; padding: 0 14px; font-size: 12px; font-weight: 700; border-radius: 8px; flex-shrink:0;">
+                            + Agregar
+                        </button>
+                    </form>
+
+                    <div style="max-height: 160px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; padding: 4px;">
+                        @forelse($tiposAlerta as $tp)
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 7px 10px; border-bottom: 1px solid var(--border);">
+                                <span style="font-weight: 700; font-size: 12.5px; color: var(--text);">{{ $tp->nombre }}</span>
+                                <form action="{{ route('admin.tipos-alerta.destroy', $tp->id) }}" method="POST" style="display:inline;">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" style="background: none; border: none; color: var(--red); cursor: pointer; font-size: 12px; padding: 4px;" onclick="return confirm('¿Seguro que deseas eliminar este tipo de alerta?')" title="Eliminar tipo">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        @empty
+                            <div style="text-align: center; color: var(--text3); font-size: 12px; padding: 12px;">
+                                No has agregado tipos personalizados aún.
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+
+            {{-- GESTIÓN DE PUNTOS DE CONTROL PREDEFINIDOS --}}
             <div class="card">
                 <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
                     <span class="card-title" style="font-size: 13.5px; font-weight: 800;">
@@ -137,7 +183,7 @@
                         </button>
                     </form>
 
-                    <div style="max-height: 180px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; padding: 4px;">
+                    <div style="max-height: 160px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; padding: 4px;">
                         @forelse($puntos as $pt)
                             <div style="display: flex; justify-content: space-between; align-items: center; padding: 7px 10px; border-bottom: 1px solid var(--border);">
                                 <span style="font-weight: 700; font-size: 12.5px; color: var(--text);">{{ $pt->nombre }}</span>
@@ -150,8 +196,8 @@
                                 </form>
                             </div>
                         @empty
-                            <div style="text-align: center; color: var(--text3); font-size: 12px; padding: 15px;">
-                                No hay opciones registradas.
+                            <div style="text-align: center; color: var(--text3); font-size: 12px; padding: 12px;">
+                                No hay puntos registrados aún.
                             </div>
                         @endforelse
                     </div>
@@ -187,16 +233,10 @@
                                 @forelse($activas as $alerta)
                                     <tr>
                                         <td>
-                                            <div style="font-weight: 800; color: var(--text); font-size: 13.5px; display: flex; align-items: center; gap: 6px;">
-                                                @if($alerta->tipo === 'desvio')
-                                                    <span class="pill" style="background:#fef3c7; color:#b45309; font-size:10px; font-weight:800; padding:2px 6px;">DESVÍO</span>
-                                                @elseif($alerta->tipo === 'informativa')
-                                                    <span class="pill" style="background:#dbeafe; color:#1d4ed8; font-size:10px; font-weight:800; padding:2px 6px;">AVISO</span>
-                                                @elseif($alerta->tipo === 'urgente')
-                                                    <span class="pill" style="background:#ffedd5; color:#ea580c; font-size:10px; font-weight:800; padding:2px 6px;">URGENTE</span>
-                                                @else
-                                                    <span class="pill red" style="font-size:10px; font-weight:800; padding:2px 6px;">OPERATIVO</span>
-                                                @endif
+                                            <div style="font-weight: 800; color: var(--text); font-size: 13.5px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                                                <span class="pill" style="background: #fee2e2; color: #991b1b; font-size: 10px; font-weight: 800; padding: 2px 6px;">
+                                                    {{ strtoupper($alerta->tipo ?: 'ALERTA') }}
+                                                </span>
                                                 {{ $alerta->titulo ?: 'Control / Operativo' }}
                                             </div>
                                             @if($alerta->mensaje)

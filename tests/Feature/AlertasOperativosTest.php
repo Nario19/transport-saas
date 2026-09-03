@@ -122,4 +122,26 @@ class AlertasOperativosTest extends TestCase
 
         $this->assertEquals('finalizado', $alerta->estado);
     }
+
+    public function test_admin_puede_agregar_y_eliminar_tipo_de_alerta(): void
+    {
+        $response = $this->actingAs($this->admin)->post(route('admin.tipos-alerta.store'), [
+            'nombre' => 'CONTINENTAL',
+        ]);
+
+        $response->assertSessionHasNoErrors();
+        $this->assertDatabaseHas('tipos_alerta', [
+            'empresa_id' => $this->empresa->id,
+            'nombre' => 'CONTINENTAL',
+        ]);
+
+        $tipo = \App\Models\TipoAlerta::where('nombre', 'CONTINENTAL')->first();
+
+        $delResponse = $this->actingAs($this->admin)->delete(route('admin.tipos-alerta.destroy', $tipo->id));
+        $delResponse->assertSessionHasNoErrors();
+
+        $this->assertDatabaseMissing('tipos_alerta', [
+            'id' => $tipo->id,
+        ]);
+    }
 }

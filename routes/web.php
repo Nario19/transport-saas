@@ -250,6 +250,9 @@ Route::middleware(['auth', 'empresa.activa', 'admin.configurado'])
         
         Route::post('/puntos-control', [\App\Http\Controllers\Conductor\AlertaOperativoController::class, 'adminAddPunto'])->name('admin.puntos.store');
         Route::delete('/puntos-control/{punto}', [\App\Http\Controllers\Conductor\AlertaOperativoController::class, 'adminDeletePunto'])->name('admin.puntos.destroy');
+
+        Route::post('/tipos-alerta', [\App\Http\Controllers\Conductor\AlertaOperativoController::class, 'adminAddTipo'])->name('admin.tipos-alerta.store');
+        Route::delete('/tipos-alerta/{tipo}', [\App\Http\Controllers\Conductor\AlertaOperativoController::class, 'adminDeleteTipo'])->name('admin.tipos-alerta.destroy');
     });
 
     Route::middleware('permission:ver tributos')->group(function () {

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Conductor;
 use App\Http\Controllers\Controller;
 use App\Models\AlertaOperativo;
 use App\Models\PuntoControl;
+use App\Models\TipoAlerta;
 use App\Events\AlertaOperativoCreada;
 use App\Events\AlertaOperativoFinalizada;
 use Illuminate\Http\Request;
@@ -114,6 +115,9 @@ class AlertaOperativoController extends Controller
         // Puntos de control registrados para la empresa
         $puntos = PuntoControl::where('empresa_id', $empresaId)->orderBy('nombre')->get();
 
+        // Tipos de alerta registrados para la empresa
+        $tiposAlerta = TipoAlerta::where('empresa_id', $empresaId)->orderBy('nombre')->get();
+
         // Alertas Activas (estado activo y sin expirar)
         $activas = AlertaOperativo::where('empresa_id', $empresaId)
             ->where('estado', 'activo')
@@ -133,7 +137,7 @@ class AlertaOperativoController extends Controller
             ->take(20)
             ->get();
 
-        return view('admin.alertas.index', compact('activas', 'historial', 'puntos'));
+        return view('admin.alertas.index', compact('activas', 'historial', 'puntos', 'tiposAlerta'));
     }
 
     /**
@@ -147,7 +151,7 @@ class AlertaOperativoController extends Controller
             'titulo' => 'required|string|max:150',
             'punto' => 'nullable|string|max:150',
             'mensaje' => 'nullable|string|max:1000',
-            'tipo' => 'nullable|string|in:operativo,informativa,urgente,desvio',
+            'tipo' => 'nullable|string|max:100',
             'duracion_minutos' => 'nullable|integer|min:5|max:10080',
             'visible_conductor' => 'nullable',
         ]);
@@ -165,7 +169,7 @@ class AlertaOperativoController extends Controller
             'titulo'            => $request->input('titulo'),
             'punto'             => $punto,
             'mensaje'           => $request->input('mensaje'),
-            'tipo'              => $request->input('tipo', 'operativo'),
+            'tipo'              => $request->input('tipo', 'Operativo / Control'),
             'visible_conductor' => $visible,
             'estado'            => 'activo',
             'expires_at'        => now()->addMinutes($duracion),
@@ -211,6 +215,46 @@ class AlertaOperativoController extends Controller
         }
 
         return back()->with('success', 'La alerta se marcó como finalizada.');
+    }
+
+    /**
+     * Agregar un nuevo tipo de alerta predefinido (Administrador).
+     */
+    public function adminAddTipo(Request $request)
+    {
+        $request->validate([
+            'nombre' => 'required|string|max:100',
+        ]);
+
+        $empresaId = auth()->user()->empresa_id;
+
+        // Evitar duplicados de nombre para la misma empresa
+        $existe = TipoAlerta::where('empresa_id', $empresaId)
+            ->where('nombre', $request->nombre)
+            ->exists();
+
+        if ($existe) {
+            return back()->with('error', 'Este tipo de alerta ya existe.');
+        }
+
+        TipoAlerta::create([
+            'empresa_id' => $empresaId,
+            'nombre'     => $request->nombre,
+        ]);
+
+        return back()->with('success', 'Tipo de alerta agregado correctamente.');
+    }
+
+    /**
+     * Eliminar un tipo de alerta (Administrador).
+     */
+    public function adminDeleteTipo($id)
+    {
+        $empresaId = auth()->user()->empresa_id;
+        $tipo = TipoAlerta::where('empresa_id', $empresaId)->findOrFail($id);
+        $tipo->delete();
+
+        return back()->with('success', 'Tipo de alerta eliminado correctamente.');
     }
 
     /**

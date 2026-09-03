@@ -358,33 +358,32 @@
         }
 
         function abrirQrGpsModal(placa, flota) {
-            const serverUrl = window.location.origin + '/api/gps/traccar';
-            const traccarConfig = JSON.stringify({
-                url: serverUrl,
-                id: placa,
-                distance: 15,
-                angle: 30,
-                stationaryHeartbeat: 60
-            });
+            const serverUrl = 'https://www.transjunin.com/api/gps/traccar';
+            // Traccar Client espera el formato URL directo: https://server/api/gps/traccar?id=PLACA
+            const traccarUrl = serverUrl + '?id=' + encodeURIComponent(placa);
 
-            // Generar URL para código QR vía QuickChart / API QR estándar
-            const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=' + encodeURIComponent(traccarConfig);
+            // Generar URL para código QR estándar legible por el scanner de Traccar
+            const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=' + encodeURIComponent(traccarUrl);
 
             Swal.fire({
                 title: `<div style="font-size:18px; font-weight:800; color:var(--text);">QR de Configuración GPS</div>`,
                 html: `
-                    <div style="text-align:center; padding:10px 0;">
+                    <div style="text-align:center; padding:5px 0;">
                         <div style="font-size:13px; color:var(--text2); margin-bottom:12px;">
                             Unidad: <b>${placa}</b> (Flota #${flota || 'S/N'})
                         </div>
                         <div style="display:inline-block; padding:12px; background:white; border-radius:16px; box-shadow:0 4px 15px rgba(0,0,0,0.08); border:1px solid #e2e8f0; margin-bottom:14px;">
                             <img src="${qrUrl}" alt="QR Configuración GPS" style="width:200px; height:200px; display:block; border-radius:8px;">
                         </div>
-                        <div style="font-size:12px; line-height:1.5; color:var(--text3); text-align:left; background:var(--bg); padding:12px; border-radius:10px; border:1px solid var(--border);">
-                            <b>Pasos para el chofer:</b><br>
-                            1. Abre la app <b>Traccar Client</b> en el celular.<br>
-                            2. Toca el <b>icono de QR</b> (arriba a la derecha).<br>
-                            3. Escanea este código y la app quedará <b>autoconfigurada</b> al instante.
+                        <div style="font-size:12px; line-height:1.5; color:var(--text3); text-align:left; background:var(--bg); padding:12px; border-radius:10px; border:1px solid var(--border); margin-bottom:10px;">
+                            <b>Pasos en Traccar Client:</b><br>
+                            1. Toca el <b>icono de QR</b> (arriba a la derecha en la app).<br>
+                            2. Escanea este código para rellenar los datos automáticamente.
+                        </div>
+                        <div style="font-size:11px; color:var(--text3); background:#f8fafc; padding:8px; border-radius:8px; border:1px dashed #cbd5e1; text-align:left; word-break:break-all;">
+                            <b>Configuración manual:</b><br>
+                            • URL Servidor: <code style="color:#2563eb;">${serverUrl}</code><br>
+                            • Identificador: <code style="color:#2563eb;">${placa}</code>
                         </div>
                     </div>
                 `,

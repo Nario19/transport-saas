@@ -211,37 +211,10 @@
                                 </td>
                                 <td>
                                     @php
-                                        $bgColor = 'var(--accent-l)';
-                                        $textColor = 'var(--accent)';
-                                        $label = 'COMPLETADA';
-
-                                        if ($vuelta->estado === 'activa') {
-                                            $bgColor = 'var(--green-l)';
-                                            $textColor = 'var(--green)';
-                                            $label = 'ACTIVA';
-                                        } elseif ($vuelta->estado === 'completada') {
-                                            $salidaTipo = $vuelta->paraderoSalida?->tipo;
-                                            $llegadaTipo = $vuelta->paraderoLlegada?->tipo;
-
-                                            if ($salidaTipo && $llegadaTipo) {
-                                                if ($salidaTipo === 'intermedio' || $llegadaTipo === 'intermedio') {
-                                                    $bgColor = 'var(--red-l)';
-                                                    $textColor = 'var(--red)';
-                                                    $label = 'CORTADA';
-                                                } else {
-                                                    $bgColor = 'var(--accent-l)';
-                                                    $textColor = 'var(--accent)';
-                                                    $label = 'COMPLETADA';
-                                                }
-                                            } else {
-                                                $bgColor = 'var(--accent-l)';
-                                                $textColor = 'var(--accent)';
-                                                $label = 'COMPLETADA';
-                                            }
-                                        }
+                                        $badge = $vuelta->badge_estado;
                                     @endphp
-                                    <span style="font-size: 13.5px; font-weight: 800; padding: 8px 14px; border-radius: 99px; background: {{ $bgColor }}; color: {{ $textColor }}; display: inline-block; text-align: center;">
-                                        {{ $label }}
+                                    <span style="font-size: 13px; font-weight: 800; padding: 6px 14px; border-radius: 99px; background: {{ $badge['bg'] }}; color: {{ $badge['color'] }}; border: 1.5px solid {{ $badge['border'] }}; display: inline-block; text-align: center; letter-spacing: 0.3px;">
+                                        {{ $badge['label'] }}
                                     </span>
                                 </td>
                                 <td>

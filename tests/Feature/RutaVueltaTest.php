@@ -144,4 +144,61 @@ class RutaVueltaTest extends TestCase
         $this->assertEquals('completada', $vuelta->estado);
         $this->assertNotNull($vuelta->hora_llegada);
     }
+
+    public function test_colores_de_estado_segun_paraderos_recorridos(): void
+    {
+        $pA = \App\Models\RutaParadero::create(['ruta_id' => $this->ruta->id, 'nombre' => 'Paradero A', 'tipo' => 'origen', 'orden' => 1]);
+        $pB = \App\Models\RutaParadero::create(['ruta_id' => $this->ruta->id, 'nombre' => 'Paradero B', 'tipo' => 'intermedio', 'orden' => 2]);
+        $pC = \App\Models\RutaParadero::create(['ruta_id' => $this->ruta->id, 'nombre' => 'Paradero C', 'tipo' => 'intermedio', 'orden' => 3]);
+        $pD = \App\Models\RutaParadero::create(['ruta_id' => $this->ruta->id, 'nombre' => 'Paradero D', 'tipo' => 'destino', 'orden' => 4]);
+        $pE = \App\Models\RutaParadero::create(['ruta_id' => $this->ruta->id, 'nombre' => 'Paradero E', 'tipo' => 'destino', 'orden' => 5]);
+
+        // 1. Caso VERDE: Origen a Destino (A -> D)
+        $vVerde = Vuelta::create([
+            'empresa_id' => $this->empresa->id,
+            'vehiculo_id' => $this->vehiculo->id,
+            'conductor_id' => $this->conductor->id,
+            'ruta_id' => $this->ruta->id,
+            'paradero_salida_id' => $pA->id,
+            'paradero_llegada_id' => $pD->id,
+            'fecha' => today(),
+            'numero_vuelta' => 10,
+            'hora_salida' => '07:00:00',
+            'hora_llegada' => '08:00:00',
+            'estado' => 'completada',
+        ]);
+        $this->assertEquals('verde', $vVerde->badge_estado['categoria']);
+
+        // 2. Caso ROJO: 1 solo salto consecutivo (A -> B, B -> C, C -> D)
+        $vRojo = Vuelta::create([
+            'empresa_id' => $this->empresa->id,
+            'vehiculo_id' => $this->vehiculo->id,
+            'conductor_id' => $this->conductor->id,
+            'ruta_id' => $this->ruta->id,
+            'paradero_salida_id' => $pA->id,
+            'paradero_llegada_id' => $pB->id,
+            'fecha' => today(),
+            'numero_vuelta' => 11,
+            'hora_salida' => '08:10:00',
+            'hora_llegada' => '08:30:00',
+            'estado' => 'completada',
+        ]);
+        $this->assertEquals('rojo', $vRojo->badge_estado['categoria']);
+
+        // 3. Caso NARANJA: 2 o más saltos intermedios (A -> C, B -> D, B -> E)
+        $vNaranja = Vuelta::create([
+            'empresa_id' => $this->empresa->id,
+            'vehiculo_id' => $this->vehiculo->id,
+            'conductor_id' => $this->conductor->id,
+            'ruta_id' => $this->ruta->id,
+            'paradero_salida_id' => $pA->id,
+            'paradero_llegada_id' => $pC->id,
+            'fecha' => today(),
+            'numero_vuelta' => 12,
+            'hora_salida' => '08:40:00',
+            'hora_llegada' => '09:10:00',
+            'estado' => 'completada',
+        ]);
+        $this->assertEquals('naranja', $vNaranja->badge_estado['categoria']);
+    }
 }

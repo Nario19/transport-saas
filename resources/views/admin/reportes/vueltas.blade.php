@@ -149,13 +149,12 @@
                                 @endif
                             </td>
                             <td style="text-align: center;">
-                                @if($reg->estado === 'completada')
-                                    <span class="pill blue" style="font-size: 10px; font-weight: 800;">COMPLETADA</span>
-                                @elseif($reg->estado === 'activa')
-                                    <span class="pill green" style="font-size: 10px; font-weight: 800;">EN RUTA</span>
-                                @else
-                                    <span class="pill red" style="font-size: 10px; font-weight: 800;">{{ strtoupper($reg->estado) }}</span>
-                                @endif
+                                @php
+                                    $b = $reg->badge_estado;
+                                @endphp
+                                <span style="font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 99px; background: {{ $b['bg'] }}; color: {{ $b['color'] }}; border: 1px solid {{ $b['border'] }}; display: inline-block;">
+                                    {{ $b['label'] }}
+                                </span>
                             </td>
                         </tr>
                     @empty

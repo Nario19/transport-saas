@@ -116,6 +116,7 @@ class VueltasEnVivoController extends Controller
                 'minutos_en_ruta' => $minutos,
                 'estimado_min'  => $v->ruta?->duracion_min ?? 0,
                 'estado'        => 'activa',
+                'badge_estado'  => $v->badge_estado,
                 'tiempo_label'  => $minutos < 60 ? "{$minutos} min" : floor($minutos / 60) . 'h ' . ($minutos % 60) . 'min',
             ];
         });

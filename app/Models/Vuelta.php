@@ -43,4 +43,104 @@ class Vuelta extends Model implements Auditable
     public function scopeDelDia($q, $fecha) { return $q->whereDate('fecha', $fecha); }
     public function scopeActivas($q)   { return $q->where('estado', 'activa'); }
     public function scopeCompletadas($q) { return $q->where('estado', 'completada'); }
+
+    /**
+     * Determina el color y estilo del estado de la vuelta según los paraderos recorridos.
+     * 
+     * Reglas de Negocio:
+     * - ACTIVA: Estado activa en ruta.
+     * - VERDE: De Punto de Origen a Destino (o viceversa) -> Extremo a Extremo completo.
+     * - ROJO: Tramos cortos / 1 solo salto consecutivo (ej: A->B, B->C, C->D).
+     * - NARANJA: Tramos medios de 2 o más saltos pero sin completar la ruta entera (ej: A->C, B->D, B->E).
+     */
+    public function getBadgeEstadoAttribute(): array
+    {
+        if ($this->estado === 'activa') {
+            return [
+                'label'     => 'ACTIVA',
+                'bg'        => 'var(--green-l)',
+                'color'     => 'var(--green)',
+                'border'    => '#86efac',
+                'categoria' => 'activa',
+            ];
+        }
+
+        $salida = $this->paraderoSalida;
+        $llegada = $this->paraderoLlegada;
+
+        if (!$salida || !$llegada) {
+            return [
+                'label'     => 'COMPLETADA',
+                'bg'        => '#dcfce7',
+                'color'     => '#15803d',
+                'border'    => '#86efac',
+                'categoria' => 'verde',
+            ];
+        }
+
+        // Obtener la secuencia de paraderos de la ruta
+        $rutaId = $this->ruta_id;
+        $paraderos = RutaParadero::where('ruta_id', $rutaId)->orderBy('orden')->orderBy('id')->get();
+
+        if ($paraderos->isEmpty()) {
+            return [
+                'label'     => 'COMPLETADA',
+                'bg'        => '#dcfce7',
+                'color'     => '#15803d',
+                'border'    => '#86efac',
+                'categoria' => 'verde',
+            ];
+        }
+
+        // Mapear posiciones secuenciales
+        $posMap = [];
+        foreach ($paraderos->values() as $idx => $p) {
+            $posMap[$p->id] = ($p->orden !== null && $p->orden > 0) ? (int) $p->orden : ($idx + 1);
+        }
+
+        $posSalida = $posMap[$salida->id] ?? 1;
+        $posLlegada = $posMap[$llegada->id] ?? 1;
+        $salto = abs($posSalida - $posLlegada);
+
+        // 1. Caso VERDE: Extremo terminal a extremo terminal (Origen <-> Destino)
+        $esExtremoAExtremo = (
+            ($salida->tipo === 'origen' && $llegada->tipo === 'destino') ||
+            ($salida->tipo === 'destino' && $llegada->tipo === 'origen')
+        );
+
+        // Si los tipos no están estrictamente marcados como origen/destino pero no son intermedios
+        if (!$esExtremoAExtremo && $salida->tipo !== 'intermedio' && $llegada->tipo !== 'intermedio' && $salida->tipo !== $llegada->tipo) {
+            $esExtremoAExtremo = true;
+        }
+
+        if ($esExtremoAExtremo) {
+            return [
+                'label'     => 'COMPLETADA',
+                'bg'        => '#dcfce7',
+                'color'     => '#15803d',
+                'border'    => '#86efac',
+                'categoria' => 'verde',
+            ];
+        }
+
+        // 2. Caso ROJO: 1 solo salto consecutivo (ej: A->B, B->C, C->D)
+        if ($salto <= 1) {
+            return [
+                'label'     => 'COMPLETADA',
+                'bg'        => '#fee2e2',
+                'color'     => '#b91c1c',
+                'border'    => '#fca5a5',
+                'categoria' => 'rojo',
+            ];
+        }
+
+        // 3. Caso NARANJA: 2 o más saltos intermedios (ej: A->C, B->D, B->E)
+        return [
+            'label'     => 'COMPLETADA',
+            'bg'        => '#ffedd5',
+            'color'     => '#c2410c',
+            'border'    => '#fed7aa',
+            'categoria' => 'naranja',
+        ];
+    }
 }

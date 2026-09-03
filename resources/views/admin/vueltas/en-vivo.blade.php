@@ -1193,23 +1193,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 `;
             }
 
-            let badgeBg = 'var(--accent-l)';
-            let badgeColor = 'var(--accent)';
-            let badgeLabel = 'COMPLETADA';
-
-            if (isActive) {
-                badgeBg = 'var(--green-l)';
-                badgeColor = 'var(--green)';
-                badgeLabel = 'ACTIVA';
-            } else {
-                if (v.paradero_salida_tipo && v.paradero_llegada_tipo) {
-                    if (v.paradero_salida_tipo === 'intermedio' || v.paradero_llegada_tipo === 'intermedio') {
-                        badgeBg = 'var(--red-l)';
-                        badgeColor = 'var(--red)';
-                        badgeLabel = 'CORTADA';
-                    }
-                }
-            }
+            let badgeBg = v.badge_estado ? v.badge_estado.bg : (isActive ? 'var(--green-l)' : '#dcfce7');
+            let badgeColor = v.badge_estado ? v.badge_estado.color : (isActive ? 'var(--green)' : '#15803d');
+            let badgeBorder = v.badge_estado ? v.badge_estado.border : (isActive ? '#86efac' : '#86efac');
+            let badgeLabel = v.badge_estado ? v.badge_estado.label : (isActive ? 'ACTIVA' : 'COMPLETADA');
 
             html += `
                 <tr id="vuelta-${v.id}" class="vuelta-row ${v.estado}">
@@ -1243,7 +1230,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         ${htmlDuracion}
                     </td>
                     <td>
-                        <span style="font-size: 13.5px; font-weight: 800; padding: 8px 14px; border-radius: 99px; background: ${badgeBg}; color: ${badgeColor}; display: inline-block; text-align: center;">
+                        <span style="font-size: 13px; font-weight: 800; padding: 6px 14px; border-radius: 99px; background: ${badgeBg}; color: ${badgeColor}; border: 1.5px solid ${badgeBorder}; display: inline-block; text-align: center;">
                             ${badgeLabel}
                         </span>
                     </td>

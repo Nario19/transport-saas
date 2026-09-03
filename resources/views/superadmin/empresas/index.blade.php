@@ -50,8 +50,8 @@
                                         @if($empresa->logo_path)
                                             <img src="{{ asset('storage/' . $empresa->logo_path) }}" alt="Logo" style="width: 38px; height: 38px; object-fit: contain; border-radius: 8px; border: 1px solid var(--border); background: white; padding: 2px; flex-shrink: 0;">
                                         @else
-                                            <div class="brand-icon brand-icon-tj" style="width: 38px; height: 38px; font-size: 15px; border-radius: 8px; flex-shrink: 0;">
-                                                TJ
+                                            <div class="brand-icon brand-icon-tj" style="width: 38px; height: 38px; font-size: 14px; border-radius: 8px; flex-shrink: 0; font-weight: 800;">
+                                                {{ strtoupper(substr($empresa->nombre, 0, 2)) }}
                                             </div>
                                         @endif
                                         <div>

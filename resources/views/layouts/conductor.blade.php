@@ -8,9 +8,9 @@
     @php
         $logoFavicon = Auth::check() && Auth::user()->empresa && Auth::user()->empresa->logo_path
             ? asset('storage/' . Auth::user()->empresa->logo_path)
-            : asset('images/logo-icon.svg');
+            : asset('images/logo.png');
     @endphp
-    <link rel="icon" type="image/svg+xml" href="{{ $logoFavicon }}">
+    <link rel="icon" type="image/png" href="{{ $logoFavicon }}">
     <link
         href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap"
         rel="stylesheet">
@@ -833,7 +833,7 @@
             @if($logo)
                 <img src="{{ $logo }}" alt="Logo" style="width: 32px; height: 32px; object-fit: contain; border-radius: 8px; flex-shrink: 0; background: white; padding: 2px;">
             @else
-                <div class="c-brand-icon">TJ</div>
+                <img src="{{ asset('images/logo.png') }}" alt="Flota+" style="width: 32px; height: 32px; object-fit: contain; border-radius: 8px; flex-shrink: 0; background: white; padding: 2px;">
             @endif
             <div>
                 <div class="c-topbar-title">@yield('title', 'Mi Panel')</div>

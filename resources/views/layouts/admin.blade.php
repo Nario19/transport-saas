@@ -17,10 +17,8 @@
                         <img src="{{ $logo }}" alt="Logo"
                             style="width: 36px; height: 36px; object-fit: contain; border-radius: 9px; flex-shrink: 0; background: white; padding: 2px;">
                     @else
-                        <div
-                            class="brand-icon brand-icon-modern {{ auth()->user()->hasRole('SUPER_ADMIN') ? 'brand-icon-sa' : 'brand-icon-tj' }}">
-                            {{ auth()->user()->hasRole('SUPER_ADMIN') ? 'SA' : 'F+' }}
-                        </div>
+                        <img src="{{ asset('images/logo.png') }}" alt="Flota+"
+                            style="width: 36px; height: 36px; object-fit: contain; border-radius: 9px; flex-shrink: 0; background: white; padding: 2px;">
                     @endif
 
                     <div style="overflow: hidden;">

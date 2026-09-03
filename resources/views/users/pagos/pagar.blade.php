@@ -209,9 +209,8 @@
 
 <body>
     <div class="container">
-        <div class="logo-bar">
-            <div class="logo-icon">F+</div>
-            <div class="logo-name">Flota+</div>
+        <div class="logo-bar" style="text-align: center; margin-bottom: 24px;">
+            <img src="{{ asset('images/logoconletra.png') }}" alt="Flota+" style="height: 54px; max-width: 220px; object-fit: contain; margin-bottom: 6px;">
             <div class="logo-sub">Sistema de cobro {{ $tipo === 'sancion' ? 'de sanciones' : 'de tributos' }}</div>
         </div>
 

@@ -45,7 +45,7 @@
     <div class="auth-container">
         <div class="auth-card">
             <div class="auth-logo">
-                <img src="{{ asset('images/logo.svg') }}" alt="Flota+" style="height: 48px; max-width: 220px; object-fit: contain;">
+                <img src="{{ asset('images/logoconletra.png') }}" alt="Flota+" style="height: 65px; max-width: 250px; object-fit: contain;">
             </div>
 
             <div style="text-align:center; margin-bottom:24px;">

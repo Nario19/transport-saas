@@ -31,8 +31,8 @@
                                 <img src="{{ asset('storage/' . $empresa->logo_path) }}" alt="Logo Empresa"
                                     style="width: 100%; height: 100%; object-fit: contain; padding: 6px; background: white;">
                             @else
-                                <div class="brand-icon brand-icon-tj" style="width: 80px; height: 80px; font-size: 34px; border-radius: 20px; font-weight: 900; box-shadow: 0 4px 14px rgba(10, 132, 255, 0.35);">
-                                    TJ
+                                <div class="brand-icon brand-icon-tj" style="width: 80px; height: 80px; font-size: 32px; border-radius: 20px; font-weight: 900; box-shadow: 0 4px 14px rgba(10, 132, 255, 0.35);">
+                                    {{ strtoupper(substr($empresa->nombre, 0, 2)) }}
                                 </div>
                             @endif
                         </div>

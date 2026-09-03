@@ -35,104 +35,114 @@
                 </div>
             @endif
 
-            {{-- 1. Especificaciones de la Flota --}}
+            {{-- 1. Especificaciones de la Flota (En filas ordenadas) --}}
             <div class="card" style="margin-bottom: 14px; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
-                <div class="card-header" style="background:#f8fafc; border-bottom:1px solid #f1f5f9; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between;">
-                    <span class="card-title" style="font-size:13.5px; color:#1e293b; font-weight: 800; display: flex; align-items: center; gap: 6px;">
+                <div class="card-header" style="background:#f8fafc; border-bottom:1px solid #f1f5f9; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between;">
+                    <span class="card-title" style="font-size:14px; color:#1e293b; font-weight: 700; display: flex; align-items: center; gap: 6px;">
                         <i class="fa-solid fa-car" style="color: var(--accent);"></i> Especificaciones de la Flota
                     </span>
                     <span class="pill {{ $vehiculo->estado === 'activo' ? 'green' : 'red' }}" style="font-size: 10px;">
                         {{ strtoupper($vehiculo->estado) }}
                     </span>
                 </div>
-                <div class="card-body" style="padding: 14px;">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px;">
-                        <div><span style="color: var(--text3);">Padrón / Nro. Flota:</span> <b style="color: #2563eb;">#{{ $vehiculo->numero_flota ?? '—' }}</b></div>
-                        <div><span style="color: var(--text3);">Marca / Modelo:</span> <b>{{ $vehiculo->marca }} {{ $vehiculo->modelo }} ({{ $vehiculo->anio }})</b></div>
-                        <div><span style="color: var(--text3);">Color:</span> <b>{{ $vehiculo->color ?? '—' }}</b></div>
-                        <div><span style="color: var(--text3);">Número de Motor:</span> <b style="font-family: monospace;">{{ $vehiculo->numero_motor ?? '—' }}</b></div>
-                        <div style="grid-column: span 2;"><span style="color: var(--text3);">Número de Chasis:</span> <b style="font-family: monospace;">{{ $vehiculo->numero_chasis ?? '—' }}</b></div>
-                        <div style="grid-column: span 2; margin-top: 4px; padding-top: 6px; border-top: 1px dashed var(--border);">
-                            <span style="color: var(--text3);">Ruta Asignada:</span>
-                            <b style="color: #16a34a;">{{ $vehiculo->rutas->where('pivot.activo', true)->first()?->nombre ?? 'Sin ruta' }}</b>
-                        </div>
+                <div class="card-body" style="padding:0;">
+                    <div style="padding:14px 16px; border-bottom:1px solid #f8fafc; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-weight:500; color: var(--text2); font-size: 13px;">Padrón / Nro. Flota</span>
+                        <span style="font-weight:800; color:#2563eb; font-size: 13.5px;">#{{ $vehiculo->numero_flota ?? '—' }}</span>
+                    </div>
+                    <div style="padding:14px 16px; border-bottom:1px solid #f8fafc; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-weight:500; color: var(--text2); font-size: 13px;">Marca / Modelo</span>
+                        <span style="font-weight:600; color:#1e293b; font-size: 13px;">{{ $vehiculo->marca }} {{ $vehiculo->modelo }} ({{ $vehiculo->anio }})</span>
+                    </div>
+                    <div style="padding:14px 16px; border-bottom:1px solid #f8fafc; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-weight:500; color: var(--text2); font-size: 13px;">Color</span>
+                        <span style="font-weight:600; color:#1e293b; font-size: 13px;">{{ $vehiculo->color ?? '—' }}</span>
+                    </div>
+                    <div style="padding:14px 16px; border-bottom:1px solid #f8fafc; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-weight:500; color: var(--text2); font-size: 13px;">Número de Motor</span>
+                        <span style="font-family: monospace; font-size: 12px; font-weight:600; color:#1e293b;">{{ $vehiculo->numero_motor ?? '—' }}</span>
+                    </div>
+                    <div style="padding:14px 16px; border-bottom:1px solid #f8fafc; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-weight:500; color: var(--text2); font-size: 13px;">Número de Chasis</span>
+                        <span style="font-family: monospace; font-size: 12px; font-weight:600; color:#1e293b;">{{ $vehiculo->numero_chasis ?? '—' }}</span>
+                    </div>
+                    <div style="padding:14px 16px; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-weight:500; color: var(--text2); font-size: 13px;">Ruta Asignada</span>
+                        <span style="font-weight:800; color: #16a34a; font-size: 13px;">
+                            {{ $vehiculo->rutas->where('pivot.activo', true)->first()?->nombre ?? 'Sin ruta' }}
+                        </span>
                     </div>
                 </div>
             </div>
 
-            {{-- 2. Documentos del Vehículo (SOAT y Rev. Técnica Editables) --}}
-            <div class="card" style="margin-bottom: 14px; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1.5px solid var(--accent-l);">
-                <div class="card-header" style="background: var(--accent-l); border-bottom:1px solid #bfdbfe; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between;">
-                    <span class="card-title" style="font-size:13.5px; color: var(--accent); font-weight: 800; display: flex; align-items: center; gap: 6px;">
-                        <i class="fa-solid fa-file-shield"></i> Documentación del Vehículo (Editable)
-                    </span>
-                    <span style="font-size: 10.5px; color: var(--accent); font-weight: 700;">
-                        Actualizable
+            {{-- 2. Documentación del Vehículo --}}
+            <div class="card" style="margin-bottom: 14px; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                <div class="card-header" style="background:#f8fafc; border-bottom:1px solid #f1f5f9; padding: 14px 16px; display: flex; align-items: center;">
+                    <span class="card-title" style="font-size:14px; color:#1e293b; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                        <i class="fa-solid fa-file-invoice" style="color: var(--accent);"></i> Documentación del Vehículo
                     </span>
                 </div>
-                <div class="card-body" style="padding: 14px;">
+                <div class="card-body" style="padding:0;">
                     <form action="{{ route('propietario.vehiculos.update-documentos', $vehiculo->id) }}" method="POST">
                         @csrf
                         @method('PUT')
 
-                        <div style="display: flex; flex-direction: column; gap: 12px;">
-                            {{-- SOAT --}}
-                            <div>
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                                    <label style="font-weight: 700; font-size: 12.5px; color: var(--text); display: flex; align-items: center; gap: 6px;">
-                                        <i class="fa-solid fa-shield-halved" style="color: #0284c7;"></i> SOAT
-                                    </label>
-                                    @if($vehiculo->soat_vence)
-                                        @php
-                                            $diasSoat = now()->startOfDay()->diffInDays(\Carbon\Carbon::parse($vehiculo->soat_vence)->startOfDay(), false);
-                                        @endphp
-                                        @if($diasSoat < 0)
-                                            <span class="pill red" style="font-size: 9.5px; padding: 2px 6px;">Vencido</span>
-                                        @elseif($diasSoat <= 15)
-                                            <span class="pill gold" style="font-size: 9.5px; padding: 2px 6px;">Vence en {{ $diasSoat }}d</span>
-                                        @else
-                                            <span class="pill green" style="font-size: 9.5px; padding: 2px 6px;">Vigente</span>
-                                        @endif
+                        {{-- SOAT --}}
+                        <div style="padding:10px 16px; border-bottom:1px solid #f8fafc; display: flex; justify-content: space-between; align-items: center; gap: 15px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="font-weight:500; color: var(--text2); font-size: 13px;">SOAT</span>
+                                @if($vehiculo->soat_vence)
+                                    @php
+                                        $diasSoat = now()->startOfDay()->diffInDays(\Carbon\Carbon::parse($vehiculo->soat_vence)->startOfDay(), false);
+                                    @endphp
+                                    @if($diasSoat < 0)
+                                        <span class="pill red" style="font-size: 9.5px; padding: 2px 6px;">Vencido</span>
+                                    @elseif($diasSoat <= 15)
+                                        <span class="pill gold" style="font-size: 9.5px; padding: 2px 6px;">Vence en {{ $diasSoat }}d</span>
                                     @else
-                                        <span class="pill gray" style="font-size: 9.5px; padding: 2px 6px;">No registrado</span>
+                                        <span class="pill green" style="font-size: 9.5px; padding: 2px 6px;">Vigente</span>
                                     @endif
-                                </div>
-                                <input type="date" name="soat_vence" value="{{ old('soat_vence', $vehiculo->soat_vence ? \Carbon\Carbon::parse($vehiculo->soat_vence)->format('Y-m-d') : '') }}" style="width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; font-family: inherit; font-size: 13px; font-weight: 600; color: var(--text); background: white;">
+                                @else
+                                    <span class="pill gray" style="font-size: 9.5px; padding: 2px 6px;">No registrado</span>
+                                @endif
                             </div>
+                            <input type="date" name="soat_vence" value="{{ old('soat_vence', $vehiculo->soat_vence ? \Carbon\Carbon::parse($vehiculo->soat_vence)->format('Y-m-d') : '') }}" style="border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; font-family: inherit; font-size: 13px; font-weight: 600; color: var(--text); background: white;">
+                        </div>
 
-                            {{-- Revisión Técnica --}}
-                            <div>
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                                    <label style="font-weight: 700; font-size: 12.5px; color: var(--text); display: flex; align-items: center; gap: 6px;">
-                                        <i class="fa-solid fa-screwdriver-wrench" style="color: #d97706;"></i> Revisión Técnica
-                                    </label>
-                                    @if($vehiculo->rev_tecnica_vence)
-                                        @php
-                                            $diasRev = now()->startOfDay()->diffInDays(\Carbon\Carbon::parse($vehiculo->rev_tecnica_vence)->startOfDay(), false);
-                                        @endphp
-                                        @if($diasRev < 0)
-                                            <span class="pill red" style="font-size: 9.5px; padding: 2px 6px;">Vencida</span>
-                                        @elseif($diasRev <= 15)
-                                            <span class="pill gold" style="font-size: 9.5px; padding: 2px 6px;">Vence en {{ $diasRev }}d</span>
-                                        @else
-                                            <span class="pill green" style="font-size: 9.5px; padding: 2px 6px;">Vigente</span>
-                                        @endif
+                        {{-- Revisión Técnica --}}
+                        <div style="padding:10px 16px; border-bottom:1px solid #f8fafc; display: flex; justify-content: space-between; align-items: center; gap: 15px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="font-weight:500; color: var(--text2); font-size: 13px;">Revisión Técnica</span>
+                                @if($vehiculo->rev_tecnica_vence)
+                                    @php
+                                        $diasRev = now()->startOfDay()->diffInDays(\Carbon\Carbon::parse($vehiculo->rev_tecnica_vence)->startOfDay(), false);
+                                    @endphp
+                                    @if($diasRev < 0)
+                                        <span class="pill red" style="font-size: 9.5px; padding: 2px 6px;">Vencida</span>
+                                    @elseif($diasRev <= 15)
+                                        <span class="pill gold" style="font-size: 9.5px; padding: 2px 6px;">Vence en {{ $diasRev }}d</span>
                                     @else
-                                        <span class="pill gray" style="font-size: 9.5px; padding: 2px 6px;">No registrada</span>
+                                        <span class="pill green" style="font-size: 9.5px; padding: 2px 6px;">Vigente</span>
                                     @endif
-                                </div>
-                                <input type="date" name="rev_tecnica_vence" value="{{ old('rev_tecnica_vence', $vehiculo->rev_tecnica_vence ? \Carbon\Carbon::parse($vehiculo->rev_tecnica_vence)->format('Y-m-d') : '') }}" style="width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; font-family: inherit; font-size: 13px; font-weight: 600; color: var(--text); background: white;">
+                                @else
+                                    <span class="pill gray" style="font-size: 9.5px; padding: 2px 6px;">No registrada</span>
+                                @endif
                             </div>
+                            <input type="date" name="rev_tecnica_vence" value="{{ old('rev_tecnica_vence', $vehiculo->rev_tecnica_vence ? \Carbon\Carbon::parse($vehiculo->rev_tecnica_vence)->format('Y-m-d') : '') }}" style="border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; font-family: inherit; font-size: 13px; font-weight: 600; color: var(--text); background: white;">
+                        </div>
 
-                            {{-- Tarjeta de Propiedad --}}
-                            @if($vehiculo->tarjeta_prop_vence)
-                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background: #f8fafc; border-radius: 6px; font-size: 12px;">
-                                    <span style="color: var(--text2);"><i class="fa-solid fa-id-card" style="color: #64748b;"></i> Tarjeta Propiedad:</span>
-                                    <b>{{ $vehiculo->tarjeta_prop_vence->format('d/m/Y') }}</b>
-                                </div>
+                        {{-- Tarjeta de Propiedad --}}
+                        <div style="padding:14px 16px; border-bottom:1px solid #f8fafc; display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-weight:500; color: var(--text2); font-size: 13px;">Tarjeta Propiedad</span>
+                            @if ($vehiculo->tarjeta_prop_vence)
+                                <span style="font-weight:600; color:#1e293b; font-size: 13px;">{{ \Carbon\Carbon::parse($vehiculo->tarjeta_prop_vence)->format('d/m/Y') }}</span>
+                            @else
+                                <span style="color:var(--text3); font-size: 13px;">—</span>
                             @endif
+                        </div>
 
-                            <button type="submit" class="btn btn-primary" style="padding: 10px; font-size: 13px; font-weight: 700; border-radius: 8px; display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 4px; background: var(--accent); color: #fff; border: none; cursor: pointer;">
+                        <div style="padding: 12px 16px;">
+                            <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 11px; font-weight: 700; font-size: 13px; border-radius: 8px; display: flex; align-items: center; gap: 6px; background: #2563eb; color: white; border: none; cursor: pointer;">
                                 <i class="fa-solid fa-floppy-disk"></i> Guardar Vencimientos
                             </button>
                         </div>
@@ -142,33 +152,33 @@
 
             {{-- 3. Personal Asignado (Conductor de la Unidad) --}}
             <div class="card" style="margin-bottom: 14px; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
-                <div class="card-header" style="background:#f8fafc; border-bottom:1px solid #f1f5f9; padding: 12px 16px; display: flex; align-items: center;">
-                    <span class="card-title" style="font-size:13.5px; color:#1e293b; font-weight: 800; display: flex; align-items: center; gap: 6px;">
+                <div class="card-header" style="background:#f8fafc; border-bottom:1px solid #f1f5f9; padding: 14px 16px; display: flex; align-items: center;">
+                    <span class="card-title" style="font-size:14px; color:#1e293b; font-weight: 700; display: flex; align-items: center; gap: 6px;">
                         <i class="fa-solid fa-user-tie" style="color: var(--accent);"></i> Personal de Conducción
                     </span>
                 </div>
-                <div class="card-body" style="padding: 14px; display: flex; flex-direction: column; gap: 10px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; border-bottom: 1px solid #f1f5f9;">
-                        <span style="font-size: 12px; color: var(--text3);">Nombre:</span>
-                        <b style="font-size: 13px; color: var(--text);">{{ $vehiculo->conductor ? $vehiculo->conductor->nombre_completo : 'Sin conductor asignado' }}</b>
+                <div class="card-body" style="padding:0;">
+                    <div style="padding:14px 16px; border-bottom:1px solid #f8fafc; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-weight:500; color: var(--text2); font-size: 13px;">Nombre</span>
+                        <span style="font-weight:600; color:#1e293b; font-size: 13px;">{{ $vehiculo->conductor ? $vehiculo->conductor->nombre_completo : 'Sin conductor asignado' }}</span>
                     </div>
                     @if($vehiculo->conductor)
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; border-bottom: 1px solid #f1f5f9;">
-                            <span style="font-size: 12px; color: var(--text3);">DNI:</span>
-                            <b style="font-size: 13px; font-family: monospace;">{{ $vehiculo->conductor->dni ?? '—' }}</b>
+                        <div style="padding:14px 16px; border-bottom:1px solid #f8fafc; display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-weight:500; color: var(--text2); font-size: 13px;">DNI</span>
+                            <span style="font-family: monospace; font-weight:600; color:#1e293b; font-size: 13px;">{{ $vehiculo->conductor->dni ?? '—' }}</span>
                         </div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; border-bottom: 1px solid #f1f5f9;">
-                            <span style="font-size: 12px; color: var(--text3);">Licencia:</span>
-                            <b style="font-size: 13px;">{{ $vehiculo->conductor->tipo_licencia ?? '—' }}</b>
+                        <div style="padding:14px 16px; border-bottom:1px solid #f8fafc; display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-weight:500; color: var(--text2); font-size: 13px;">Licencia</span>
+                            <span style="font-weight:600; color:#1e293b; font-size: 13px;">{{ $vehiculo->conductor->tipo_licencia ?? '—' }}</span>
                         </div>
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-size: 12px; color: var(--text3);">Contacto Chofer:</span>
+                        <div style="padding:14px 16px; display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-weight:500; color: var(--text2); font-size: 13px;">Contacto Chofer</span>
                             @if($vehiculo->conductor->telefono)
-                                <a href="tel:{{ $vehiculo->conductor->telefono }}" style="font-weight: 700; color: #2563eb; text-decoration: none; font-size: 13px; display: flex; align-items: center; gap: 4px;">
+                                <a href="tel:{{ $vehiculo->conductor->telefono }}" style="font-weight: 700; color: #2563eb; text-decoration: none; font-size: 13px; display: flex; align-items: center; gap: 5px;">
                                     <i class="fa-solid fa-phone"></i> {{ $vehiculo->conductor->telefono }}
                                 </a>
                             @else
-                                <span style="color: var(--text3); font-size: 12px;">—</span>
+                                <span style="color:var(--text3); font-size: 13px;">—</span>
                             @endif
                         </div>
                     @endif
@@ -183,10 +193,10 @@
         @endforelse
 
         {{-- 4. SECCIÓN MONTO DE INGRESO Y LAS 3 CUOTAS --}}
-        <div class="card" style="margin-bottom: 24px; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1.5px solid var(--gold-l);">
-            <div class="card-header" style="background: var(--gold-l); border-bottom: 1px solid #fde68a; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between;">
-                <span class="card-title" style="font-size:13.5px; color: #92400e; font-weight: 800; display: flex; align-items: center; gap: 6px;">
-                    <i class="fa-solid fa-money-bill-transfer"></i> Monto de Ingreso a la Empresa
+        <div class="card" style="margin-bottom: 24px; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+            <div class="card-header" style="background:#f8fafc; border-bottom: 1px solid #f1f5f9; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between;">
+                <span class="card-title" style="font-size:14px; color: #1e293b; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                    <i class="fa-solid fa-hand-holding-dollar" style="color: var(--accent);"></i> Monto de Ingreso a la Empresa
                 </span>
                 <span class="pill {{ $propietario->es_socio ? 'gold' : ($propietario->monto_ingreso_deuda > 0 ? 'red' : 'green') }}" style="font-size: 10px;">
                     {{ $propietario->estado_ingreso }}

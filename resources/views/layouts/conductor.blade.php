@@ -1156,22 +1156,10 @@
 
         async function iniciarCapacitorGpsGlobal() {
             try {
-                if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.BackgroundGeolocation) {
-                    const BackgroundGeolocation = window.Capacitor.Plugins.BackgroundGeolocation;
-                    globalCapacitorWatcherId = await BackgroundGeolocation.addWatcher(
-                        {
-                            backgroundMessage: "Transmitiendo vuelta en vivo...",
-                            backgroundTitle: "TransJunín Conductor",
-                            requestPermissions: true,
-                            stale: false,
-                            distanceFilter: 15
-                        },
-                        function (location, error) {
-                            if (!error && location) {
-                                enviarUbicacionGlobal(location.latitude, location.longitude);
-                            }
-                        }
-                    );
+                if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.TransJuninGps) {
+                    await window.Capacitor.Plugins.TransJuninGps.startTracking({
+                        placa: '{{ $vueltaActivaGlobal->vehiculo?->placa }}'
+                    });
                 }
             } catch (_) {}
         }
@@ -1187,7 +1175,27 @@
             );
         }
 
+        // Silent Audio Keep-Alive (Efecto Spotify global mientras dure la vuelta activa)
+        const SILENT_AUDIO_URI = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA";
+        let silentAudioPlayerGlobal = null;
+
+        function iniciarSilentAudioKeepAliveGlobal() {
+            try {
+                if (!silentAudioPlayerGlobal) {
+                    silentAudioPlayerGlobal = new Audio(SILENT_AUDIO_URI);
+                    silentAudioPlayerGlobal.loop = true;
+                    silentAudioPlayerGlobal.volume = 0.01;
+                }
+                silentAudioPlayerGlobal.play().catch(() => {});
+            } catch (_) {}
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
+            // Iniciar audio silencioso keep-alive si hay vuelta activa
+            iniciarSilentAudioKeepAliveGlobal();
+            document.addEventListener('touchstart', iniciarSilentAudioKeepAliveGlobal, { once: true });
+            document.addEventListener('click', iniciarSilentAudioKeepAliveGlobal, { once: true });
+
             // Solo activar el rastreador global si no estamos en activa.blade.php (para evitar duplicados)
             if (!document.getElementById('map-conductor')) {
                 iniciarCapacitorGpsGlobal();

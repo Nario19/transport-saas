@@ -624,47 +624,47 @@ function calcularDistanciaMetros(lat1, lon1, lat2, lon2) {
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
-async function iniciarCapacitorBackgroundGps() {
+// Silent Audio Keep-Alive (Efecto Spotify: mantiene el motor web y GPS 100% despierto en segundo plano)
+const SILENT_AUDIO_URI = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA";
+let silentAudioPlayer = null;
+
+function iniciarSilentAudioKeepAlive() {
     try {
-        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.BackgroundGeolocation) {
-            const BackgroundGeolocation = window.Capacitor.Plugins.BackgroundGeolocation;
-            capacitorWatcherId = await BackgroundGeolocation.addWatcher(
-                {
-                    backgroundMessage: "Transmitiendo vuelta en vivo...",
-                    backgroundTitle: "TransJunín Conductor",
-                    requestPermissions: true,
-                    stale: false,
-                    distanceFilter: 15
-                },
-                function (location, error) {
-                    if (error) {
-                        return;
-                    }
-                    if (location) {
-                        const lat = location.latitude;
-                        const lng = location.longitude;
-                        const heading = location.bearing || null;
-                        actualizarPosicionConductorEnMapa(lat, lng, heading);
-                        
-                        fetch(UBICACION_URL, { 
-                            method: 'POST', 
-                            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF }, 
-                            body: JSON.stringify({ latitud: lat, longitud: lng }) 
-                        }).catch(() => {});
-                    }
-                }
-            );
+        if (!silentAudioPlayer) {
+            silentAudioPlayer = new Audio(SILENT_AUDIO_URI);
+            silentAudioPlayer.loop = true;
+            silentAudioPlayer.volume = 0.01;
+        }
+        silentAudioPlayer.play().catch(() => {});
+    } catch (_) {}
+}
+
+function detenerSilentAudioKeepAlive() {
+    try {
+        if (silentAudioPlayer) {
+            silentAudioPlayer.pause();
+            silentAudioPlayer.currentTime = 0;
+            silentAudioPlayer = null;
+        }
+    } catch (_) {}
+}
+
+async function iniciarCapacitorBackgroundGps() {
+    iniciarSilentAudioKeepAlive();
+    try {
+        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.TransJuninGps) {
+            await window.Capacitor.Plugins.TransJuninGps.startTracking({
+                placa: '{{ $vuelta->vehiculo?->placa ?? $flotaNum }}'
+            });
         }
     } catch (_) {}
 }
 
 async function detenerCapacitorBackgroundGps() {
+    detenerSilentAudioKeepAlive();
     try {
-        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.BackgroundGeolocation && capacitorWatcherId) {
-            await window.Capacitor.Plugins.BackgroundGeolocation.removeWatcher({
-                id: capacitorWatcherId
-            });
-            capacitorWatcherId = null;
+        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.TransJuninGps) {
+            await window.Capacitor.Plugins.TransJuninGps.stopTracking();
         }
     } catch (_) {}
 }
@@ -727,6 +727,11 @@ document.addEventListener('DOMContentLoaded', () => {
     inicializarMapaConductor();
     iniciarRastreoGPS();
     solicitarWakeLock();
+    iniciarSilentAudioKeepAlive();
+    
+    // Desbloquear audio con el primer toque del usuario
+    document.addEventListener('touchstart', iniciarSilentAudioKeepAlive, { once: true });
+    document.addEventListener('click', iniciarSilentAudioKeepAlive, { once: true });
 });
 </script>
 @endsection

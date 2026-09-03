@@ -1512,7 +1512,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- INICIO ---
     actualizarDatos();
-    setInterval(actualizarDatos, 30000); // Polling de seguridad cada 30s
+    setInterval(actualizarDatos, 5000); // Polling en vivo optimizado cada 5 segundos
 });
 </script>
 

@@ -33,27 +33,6 @@
         </div>
     </div>
 
-    {{-- Tarjeta de Configuración GPS en Segundo Plano --}}
-    @if($conductor->vehiculos->first())
-        <div class="card mb16" style="border: 1px solid rgba(37,99,235,0.2); background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%); margin-bottom: 16px; border-radius: 14px;">
-            <div class="card-body" style="padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; gap: 10px;">
-                <div>
-                    <div style="font-weight: 800; font-size: 13px; color: #1e40af; display: flex; align-items: center; gap: 6px;">
-                        <i class="fa-solid fa-satellite-dish"></i> GPS en Segundo Plano
-                    </div>
-                    <div style="font-size: 11px; color: var(--text3); margin-top: 2px;">
-                        Transmite tu ruta con la pantalla apagada (Traccar)
-                    </div>
-                </div>
-                <button type="button" class="btn-primary" 
-                        style="padding: 8px 14px; font-size: 12px; font-weight: 800; border-radius: 10px; background: #2563eb; display: flex; align-items: center; gap: 6px;"
-                        onclick="abrirQrGpsModalConductor('{{ $conductor->vehiculos->first()->placa }}', '{{ $conductor->vehiculos->first()->numero_flota }}')">
-                    <i class="fa-solid fa-qrcode"></i> Configurar
-                </button>
-            </div>
-        </div>
-    @endif
-
     {{-- 3. Stats del día (Grid de 2 columnas) --}}
     <div class="stats-row mb16" style="grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 16px;">
         <div class="stat {{ $tributoHoy?->estado === 'pagado' ? 'green' : ($tributoHoy?->estado === 'exonerado' ? 'blue' : 'red') }}">
@@ -345,45 +324,6 @@
                     console.error('Error:', error);
                     Swal.fire('Error', 'Hubo un problema al procesar la solicitud.', 'error');
                 });
-            }
-        });
-    }
-
-    function abrirQrGpsModalConductor(placa, flota) {
-        const serverUrl = 'https://www.transjunin.com/api/gps/traccar';
-        // Configuración optimizada de alta precisión para flotas de transporte
-        const traccarUrl = serverUrl + '?id=' + encodeURIComponent(placa) + '&distance=20&angle=30&stationaryHeartbeat=60&accuracy=high&buffer=true';
-
-        const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=' + encodeURIComponent(traccarUrl);
-
-        Swal.fire({
-            title: `<div style="font-size:18px; font-weight:800; color:var(--text);">GPS en Segundo Plano</div>`,
-            html: `
-                <div style="text-align:center; padding:5px 0;">
-                    <div style="font-size:13px; color:var(--text2); margin-bottom:12px;">
-                        Vehículo: <b>${placa}</b> (Flota #${flota || 'S/N'})
-                    </div>
-                    <div style="display:inline-block; padding:12px; background:white; border-radius:16px; box-shadow:0 4px 15px rgba(0,0,0,0.08); border:1px solid #e2e8f0; margin-bottom:14px;">
-                        <img src="${qrUrl}" alt="QR Configuración GPS" style="width:200px; height:200px; display:block; border-radius:8px;">
-                    </div>
-                    <div style="font-size:12px; line-height:1.5; color:var(--text3); text-align:left; background:var(--bg); padding:12px; border-radius:10px; border:1px solid var(--border); margin-bottom:10px;">
-                        <b>¿Cómo configurarlo?</b><br>
-                        1. Toca el <b>icono de QR</b> (arriba a la derecha en Traccar Client).<br>
-                        2. Escanea este código para rellenar los datos automáticamente.<br>
-                        3. ¡Enciende el interruptor superior y listo!
-                    </div>
-                    <div style="font-size:11px; color:var(--text3); background:#f8fafc; padding:8px; border-radius:8px; border:1px dashed #cbd5e1; text-align:left; word-break:break-all;">
-                        <b>Configuración manual:</b><br>
-                        • URL Servidor: <code style="color:#2563eb;">${serverUrl}</code><br>
-                        • Identificador: <code style="color:#2563eb;">${placa}</code>
-                    </div>
-                </div>
-            `,
-            confirmButtonText: '<i class="fa-solid fa-check"></i> Entendido',
-            confirmButtonColor: '#2563eb',
-            showCloseButton: true,
-            customClass: {
-                popup: 'swal2-custom-popup'
             }
         });
     }

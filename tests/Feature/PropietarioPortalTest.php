@@ -223,4 +223,45 @@ class PropietarioPortalTest extends TestCase
         $respDatos->assertSee('Cuota 2');
         $respDatos->assertSee('Cuota 3');
     }
+
+    public function test_actualizacion_de_cuotas_en_admin_se_refleja_en_mi_flota(): void
+    {
+        $this->propietario->update(['primer_ingreso' => false]);
+        $user = User::create([
+            'empresa_id'     => $this->empresa->id,
+            'propietario_id' => $this->propietario->id,
+            'name'           => 'Carlos Mendoza',
+            'email'          => '12345678',
+            'password'       => Hash::make('password'),
+            'activo'         => true,
+        ]);
+        $rolePropietario = Role::findByName('propietario', 'web');
+        $user->assignRole($rolePropietario);
+
+        // 1. Admin actualiza la cuota 1 del vehículo a S/. 250.00 pagada hoy
+        $this->actingAs($this->admin)->put(route('propietarios.update', $this->propietario->id), [
+            'nombre'        => $this->propietario->nombre,
+            'apellidos'     => $this->propietario->apellidos,
+            'tipo_persona'  => 'personal_normal',
+            'vehiculos'     => [
+                $this->vehiculo->id => [
+                    'monto_inicial'       => 300.00,
+                    'fecha_monto_inicial' => '2026-01-10',
+                    'cuota_1'             => 250.00,
+                    'fecha_cuota_1'       => '2026-09-03',
+                    'cuota_2'             => 0.00,
+                    'cuota_3'             => 0.00,
+                ]
+            ]
+        ]);
+
+        $this->vehiculo->refresh();
+        $this->assertEquals(250.00, $this->vehiculo->cuota_1);
+
+        // 2. Propietario consulta Mi Flota y ve reflejado los S/. 250.00 y la fecha
+        $respDatos = $this->actingAs($user)->get(route('propietario.datos'));
+        $respDatos->assertStatus(200);
+        $respDatos->assertSee('250.00');
+        $respDatos->assertSee('03/09/2026');
+    }
 }

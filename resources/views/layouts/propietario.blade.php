@@ -370,7 +370,7 @@
 
         <a href="{{ route('propietario.datos') }}"
            class="c-nav-item {{ request()->routeIs('propietario.datos') ? 'active' : '' }}">
-            <i class="fa-solid fa-van-shuttle c-nav-icon"></i>
+            <i class="fa-solid fa-car c-nav-icon"></i>
             <span>Mi Flota</span>
         </a>
     </nav>

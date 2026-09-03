@@ -25,15 +25,11 @@
                 </div>
             @else
                 @php
-                    $montoInicial = $propietario->monto_inicial ?? 0;
-                    $cuota1 = $propietario->cuota_1 ?? 0;
-                    $cuota2 = $propietario->cuota_2 ?? 0;
-                    $cuota3 = $propietario->cuota_3 ?? 0;
-                    $totalAbonado = $montoInicial + $cuota1 + $cuota2 + $cuota3;
                     $deuda = $propietario->monto_ingreso_deuda;
+                    $totalAbonado = $propietario->monto_ingreso_total;
                 @endphp
 
-                {{-- Resumen de Monto Abonado vs Deuda --}}
+                {{-- Resumen Consolidado --}}
                 <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 12px; border-radius: 10px; margin-bottom: 14px; border: 1px solid var(--border);">
                     <div>
                         <div style="font-size: 10.5px; color: var(--text3); font-weight: 700; text-transform: uppercase;">Total Abonado</div>
@@ -49,92 +45,195 @@
                     </div>
                 </div>
 
-                {{-- Desglose de Monto Inicial y 3 Cuotas --}}
-                <div style="font-size: 12px; font-weight: 800; color: var(--text2); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px;">
-                    Desglose de Pagos Registrados:
-                </div>
+                @if($vehiculos->isNotEmpty())
+                    @foreach($vehiculos as $v)
+                        @php
+                            // Priorizar pagos registrados en el vehículo o en el propietario
+                            $montoInicial = ($v->monto_inicial > 0 || $v->fecha_monto_inicial) ? $v->monto_inicial : ($propietario->monto_inicial ?? 0);
+                            $fechaMontoInicial = $v->fecha_monto_inicial ?? $propietario->fecha_monto_inicial;
 
-                <div style="display: flex; flex-direction: column; gap: 8px;">
-                    {{-- Monto Inicial --}}
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: #ffffff; border: 1px solid var(--border); border-radius: 8px;">
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <div style="width: 24px; height: 24px; border-radius: 6px; background: {{ $montoInicial > 0 ? 'var(--green-l)' : '#f1f5f9' }}; color: {{ $montoInicial > 0 ? 'var(--green)' : 'var(--text3)' }}; display: flex; align-items: center; justify-content: center; font-size: 11px;">
-                                <i class="fa-solid fa-money-bill"></i>
+                            $cuota1 = ($v->cuota_1 > 0 || $v->fecha_cuota_1) ? $v->cuota_1 : ($propietario->cuota_1 ?? 0);
+                            $fechaCuota1 = $v->fecha_cuota_1 ?? $propietario->fecha_cuota_1;
+
+                            $cuota2 = ($v->cuota_2 > 0 || $v->fecha_cuota_2) ? $v->cuota_2 : ($propietario->cuota_2 ?? 0);
+                            $fechaCuota2 = $v->fecha_cuota_2 ?? $propietario->fecha_cuota_2;
+
+                            $cuota3 = ($v->cuota_3 > 0 || $v->fecha_cuota_3) ? $v->cuota_3 : ($propietario->cuota_3 ?? 0);
+                            $fechaCuota3 = $v->fecha_cuota_3 ?? $propietario->fecha_cuota_3;
+                        @endphp
+
+                        @if($vehiculos->count() > 1)
+                            <div style="font-size: 13px; font-weight: 800; color: var(--accent); margin-top: 10px; margin-bottom: 6px;">
+                                <i class="fa-solid fa-car"></i> Pagos de Flota #{{ $v->numero_flota }} ({{ $v->placa_form }}):
                             </div>
-                            <div>
-                                <div style="font-weight: 700; font-size: 13px;">Monto Inicial</div>
-                                <div style="font-size: 11px; color: var(--text3);">
-                                    {{ $propietario->fecha_monto_inicial ? $propietario->fecha_monto_inicial->format('d/m/Y') : 'Sin fecha registrada' }}
+                        @else
+                            <div style="font-size: 12px; font-weight: 800; color: var(--text2); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px;">
+                                Desglose de Pagos Registrados:
+                            </div>
+                        @endif
+
+                        <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px;">
+                            {{-- Monto Inicial --}}
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: #ffffff; border: 1px solid var(--border); border-radius: 8px;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div style="width: 24px; height: 24px; border-radius: 6px; background: {{ $montoInicial > 0 ? 'var(--green-l)' : '#f1f5f9' }}; color: {{ $montoInicial > 0 ? 'var(--green)' : 'var(--text3)' }}; display: flex; align-items: center; justify-content: center; font-size: 11px;">
+                                        <i class="fa-solid fa-money-bill"></i>
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 700; font-size: 13px;">Monto Inicial</div>
+                                        <div style="font-size: 11px; color: var(--text3);">
+                                            {{ $fechaMontoInicial ? \Carbon\Carbon::parse($fechaMontoInicial)->format('d/m/Y') : 'Sin fecha registrada' }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <span style="font-weight: 800; font-size: 13.5px; color: {{ $montoInicial > 0 ? 'var(--green)' : 'var(--text3)' }}; font-family: monospace;">
+                                        S/ {{ number_format($montoInicial, 2) }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {{-- Cuota 1 --}}
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: #ffffff; border: 1px solid var(--border); border-radius: 8px;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div style="width: 24px; height: 24px; border-radius: 6px; background: {{ $cuota1 > 0 ? 'var(--green-l)' : '#f1f5f9' }}; color: {{ $cuota1 > 0 ? 'var(--green)' : 'var(--text3)' }}; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800;">
+                                        1
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 700; font-size: 13px;">Cuota 1</div>
+                                        <div style="font-size: 11px; color: var(--text3);">
+                                            {{ $fechaCuota1 ? \Carbon\Carbon::parse($fechaCuota1)->format('d/m/Y') : 'Pendiente' }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <span style="font-weight: 800; font-size: 13.5px; color: {{ $cuota1 > 0 ? 'var(--green)' : 'var(--text3)' }}; font-family: monospace;">
+                                        S/ {{ number_format($cuota1, 2) }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {{-- Cuota 2 --}}
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: #ffffff; border: 1px solid var(--border); border-radius: 8px;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div style="width: 24px; height: 24px; border-radius: 6px; background: {{ $cuota2 > 0 ? 'var(--green-l)' : '#f1f5f9' }}; color: {{ $cuota2 > 0 ? 'var(--green)' : 'var(--text3)' }}; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800;">
+                                        2
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 700; font-size: 13px;">Cuota 2</div>
+                                        <div style="font-size: 11px; color: var(--text3);">
+                                            {{ $fechaCuota2 ? \Carbon\Carbon::parse($fechaCuota2)->format('d/m/Y') : 'Pendiente' }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <span style="font-weight: 800; font-size: 13.5px; color: {{ $cuota2 > 0 ? 'var(--green)' : 'var(--text3)' }}; font-family: monospace;">
+                                        S/ {{ number_format($cuota2, 2) }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {{-- Cuota 3 --}}
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: #ffffff; border: 1px solid var(--border); border-radius: 8px;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div style="width: 24px; height: 24px; border-radius: 6px; background: {{ $cuota3 > 0 ? 'var(--green-l)' : '#f1f5f9' }}; color: {{ $cuota3 > 0 ? 'var(--green)' : 'var(--text3)' }}; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800;">
+                                        3
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 700; font-size: 13px;">Cuota 3</div>
+                                        <div style="font-size: 11px; color: var(--text3);">
+                                            {{ $fechaCuota3 ? \Carbon\Carbon::parse($fechaCuota3)->format('d/m/Y') : 'Pendiente' }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <span style="font-weight: 800; font-size: 13.5px; color: {{ $cuota3 > 0 ? 'var(--green)' : 'var(--text3)' }}; font-family: monospace;">
+                                        S/ {{ number_format($cuota3, 2) }}
+                                    </span>
                                 </div>
                             </div>
                         </div>
-                        <div style="text-align: right;">
-                            <span style="font-weight: 800; font-size: 13.5px; color: {{ $montoInicial > 0 ? 'var(--green)' : 'var(--text3)' }}; font-family: monospace;">
-                                S/ {{ number_format($montoInicial, 2) }}
-                            </span>
-                        </div>
-                    </div>
-
-                    {{-- Cuota 1 --}}
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: #ffffff; border: 1px solid var(--border); border-radius: 8px;">
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <div style="width: 24px; height: 24px; border-radius: 6px; background: {{ $cuota1 > 0 ? 'var(--green-l)' : '#f1f5f9' }}; color: {{ $cuota1 > 0 ? 'var(--green)' : 'var(--text3)' }}; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800;">
-                                1
-                            </div>
-                            <div>
-                                <div style="font-weight: 700; font-size: 13px;">Cuota 1</div>
-                                <div style="font-size: 11px; color: var(--text3);">
-                                    {{ $propietario->fecha_cuota_1 ? $propietario->fecha_cuota_1->format('d/m/Y') : 'Pendiente' }}
+                    @endforeach
+                @else
+                    {{-- Sin vehículos asignados aún: tomar de propietario --}}
+                    @php
+                        $montoInicial = $propietario->monto_inicial ?? 0;
+                        $cuota1 = $propietario->cuota_1 ?? 0;
+                        $cuota2 = $propietario->cuota_2 ?? 0;
+                        $cuota3 = $propietario->cuota_3 ?? 0;
+                    @endphp
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: #ffffff; border: 1px solid var(--border); border-radius: 8px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="width: 24px; height: 24px; border-radius: 6px; background: {{ $montoInicial > 0 ? 'var(--green-l)' : '#f1f5f9' }}; color: {{ $montoInicial > 0 ? 'var(--green)' : 'var(--text3)' }}; display: flex; align-items: center; justify-content: center; font-size: 11px;">
+                                    <i class="fa-solid fa-money-bill"></i>
+                                </div>
+                                <div>
+                                    <div style="font-weight: 700; font-size: 13px;">Monto Inicial</div>
+                                    <div style="font-size: 11px; color: var(--text3);">
+                                        {{ $propietario->fecha_monto_inicial ? $propietario->fecha_monto_inicial->format('d/m/Y') : 'Sin fecha registrada' }}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div style="text-align: right;">
-                            <span style="font-weight: 800; font-size: 13.5px; color: {{ $cuota1 > 0 ? 'var(--green)' : 'var(--text3)' }}; font-family: monospace;">
-                                S/ {{ number_format($cuota1, 2) }}
-                            </span>
-                        </div>
-                    </div>
-
-                    {{-- Cuota 2 --}}
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: #ffffff; border: 1px solid var(--border); border-radius: 8px;">
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <div style="width: 24px; height: 24px; border-radius: 6px; background: {{ $cuota2 > 0 ? 'var(--green-l)' : '#f1f5f9' }}; color: {{ $cuota2 > 0 ? 'var(--green)' : 'var(--text3)' }}; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800;">
-                                2
+                            <div style="text-align: right;">
+                                <span style="font-weight: 800; font-size: 13.5px; color: {{ $montoInicial > 0 ? 'var(--green)' : 'var(--text3)' }}; font-family: monospace;">
+                                    S/ {{ number_format($montoInicial, 2) }}
+                                </span>
                             </div>
-                            <div>
-                                <div style="font-weight: 700; font-size: 13px;">Cuota 2</div>
-                                <div style="font-size: 11px; color: var(--text3);">
-                                    {{ $propietario->fecha_cuota_2 ? $propietario->fecha_cuota_2->format('d/m/Y') : 'Pendiente' }}
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: #ffffff; border: 1px solid var(--border); border-radius: 8px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="width: 24px; height: 24px; border-radius: 6px; background: {{ $cuota1 > 0 ? 'var(--green-l)' : '#f1f5f9' }}; color: {{ $cuota1 > 0 ? 'var(--green)' : 'var(--text3)' }}; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800;">1</div>
+                                <div>
+                                    <div style="font-weight: 700; font-size: 13px;">Cuota 1</div>
+                                    <div style="font-size: 11px; color: var(--text3);">
+                                        {{ $propietario->fecha_cuota_1 ? $propietario->fecha_cuota_1->format('d/m/Y') : 'Pendiente' }}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div style="text-align: right;">
-                            <span style="font-weight: 800; font-size: 13.5px; color: {{ $cuota2 > 0 ? 'var(--green)' : 'var(--text3)' }}; font-family: monospace;">
-                                S/ {{ number_format($cuota2, 2) }}
-                            </span>
-                        </div>
-                    </div>
-
-                    {{-- Cuota 3 --}}
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: #ffffff; border: 1px solid var(--border); border-radius: 8px;">
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <div style="width: 24px; height: 24px; border-radius: 6px; background: {{ $cuota3 > 0 ? 'var(--green-l)' : '#f1f5f9' }}; color: {{ $cuota3 > 0 ? 'var(--green)' : 'var(--text3)' }}; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800;">
-                                3
+                            <div style="text-align: right;">
+                                <span style="font-weight: 800; font-size: 13.5px; color: {{ $cuota1 > 0 ? 'var(--green)' : 'var(--text3)' }}; font-family: monospace;">
+                                    S/ {{ number_format($cuota1, 2) }}
+                                </span>
                             </div>
-                            <div>
-                                <div style="font-weight: 700; font-size: 13px;">Cuota 3</div>
-                                <div style="font-size: 11px; color: var(--text3);">
-                                    {{ $propietario->fecha_cuota_3 ? $propietario->fecha_cuota_3->format('d/m/Y') : 'Pendiente' }}
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: #ffffff; border: 1px solid var(--border); border-radius: 8px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="width: 24px; height: 24px; border-radius: 6px; background: {{ $cuota2 > 0 ? 'var(--green-l)' : '#f1f5f9' }}; color: {{ $cuota2 > 0 ? 'var(--green)' : 'var(--text3)' }}; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800;">2</div>
+                                <div>
+                                    <div style="font-weight: 700; font-size: 13px;">Cuota 2</div>
+                                    <div style="font-size: 11px; color: var(--text3);">
+                                        {{ $propietario->fecha_cuota_2 ? $propietario->fecha_cuota_2->format('d/m/Y') : 'Pendiente' }}
+                                    </div>
                                 </div>
                             </div>
+                            <div style="text-align: right;">
+                                <span style="font-weight: 800; font-size: 13.5px; color: {{ $cuota2 > 0 ? 'var(--green)' : 'var(--text3)' }}; font-family: monospace;">
+                                    S/ {{ number_format($cuota2, 2) }}
+                                </span>
+                            </div>
                         </div>
-                        <div style="text-align: right;">
-                            <span style="font-weight: 800; font-size: 13.5px; color: {{ $cuota3 > 0 ? 'var(--green)' : 'var(--text3)' }}; font-family: monospace;">
-                                S/ {{ number_format($cuota3, 2) }}
-                            </span>
+
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: #ffffff; border: 1px solid var(--border); border-radius: 8px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="width: 24px; height: 24px; border-radius: 6px; background: {{ $cuota3 > 0 ? 'var(--green-l)' : '#f1f5f9' }}; color: {{ $cuota3 > 0 ? 'var(--green)' : 'var(--text3)' }}; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800;">3</div>
+                                <div>
+                                    <div style="font-weight: 700; font-size: 13px;">Cuota 3</div>
+                                    <div style="font-size: 11px; color: var(--text3);">
+                                        {{ $propietario->fecha_cuota_3 ? $propietario->fecha_cuota_3->format('d/m/Y') : 'Pendiente' }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="text-align: right;">
+                                <span style="font-weight: 800; font-size: 13.5px; color: {{ $cuota3 > 0 ? 'var(--green)' : 'var(--text3)' }}; font-family: monospace;">
+                                    S/ {{ number_format($cuota3, 2) }}
+                                </span>
+                            </div>
                         </div>
                     </div>
-                </div>
+                @endif
             @endif
         </div>
     </div>
@@ -145,7 +244,7 @@
             <div class="card-header">
                 <div>
                     <span class="card-title">
-                        <i class="fa-solid fa-van-shuttle" style="color: var(--accent); margin-right: 6px;"></i>
+                        <i class="fa-solid fa-car" style="color: var(--accent); margin-right: 6px;"></i>
                         Unidad #{{ $vehiculo->numero_flota ?? '—' }} ({{ $vehiculo->placa_form }})
                     </span>
                 </div>
@@ -208,7 +307,7 @@
         </div>
     @empty
         <div class="empty-state">
-            <i class="fa-solid fa-van-shuttle" style="font-size: 28px; margin-bottom: 8px; display: block; opacity: 0.5;"></i>
+            <i class="fa-solid fa-car" style="font-size: 28px; margin-bottom: 8px; display: block; opacity: 0.5;"></i>
             No tienes vehículos asignados actualmente.
         </div>
     @endforelse

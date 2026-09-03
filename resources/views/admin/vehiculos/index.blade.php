@@ -228,6 +228,11 @@
                                 </td>
                                 <td class="col-actions">
                                     <div class="flex-h" style="justify-content: flex-end; gap: 4px;">
+                                        <button type="button" class="action-icon" style="background: rgba(37,99,235,0.1); color: #2563eb; border:none;" 
+                                                 title="Autoconfigurar GPS Traccar (Escanear QR)"
+                                                 onclick="abrirQrGpsModal('{{ $v->placa }}', '{{ $v->numero_flota }}')">
+                                             <i class="fa-solid fa-qrcode"></i>
+                                         </button>
                                         <a href="{{ route('vehiculos.show', $v->id) }}" class="action-icon show-icon" title="Ver Detalle">
                                             <i class="fa-solid fa-eye"></i>
                                         </a>
@@ -350,6 +355,46 @@
 
         function closeDocModal(event) {
             document.getElementById('docModal').classList.remove('open');
+        }
+
+        function abrirQrGpsModal(placa, flota) {
+            const serverUrl = window.location.origin + '/api/gps/traccar';
+            const traccarConfig = JSON.stringify({
+                url: serverUrl,
+                id: placa,
+                distance: 15,
+                angle: 30,
+                stationaryHeartbeat: 60
+            });
+
+            // Generar URL para código QR vía QuickChart / API QR estándar
+            const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=' + encodeURIComponent(traccarConfig);
+
+            Swal.fire({
+                title: `<div style="font-size:18px; font-weight:800; color:var(--text);">QR de Configuración GPS</div>`,
+                html: `
+                    <div style="text-align:center; padding:10px 0;">
+                        <div style="font-size:13px; color:var(--text2); margin-bottom:12px;">
+                            Unidad: <b>${placa}</b> (Flota #${flota || 'S/N'})
+                        </div>
+                        <div style="display:inline-block; padding:12px; background:white; border-radius:16px; box-shadow:0 4px 15px rgba(0,0,0,0.08); border:1px solid #e2e8f0; margin-bottom:14px;">
+                            <img src="${qrUrl}" alt="QR Configuración GPS" style="width:200px; height:200px; display:block; border-radius:8px;">
+                        </div>
+                        <div style="font-size:12px; line-height:1.5; color:var(--text3); text-align:left; background:var(--bg); padding:12px; border-radius:10px; border:1px solid var(--border);">
+                            <b>Pasos para el chofer:</b><br>
+                            1. Abre la app <b>Traccar Client</b> en el celular.<br>
+                            2. Toca el <b>icono de QR</b> (arriba a la derecha).<br>
+                            3. Escanea este código y la app quedará <b>autoconfigurada</b> al instante.
+                        </div>
+                    </div>
+                `,
+                confirmButtonText: '<i class="fa-solid fa-check"></i> Listo',
+                confirmButtonColor: 'var(--accent)',
+                showCloseButton: true,
+                customClass: {
+                    popup: 'swal2-custom-popup'
+                }
+            });
         }
     </script>
 @endsection

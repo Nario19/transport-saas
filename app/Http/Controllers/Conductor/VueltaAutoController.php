@@ -257,6 +257,10 @@ class VueltaAutoController extends Controller
     public function actualizarUbicacion(Request $request)
     {
         $conductor = auth()->user()->conductor;
+        if (!$conductor) {
+            return response()->json(['ok' => false, 'error' => 'No autorizado'], 403);
+        }
+
         $vuelta = Vuelta::where('conductor_id', $conductor->id)
             ->where('estado', 'activa')
             ->latest()
@@ -271,12 +275,14 @@ class VueltaAutoController extends Controller
             'lng_actual' => $request->longitud,
         ]);
 
-        // Transmitir la actualización por WebSockets/Reverb de inmediato
-        broadcast(new \App\Events\VueltaUbicacionActualizada(
-            $vuelta,
-            (float) $request->latitud,
-            (float) $request->longitud
-        ));
+        // Transmitir la actualización por WebSockets/Reverb de inmediato si está activo
+        try {
+            broadcast(new \App\Events\VueltaUbicacionActualizada(
+                $vuelta,
+                (float) $request->latitud,
+                (float) $request->longitud
+            ));
+        } catch (\Throwable $e) {}
 
         return response()->json(['ok' => true]);
     }

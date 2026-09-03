@@ -1025,23 +1025,61 @@
                             let card = document.getElementById(`operativo-card-${alerta.id}`);
                             if (!card) {
                                 const buttonHtml = alerta.es_creador ? `
-                                    <button onclick="finalizarOperativo(${alerta.id})" style="background: #22c55e; color: white; border: none; padding: 8px 14px; font-size: 11px; font-weight: 900; border-radius: 8px; cursor: pointer; text-transform: uppercase; display: flex; align-items: center; gap: 4px; box-shadow: 0 2px 6px rgba(34,197,94,0.4); z-index: 2; flex-shrink: 0; transition: transform 0.15s ease;">
+                                    <button onclick="finalizarOperativo(${alerta.id})" style="background: #22c55e; color: white; border: none; padding: 8px 12px; font-size: 11px; font-weight: 900; border-radius: 8px; cursor: pointer; text-transform: uppercase; display: flex; align-items: center; gap: 4px; box-shadow: 0 2px 6px rgba(34,197,94,0.4); z-index: 2; flex-shrink: 0; transition: transform 0.15s ease;">
                                         <i class="fa-solid fa-circle-check"></i> Retirado
                                     </button>
                                 ` : '';
 
+                                let bgGrad = 'linear-gradient(135deg, #dc2626 0%, #991b1b 100%)';
+                                let borderColor = '#ef4444';
+                                let iconClass = 'fa-solid fa-triangle-exclamation';
+                                let iconColor = '#facc15';
+
+                                const tLower = (alerta.tipo || '').toLowerCase();
+                                if (tLower.includes('desv')) {
+                                    bgGrad = 'linear-gradient(135deg, #d97706 0%, #b45309 100%)';
+                                    borderColor = '#f59e0b';
+                                    iconClass = 'fa-solid fa-route';
+                                    iconColor = '#fef08a';
+                                } else if (tLower.includes('aviso') || tLower.includes('info')) {
+                                    bgGrad = 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)';
+                                    borderColor = '#3b82f6';
+                                    iconClass = 'fa-solid fa-circle-info';
+                                    iconColor = '#93c5fd';
+                                } else if (tLower.includes('urgente')) {
+                                    bgGrad = 'linear-gradient(135deg, #ea580c 0%, #9a3412 100%)';
+                                    borderColor = '#f97316';
+                                    iconClass = 'fa-solid fa-radiation';
+                                    iconColor = '#ffedd5';
+                                }
+
+                                const puntoHtml = (alerta.punto && alerta.punto !== 'Ubicación General') ? `
+                                    <div style="font-size: 12px; font-weight: 700; opacity: 0.95; margin-top: 2px; color: #fef08a;">
+                                        Ubicación: <strong style="text-decoration: underline;">${alerta.punto}</strong>
+                                    </div>
+                                ` : '';
+
+                                const mensajeHtml = alerta.mensaje ? `
+                                    <div style="font-size: 12px; font-weight: 600; opacity: 0.95; margin-top: 3px; color: #f8fafc; line-height: 1.3;">
+                                        ${alerta.mensaje}
+                                    </div>
+                                ` : '';
+
                                 const cardHtml = `
-                                    <div id="operativo-card-${alerta.id}" class="alert-pulse-red" style="display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); color: white; padding: 20px 16px; border-radius: 14px; box-shadow: 0 4px 15px rgba(220, 38, 38, 0.4); border: 2px solid #ef4444; position: relative; overflow: hidden; width: 100%; box-sizing: border-box; gap: 14px;">
-                                        <div style="display: flex; align-items: center; gap: 12px; z-index: 2;">
+                                    <div id="operativo-card-${alerta.id}" class="alert-pulse-red" style="display: flex; justify-content: space-between; align-items: center; background: ${bgGrad}; color: white; padding: 16px 14px; border-radius: 14px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25); border: 2px solid ${borderColor}; position: relative; overflow: hidden; width: 100%; box-sizing: border-box; gap: 12px;">
+                                        <div style="display: flex; align-items: center; gap: 12px; z-index: 2; flex: 1;">
                                             <div style="width: 38px; height: 38px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; animation: pulse-icon 1.2s infinite; flex-shrink: 0;">
-                                                <i class="fa-solid fa-triangle-exclamation" style="font-size: 18px; color: #facc15;"></i>
+                                                <i class="${iconClass}" style="font-size: 18px; color: ${iconColor};"></i>
                                             </div>
-                                            <div style="text-align: left;">
-                                                <div style="font-weight: 900; font-size: 13.5px; letter-spacing: 0.5px; text-transform: uppercase; color: #ffffff;">⚠️ Control / Operativo</div>
-                                                <div style="font-size: 12px; font-weight: 700; opacity: 0.95; margin-top: 2px; color: #fef08a;">
-                                                    Ubicación: <strong style="font-size: 14px; text-decoration: underline;">${alerta.punto}</strong>
-                                                    <span style="font-size: 10px; display: block; opacity: 0.8; font-weight: normal; margin-top: 2px;">Reportado a las ${alerta.creado_at} por ${alerta.reportado_por}</span>
+                                            <div style="text-align: left; flex: 1;">
+                                                <div style="font-weight: 900; font-size: 14px; letter-spacing: 0.3px; color: #ffffff; text-transform: uppercase;">
+                                                    ${alerta.titulo || '⚠️ ALERTA EN RUTA'}
                                                 </div>
+                                                ${puntoHtml}
+                                                ${mensajeHtml}
+                                                <span style="font-size: 10px; display: block; opacity: 0.8; font-weight: normal; margin-top: 4px;">
+                                                    Emitido a las ${alerta.creado_at} por ${alerta.reportado_por}
+                                                </span>
                                             </div>
                                         </div>
                                         ${buttonHtml}
@@ -1054,11 +1092,40 @@
                             if (!notifiedAlertIds.includes(alerta.id)) {
                                 notifiedAlertIds.push(alerta.id);
                                 sessionStorage.setItem('notified_alertas', JSON.stringify(notifiedAlertIds));
+
+                                let modalPunto = '';
+                                if (alerta.punto && alerta.punto !== 'Ubicación General') {
+                                    modalPunto = `
+                                        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:10px 14px; margin-bottom:10px; text-align:left;">
+                                            <span style="font-size:11px; font-weight:800; color:#64748b; text-transform:uppercase; display:block;">📍 Punto Crítico / Ubicación</span>
+                                            <span style="font-size:14px; font-weight:800; color:#0f172a; margin-top:2px; display:block;">${alerta.punto}</span>
+                                        </div>
+                                    `;
+                                }
+
+                                let modalMensaje = '';
+                                if (alerta.mensaje) {
+                                    modalMensaje = `
+                                        <div style="background:#fef2f2; border:1px solid #fee2e2; border-radius:10px; padding:10px 14px; margin-bottom:10px; text-align:left;">
+                                            <span style="font-size:11px; font-weight:800; color:#991b1b; text-transform:uppercase; display:block;">💬 Mensaje / Indicaciones</span>
+                                            <span style="font-size:13.5px; font-weight:600; color:#7f1d1d; line-height:1.4; margin-top:2px; display:block;">${alerta.mensaje}</span>
+                                        </div>
+                                    `;
+                                }
+
                                 Swal.fire({
-                                    title: '🚨 ¡OPERATIVO DETECTADO!',
-                                    html: `Se reportó un operativo en el punto <strong>${alerta.punto}</strong> a las ${alerta.creado_at} por ${alerta.reportado_por}.<br><br><span style="color:#ef4444;font-weight:700;">¡Conduce con cuidado!</span>`,
+                                    title: `<div style="font-size:18px; font-weight:900; color:#dc2626; text-transform:uppercase; letter-spacing:0.3px;">🚨 ${alerta.titulo || 'ALERTA EN RUTA'}</div>`,
+                                    html: `
+                                        <div style="margin-top:12px;">
+                                            ${modalPunto}
+                                            ${modalMensaje}
+                                            <div style="font-size:11px; color:#64748b; margin-top:10px; font-weight:600;">
+                                                Emitido a las <b>${alerta.creado_at}</b> por <b>${alerta.reportado_por}</b>
+                                            </div>
+                                        </div>
+                                    `,
                                     icon: 'warning',
-                                    confirmButtonText: 'Entendido',
+                                    confirmButtonText: '¡Entendido!',
                                     confirmButtonColor: '#dc2626',
                                     allowOutsideClick: true
                                 });

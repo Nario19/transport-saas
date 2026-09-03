@@ -29,12 +29,23 @@ class AlertaOperativoCreada implements ShouldBroadcast
 
     public function broadcastWith(): array
     {
+        $creatorStr = 'Administración';
+        if ($this->alerta->conductor) {
+            $veh = $this->alerta->conductor->vehiculos->first();
+            $creatorStr = $veh ? "la flota {$veh->numero_flota}" : 'la flota S/N';
+        }
+
         return [
             'alerta' => [
-                'id'         => $this->alerta->id,
-                'punto'      => $this->alerta->punto,
-                'conductor'  => $this->alerta->conductor?->nombre_completo ?? 'Administrador',
-                'creado_at'  => $this->alerta->created_at->format('h:i A'),
+                'id'                => $this->alerta->id,
+                'titulo'            => $this->alerta->titulo ?: '⚠️ Alerta en Ruta',
+                'punto'             => $this->alerta->punto,
+                'mensaje'           => $this->alerta->mensaje,
+                'tipo'              => $this->alerta->tipo ?: 'Operativo / Control',
+                'visible_conductor' => (bool)$this->alerta->visible_conductor,
+                'conductor'         => $this->alerta->conductor?->nombre_completo ?? 'Administración',
+                'reportado_por'     => $creatorStr,
+                'creado_at'         => $this->alerta->created_at->format('h:i A'),
             ]
         ];
     }

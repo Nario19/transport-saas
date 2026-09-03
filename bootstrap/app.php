@@ -24,6 +24,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'forzar.password'    => \App\Http\Middleware\ForzarCambioPassword::class,
             'admin.configurado'  => \App\Http\Middleware\EnsureCompanyConfigured::class,
         ]);
+        $middleware->validateCsrfTokens(except: [
+            'webhook/*',
+            'api/*',
+        ]);
         $middleware->redirectGuestsTo(fn() => route('login'));
     })
     ->withExceptions(function (Exceptions $exceptions): void {

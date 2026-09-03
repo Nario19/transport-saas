@@ -654,9 +654,24 @@ function iniciarRastreoGPS() {
     }, null, { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 });
 }
 
+let wakeLock = null;
+async function solicitarWakeLock() {
+    try {
+        if ('wakeLock' in navigator) {
+            wakeLock = await navigator.wakeLock.request('screen');
+            document.addEventListener('visibilitychange', async () => {
+                if (wakeLock !== null && document.visibilityState === 'visible') {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                }
+            });
+        }
+    } catch (_) {}
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     inicializarMapaConductor();
     iniciarRastreoGPS();
+    solicitarWakeLock();
 });
 </script>
 @endsection

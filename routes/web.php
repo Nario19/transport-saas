@@ -59,6 +59,12 @@ Route::get('/pago/retorno',         [PagoMpController::class, 'retorno'])->name(
 Route::post('/pago/procesar',       [PagoMpController::class, 'procesar'])->name('pago.procesar');
 Route::post('/webhook/mercadopago', [PagoMpController::class, 'webhook'])->name('webhook.mercadopago');
 
+// ═══════════════════════════════════════════════════════════════════
+// MÓDULO GPS — Telemetría Traccar Client / OsmAnd Protocol (PÚBLICA)
+// ═══════════════════════════════════════════════════════════════════
+Route::match(['get', 'post'], '/api/gps/traccar', [\App\Http\Controllers\Api\TraccarGpsController::class, 'handle'])
+    ->name('api.gps.traccar');
+
 // ── Panel Conductor ───────────────────────────────────────────────
 Route::middleware(['auth', 'empresa.activa', 'role:conductor', 'forzar.password'])
     ->prefix('conductor')

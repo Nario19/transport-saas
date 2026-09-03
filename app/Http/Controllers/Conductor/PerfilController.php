@@ -43,13 +43,7 @@ class PerfilController extends Controller
         // Marcar que ya no es primer ingreso
         $conductor = $user->conductor;
         if ($conductor) $conductor->update(['primer_ingreso' => false]);
- 
-        // Redirigir a registro facial si es obligatorio y no lo tiene
-        if ($conductor && $conductor->requiere_facial && !$conductor->rostro()->exists()) {
-            return redirect()->route('conductor.rostro.index')
-                ->with('warning', 'Contraseña actualizada. Ahora registra tu rostro.');
-        }
- 
+
         return redirect()->route('conductor.dashboard')
             ->with('success', 'Contraseña actualizada correctamente.');
     }

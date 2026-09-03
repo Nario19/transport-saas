@@ -16,7 +16,7 @@ class RedirectSegunRol
         }
  
         // Si es conductor y está intentando acceder al panel admin
-        if ($user->hasRole('conductor') && $request->is('dashboard') || $request->is('vehiculos*') || $request->is('conductores*')) {
+        if ($user->hasRole('conductor') && ($request->is('dashboard') || $request->is('vehiculos*') || $request->is('conductores*'))) {
             return redirect()->route('conductor.dashboard');
         }
  

@@ -6,6 +6,22 @@
 
 @section('content')
 
+    {{-- 0. Aviso de Registro Biométrico Pendiente --}}
+    @if ($conductor->requiere_facial && !$conductor->rostro()->exists())
+        <div class="alert warning mb16" style="background: #fffbeb; border: 1.5px solid #fde68a; color: #92400e; display: flex; align-items: center; justify-content: space-between; border-radius: 12px; padding: 12px 14px; gap: 10px; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <i class="fa-solid fa-camera" style="font-size: 18px; color: #d97706;"></i>
+                <div>
+                    <strong style="font-size: 13px;">Registro Facial Pendiente</strong>
+                    <div style="font-size: 11px; opacity: 0.9;">Tu empresa solicita registrar tu rostro para iniciar vueltas.</div>
+                </div>
+            </div>
+            <a href="{{ route('conductor.rostro.index') }}" class="btn-primary" style="font-size: 11px; padding: 6px 12px; border-radius: 8px; font-weight: 800; text-decoration: none; white-space: nowrap; background: #d97706;">
+                Registrar Rostro →
+            </a>
+        </div>
+    @endif
+
     {{-- 1. Alertas de documentos --}}
     @if (count($alertas) > 0)
         @foreach ($alertas as $alerta)

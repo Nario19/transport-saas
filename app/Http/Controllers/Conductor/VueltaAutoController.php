@@ -21,7 +21,9 @@ class VueltaAutoController extends Controller
     public function iniciarVista()
     {
         $conductor = auth()->user()->conductor;
-        if (! $conductor) abort(403, 'Sin perfil de conductor');
+        if (! $conductor) {
+            return redirect()->route('conductor.dashboard')->with('error', 'Sin perfil de conductor asociado.');
+        }
 
         // Verificar si ya tiene una vuelta activa
         $vueltaActiva = Vuelta::where('conductor_id', $conductor->id)
@@ -76,7 +78,9 @@ class VueltaAutoController extends Controller
     public function iniciar(IniciarVueltaAutoRequest $request)
     {
         $conductor = auth()->user()->conductor;
-        if (! $conductor) abort(403);
+        if (! $conductor) {
+            return response()->json(['ok' => false, 'error' => 'Sin perfil de conductor asociado.'], 403);
+        }
 
         $request->validated();
 
@@ -172,7 +176,9 @@ class VueltaAutoController extends Controller
     public function terminar(Request $request)
     {
         $conductor = auth()->user()->conductor;
-        if (! $conductor) abort(403);
+        if (! $conductor) {
+            return response()->json(['ok' => false, 'error' => 'Sin perfil de conductor asociado.'], 403);
+        }
 
         $vuelta = Vuelta::where('conductor_id', $conductor->id)
             ->where('estado', 'activa')

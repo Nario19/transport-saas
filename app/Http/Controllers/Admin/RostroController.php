@@ -73,7 +73,10 @@ class RostroController extends Controller
     public function showConductor()
     {
         $conductor = auth()->user()->conductor;
-        if (!$conductor) abort(403);
+        if (!$conductor) {
+            return redirect()->route('conductor.dashboard')
+                ->with('error', 'No se encontró un expediente de conductor asociado a este usuario.');
+        }
 
         $rostro = ConductorRostro::where('conductor_id', $conductor->id)
             ->where('activo', true)
@@ -89,7 +92,9 @@ class RostroController extends Controller
     public function storeConductor(Request $request)
     {
         $conductor = auth()->user()->conductor;
-        if (!$conductor) abort(403);
+        if (!$conductor) {
+            return response()->json(['ok' => false, 'error' => 'No se encontró un expediente de conductor.'], 404);
+        }
 
         $embedding = json_decode($request->embedding, true);
         if (! is_array($embedding) || count($embedding) < 64) {

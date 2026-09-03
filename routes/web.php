@@ -246,6 +246,7 @@ Route::middleware(['auth', 'empresa.activa', 'admin.configurado'])
         Route::get('/alertas', [\App\Http\Controllers\Conductor\AlertaOperativoController::class, 'adminIndex'])->name('admin.alertas.index');
         Route::post('/alertas', [\App\Http\Controllers\Conductor\AlertaOperativoController::class, 'adminStore'])->name('admin.alertas.store');
         Route::post('/alertas/{alerta}/finalizar', [\App\Http\Controllers\Conductor\AlertaOperativoController::class, 'adminFinalizar'])->name('admin.alertas.finalizar');
+        Route::post('/alertas/{alerta}/toggle-visibilidad', [\App\Http\Controllers\Conductor\AlertaOperativoController::class, 'adminToggleVisibilidad'])->name('admin.alertas.toggle-visibilidad');
         
         Route::post('/puntos-control', [\App\Http\Controllers\Conductor\AlertaOperativoController::class, 'adminAddPunto'])->name('admin.puntos.store');
         Route::delete('/puntos-control/{punto}', [\App\Http\Controllers\Conductor\AlertaOperativoController::class, 'adminDeletePunto'])->name('admin.puntos.destroy');

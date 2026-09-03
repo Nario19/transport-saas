@@ -137,43 +137,61 @@ class AlertaOperativoController extends Controller
     }
 
     /**
-     * Reportar un operativo (Administrador).
+     * Reportar una alerta personalizada (Administrador).
      */
     public function adminStore(Request $request)
     {
         $empresaId = auth()->user()->empresa_id;
 
         $request->validate([
-            'punto' => [
-                'required',
-                'string',
-                Rule::exists('puntos_control', 'nombre')->where('empresa_id', $empresaId)
-            ],
+            'titulo' => 'required|string|max:150',
+            'punto' => 'nullable|string|max:150',
+            'mensaje' => 'nullable|string|max:1000',
+            'tipo' => 'nullable|string|in:operativo,informativa,urgente,desvio',
+            'duracion_minutos' => 'nullable|integer|min:5|max:10080',
+            'visible_conductor' => 'nullable',
         ]);
 
-        // Evitar duplicados activos
-        $existeActivo = AlertaOperativo::where('empresa_id', $empresaId)
-            ->where('punto', $request->punto)
-            ->where('estado', 'activo')
-            ->where('expires_at', '>', now())
-            ->exists();
+        $punto = $request->input('punto') ?: 'Ubicación General';
+        $duracion = (int) $request->input('duracion_minutos', 60);
+        if ($duracion <= 0) $duracion = 60;
 
-        if ($existeActivo) {
-            return back()->with('error', 'Ya existe un reporte operativo activo para este punto.');
-        }
+        $visible = $request->has('visible_conductor') ? $request->boolean('visible_conductor') : true;
 
         $alerta = AlertaOperativo::create([
-            'empresa_id'   => $empresaId,
-            'conductor_id' => null,
-            'user_id'      => auth()->id(),
-            'punto'        => $request->punto,
-            'estado'       => 'activo',
-            'expires_at'   => now()->addMinutes(20),
+            'empresa_id'        => $empresaId,
+            'conductor_id'      => null,
+            'user_id'           => auth()->id(),
+            'titulo'            => $request->input('titulo'),
+            'punto'             => $punto,
+            'mensaje'           => $request->input('mensaje'),
+            'tipo'              => $request->input('tipo', 'operativo'),
+            'visible_conductor' => $visible,
+            'estado'            => 'activo',
+            'expires_at'        => now()->addMinutes($duracion),
         ]);
 
-        broadcast(new AlertaOperativoCreada($alerta))->toOthers();
+        try {
+            broadcast(new AlertaOperativoCreada($alerta))->toOthers();
+        } catch (\Exception $e) {}
 
-        return back()->with('success', "Se reportó el operativo en el {$alerta->punto} correctamente.");
+        return back()->with('success', "Alerta '{$alerta->titulo}' emitida correctamente.");
+    }
+
+    /**
+     * Alternar visibilidad de la alerta para los conductores (Ocultar / Mostrar).
+     */
+    public function adminToggleVisibilidad(AlertaOperativo $alerta)
+    {
+        if ($alerta->empresa_id !== auth()->user()->empresa_id) {
+            abort(403, 'Acceso no autorizado.');
+        }
+
+        $nuevoEstado = !$alerta->visible_conductor;
+        $alerta->update(['visible_conductor' => $nuevoEstado]);
+
+        $msg = $nuevoEstado ? 'visible para los conductores' : 'oculta para los conductores';
+        return back()->with('success', "La alerta '{$alerta->titulo}' ahora está {$msg}.");
     }
 
     /**
@@ -187,10 +205,12 @@ class AlertaOperativoController extends Controller
 
         if ($alerta->estado === 'activo') {
             $alerta->update(['estado' => 'finalizado']);
-            broadcast(new AlertaOperativoFinalizada($alerta))->toOthers();
+            try {
+                broadcast(new AlertaOperativoFinalizada($alerta))->toOthers();
+            } catch (\Exception $e) {}
         }
 
-        return back()->with('success', 'El operativo se marcó como finalizado.');
+        return back()->with('success', 'La alerta se marcó como finalizada.');
     }
 
     /**
@@ -247,6 +267,7 @@ class AlertaOperativoController extends Controller
         $alertas = AlertaOperativo::with(['conductor.vehiculos'])
             ->where('empresa_id', $empresaId)
             ->where('estado', 'activo')
+            ->where('visible_conductor', true)
             ->where('expires_at', '>', now())
             ->get()
             ->map(function ($al) use ($user) {
@@ -261,7 +282,10 @@ class AlertaOperativoController extends Controller
 
                 return [
                     'id'            => $al->id,
+                    'titulo'        => $al->titulo ?: '⚠️ Control / Operativo',
                     'punto'         => $al->punto,
+                    'mensaje'       => $al->mensaje,
+                    'tipo'          => $al->tipo ?: 'operativo',
                     'creado_at'     => $timeStr,
                     'es_creador'    => $isCreator,
                     'reportado_por' => $creatorStr

@@ -14,11 +14,16 @@ class AlertaOperativo extends Model
         'conductor_id',
         'user_id',
         'punto',
+        'titulo',
+        'mensaje',
+        'tipo',
+        'visible_conductor',
         'estado',
         'expires_at'
     ];
 
     protected $casts = [
+        'visible_conductor' => 'boolean',
         'expires_at' => 'datetime',
     ];
 

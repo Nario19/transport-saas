@@ -55,14 +55,19 @@ class AlertasOperativosTest extends TestCase
         $response = $this->actingAs($this->admin)->get(route('admin.alertas.index'));
 
         $response->assertStatus(200);
-        $response->assertSee('Alertas de Operativos');
+        $response->assertSee('Centro de Alertas');
         $response->assertSee('Control Policial El Tambo');
     }
 
     public function test_admin_puede_emitir_nueva_alerta_de_operativo_en_tiempo_real(): void
     {
         $response = $this->actingAs($this->admin)->post(route('admin.alertas.store'), [
+            'titulo' => 'Operativo Policial',
             'punto' => 'Control Policial El Tambo',
+            'mensaje' => 'Revisión técnica vehicular',
+            'tipo' => 'operativo',
+            'visible_conductor' => '1',
+            'duracion_minutos' => 60,
         ]);
 
         $response->assertSessionHasNoErrors();
@@ -70,9 +75,33 @@ class AlertasOperativosTest extends TestCase
 
         $this->assertDatabaseHas('alertas_operativos', [
             'empresa_id' => $this->empresa->id,
+            'titulo' => 'Operativo Policial',
             'punto' => 'Control Policial El Tambo',
+            'mensaje' => 'Revisión técnica vehicular',
+            'tipo' => 'operativo',
+            'visible_conductor' => 1,
             'estado' => 'activo',
         ]);
+    }
+
+    public function test_admin_puede_alternar_visibilidad_para_conductor(): void
+    {
+        $alerta = AlertaOperativo::create([
+            'empresa_id' => $this->empresa->id,
+            'user_id' => $this->admin->id,
+            'titulo' => 'Desvío Avenida Real',
+            'punto' => 'Control Policial El Tambo',
+            'visible_conductor' => true,
+            'estado' => 'activo',
+            'expires_at' => now()->addHour(),
+        ]);
+
+        $response = $this->actingAs($this->admin)->post(route('admin.alertas.toggle-visibilidad', $alerta->id));
+
+        $response->assertSessionHasNoErrors();
+        $alerta->refresh();
+
+        $this->assertFalse($alerta->visible_conductor);
     }
 
     public function test_admin_puede_finalizar_alerta_activa(): void
@@ -80,6 +109,7 @@ class AlertasOperativosTest extends TestCase
         $alerta = AlertaOperativo::create([
             'empresa_id' => $this->empresa->id,
             'user_id' => $this->admin->id,
+            'titulo' => 'Inspección',
             'punto' => 'Control Policial El Tambo',
             'estado' => 'activo',
             'expires_at' => now()->addHour(),

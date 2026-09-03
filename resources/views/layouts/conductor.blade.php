@@ -855,6 +855,7 @@
             @php
                 $layoutAlertas = \App\Models\AlertaOperativo::where('empresa_id', auth()->user()->empresa_id)
                     ->where('estado', 'activo')
+                    ->where('visible_conductor', true)
                     ->where('expires_at', '>', now())
                     ->with(['conductor.vehiculos', 'user'])
                     ->get();
@@ -862,30 +863,62 @@
             <div id="global-operativos-container" style="display: flex; flex-direction: column; gap: 10px; width: 100%; box-sizing: border-box; margin-bottom: 14px;">
                 @if ($layoutAlertas->count() > 0)
                     @foreach ($layoutAlertas as $opAlerta)
-                        <div id="operativo-card-{{ $opAlerta->id }}" class="alert-pulse-red" style="display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); color: white; padding: 20px 16px; border-radius: 14px; box-shadow: 0 4px 15px rgba(220, 38, 38, 0.4); border: 2px solid #ef4444; position: relative; overflow: hidden; width: 100%; box-sizing: border-box; gap: 14px;">
-                            <div style="display: flex; align-items: center; gap: 12px; z-index: 2;">
+                        @php
+                            $bgGrad = 'linear-gradient(135deg, #dc2626 0%, #991b1b 100%)';
+                            $borderColor = '#ef4444';
+                            $iconClass = 'fa-solid fa-triangle-exclamation';
+                            $iconColor = '#facc15';
+
+                            if ($opAlerta->tipo === 'desvio') {
+                                $bgGrad = 'linear-gradient(135deg, #d97706 0%, #b45309 100%)';
+                                $borderColor = '#f59e0b';
+                                $iconClass = 'fa-solid fa-route';
+                                $iconColor = '#fef08a';
+                            } elseif ($opAlerta->tipo === 'informativa') {
+                                $bgGrad = 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)';
+                                $borderColor = '#3b82f6';
+                                $iconClass = 'fa-solid fa-circle-info';
+                                $iconColor = '#93c5fd';
+                            } elseif ($opAlerta->tipo === 'urgente') {
+                                $bgGrad = 'linear-gradient(135deg, #ea580c 0%, #9a3412 100%)';
+                                $borderColor = '#f97316';
+                                $iconClass = 'fa-solid fa-radiation';
+                                $iconColor = '#ffedd5';
+                            }
+                        @endphp
+                        <div id="operativo-card-{{ $opAlerta->id }}" class="alert-pulse-red" style="display: flex; justify-content: space-between; align-items: center; background: {{ $bgGrad }}; color: white; padding: 16px 14px; border-radius: 14px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25); border: 2px solid {{ $borderColor }}; position: relative; overflow: hidden; width: 100%; box-sizing: border-box; gap: 12px;">
+                            <div style="display: flex; align-items: center; gap: 12px; z-index: 2; flex: 1;">
                                 <div style="width: 38px; height: 38px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; animation: pulse-icon 1.2s infinite; flex-shrink: 0;">
-                                    <i class="fa-solid fa-triangle-exclamation" style="font-size: 18px; color: #facc15;"></i>
+                                    <i class="{{ $iconClass }}" style="font-size: 18px; color: {{ $iconColor }};"></i>
                                 </div>
-                                <div style="text-align: left;">
-                                    <div style="font-weight: 900; font-size: 13.5px; letter-spacing: 0.5px; text-transform: uppercase; color: #ffffff;">⚠️ Control / Operativo</div>
-                                    <div style="font-size: 12px; font-weight: 700; opacity: 0.95; margin-top: 2px; color: #fef08a;">
-                                        Ubicación: <strong style="font-size: 14px; text-decoration: underline;">{{ $opAlerta->punto }}</strong>
-                                        <span style="font-size: 10px; display: block; opacity: 0.8; font-weight: normal; margin-top: 2px;">
-                                            @php
-                                                $creatorStr = 'Administración';
-                                                if ($opAlerta->conductor) {
-                                                    $veh = $opAlerta->conductor->vehiculos->first();
-                                                    $creatorStr = $veh ? "la flota {$veh->numero_flota}" : 'la flota S/N';
-                                                }
-                                            @endphp
-                                            Reportado a las {{ $opAlerta->created_at->format('h:i A') }} por {{ $creatorStr }}
-                                        </span>
+                                <div style="text-align: left; flex: 1;">
+                                    <div style="font-weight: 900; font-size: 14px; letter-spacing: 0.3px; color: #ffffff; text-transform: uppercase;">
+                                        {{ $opAlerta->titulo ?: '⚠️ Alerta en Ruta' }}
                                     </div>
+                                    @if($opAlerta->punto && $opAlerta->punto !== 'Ubicación General')
+                                        <div style="font-size: 12px; font-weight: 700; opacity: 0.95; margin-top: 2px; color: #fef08a;">
+                                            Ubicación: <strong style="text-decoration: underline;">{{ $opAlerta->punto }}</strong>
+                                        </div>
+                                    @endif
+                                    @if($opAlerta->mensaje)
+                                        <div style="font-size: 12px; font-weight: 600; opacity: 0.95; margin-top: 3px; color: #f8fafc; line-height: 1.3;">
+                                            {{ $opAlerta->mensaje }}
+                                        </div>
+                                    @endif
+                                    <span style="font-size: 10px; display: block; opacity: 0.8; font-weight: normal; margin-top: 4px;">
+                                        @php
+                                            $creatorStr = 'Administración';
+                                            if ($opAlerta->conductor) {
+                                                $veh = $opAlerta->conductor->vehiculos->first();
+                                                $creatorStr = $veh ? "la flota {$veh->numero_flota}" : 'la flota S/N';
+                                            }
+                                        @endphp
+                                        Emitido a las {{ $opAlerta->created_at->format('h:i A') }} por {{ $creatorStr }}
+                                    </span>
                                 </div>
                             </div>
                             @if (auth()->user()->conductor && $opAlerta->conductor_id === auth()->user()->conductor->id)
-                                <button onclick="finalizarOperativo({{ $opAlerta->id }})" style="background: #22c55e; color: white; border: none; padding: 8px 14px; font-size: 11px; font-weight: 900; border-radius: 8px; cursor: pointer; text-transform: uppercase; display: flex; align-items: center; gap: 4px; box-shadow: 0 2px 6px rgba(34,197,94,0.4); z-index: 2; flex-shrink: 0; transition: transform 0.15s ease;">
+                                <button onclick="finalizarOperativo({{ $opAlerta->id }})" style="background: #22c55e; color: white; border: none; padding: 8px 12px; font-size: 11px; font-weight: 900; border-radius: 8px; cursor: pointer; text-transform: uppercase; display: flex; align-items: center; gap: 4px; box-shadow: 0 2px 6px rgba(34,197,94,0.4); z-index: 2; flex-shrink: 0; transition: transform 0.15s ease;">
                                     <i class="fa-solid fa-circle-check"></i> Retirado
                                 </button>
                             @endif

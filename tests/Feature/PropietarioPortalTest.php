@@ -264,4 +264,31 @@ class PropietarioPortalTest extends TestCase
         $respDatos->assertSee('250.00');
         $respDatos->assertSee('03/09/2026');
     }
+
+    public function test_propietario_puede_actualizar_soat_y_revision_tecnica_de_su_vehiculo(): void
+    {
+        $this->propietario->update(['primer_ingreso' => false]);
+        $user = User::create([
+            'empresa_id'     => $this->empresa->id,
+            'propietario_id' => $this->propietario->id,
+            'name'           => 'Carlos Mendoza',
+            'email'          => '12345678',
+            'password'       => Hash::make('password'),
+            'activo'         => true,
+        ]);
+        $rolePropietario = Role::findByName('propietario', 'web');
+        $user->assignRole($rolePropietario);
+
+        $response = $this->actingAs($user)->put(route('propietario.vehiculos.update-documentos', $this->vehiculo->id), [
+            'soat_vence'        => '2028-01-15',
+            'rev_tecnica_vence' => '2028-02-28',
+        ]);
+
+        $response->assertRedirect(route('propietario.datos'));
+        $response->assertSessionHas('success');
+
+        $this->vehiculo->refresh();
+        $this->assertEquals('2028-01-15', $this->vehiculo->soat_vence->format('Y-m-d'));
+        $this->assertEquals('2028-02-28', $this->vehiculo->rev_tecnica_vence->format('Y-m-d'));
+    }
 }

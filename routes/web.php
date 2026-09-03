@@ -134,6 +134,7 @@ Route::middleware(['auth', 'empresa.activa', 'role:propietario', 'forzar.passwor
         Route::get('/tributos',  [\App\Http\Controllers\Propietario\TributoController::class, 'index'])->name('tributos');
         Route::get('/sanciones', [\App\Http\Controllers\Propietario\SancionController::class, 'index'])->name('sanciones');
         Route::get('/datos',     [\App\Http\Controllers\Propietario\DatosController::class, 'index'])->name('datos');
+        Route::put('/vehiculos/{vehiculo}/documentos', [\App\Http\Controllers\Propietario\DatosController::class, 'updateVehiculo'])->name('vehiculos.update-documentos');
         Route::get('/perfil',    [\App\Http\Controllers\Propietario\PerfilController::class, 'index'])->name('perfil');
 
         Route::get('/cambiar-password',  [\App\Http\Controllers\Propietario\PerfilController::class, 'cambiarPassword'])

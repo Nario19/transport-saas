@@ -83,4 +83,32 @@ class ConductorFlowTest extends TestCase
         $responseTributos = $this->actingAs($this->conductorUser)->get(route('conductor.tributos'));
         $responseTributos->assertStatus(200);
     }
+
+    public function test_conductor_puede_actualizar_soat_y_revision_tecnica(): void
+    {
+        $vehiculo = \App\Models\Vehiculo::create([
+            'empresa_id'   => $this->empresa->id,
+            'conductor_id' => $this->conductor->id,
+            'placa'        => 'XYZ-999',
+            'numero_flota' => 20,
+            'marca'        => 'Toyota',
+            'modelo'       => 'Hiace',
+            'estado'       => 'activo',
+        ]);
+
+        $response = $this->actingAs($this->conductorUser)->put(route('conductor.perfil.update'), [
+            'telefono'          => '987654321',
+            'tipo_licencia'     => 'AII-B',
+            'licencia_vence'    => '2027-05-20',
+            'soat_vence'        => '2027-12-31',
+            'rev_tecnica_vence' => '2027-11-15',
+        ]);
+
+        $response->assertRedirect(route('conductor.perfil'));
+        $response->assertSessionHas('success');
+
+        $vehiculo->refresh();
+        $this->assertEquals('2027-12-31', $vehiculo->soat_vence->format('Y-m-d'));
+        $this->assertEquals('2027-11-15', $vehiculo->rev_tecnica_vence->format('Y-m-d'));
+    }
 }

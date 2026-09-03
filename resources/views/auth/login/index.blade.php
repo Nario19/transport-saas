@@ -10,8 +10,7 @@
         <div style="margin-bottom: 16px;">
             <label style="display:block; margin-bottom:6px; font-weight:600; font-size:13px;">Usuario / Placa</label>
             <input type="text" name="email" value="{{ old('email') }}" required autofocus
-                style="width:100%; padding:10px; border:1px solid var(--border); border-radius:8px; background:var(--bg);"
-                placeholder="Ej. ABC-123">
+                style="width:100%; padding:10px; border:1px solid var(--border); border-radius:8px; background:var(--bg);">
             @error('email')
                 <span
                     style="color:var(--danger); font-size:12px; font-weight:600; margin-top:4px; display:block;">{{ $message }}</span>
@@ -50,14 +49,14 @@
         </button>
 
         {{-- Descarga de App Android --}}
-        <div style="margin-top: 20px; padding-top: 16px; border-top: 1px dashed var(--border); text-align: center;">
-            <a href="/descargas/TransJunin.apk" download class="btn-secondary" 
-               style="width: 100%; justify-content: center; padding: 10px; font-size: 13px; font-weight: 700; border-radius: 10px; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; color: var(--text);">
-                <i class="fa-brands fa-android" style="color: #22c55e; font-size: 16px;"></i> Descargar App Conductor (.apk)
+        <div style="margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--border); text-align: center;">
+            <a href="/descargas/TransJunin.apk" download 
+               style="width: 100%; justify-content: center; padding: 12px 16px; font-size: 12.5px; font-weight: 800; letter-spacing: 0.3px; border-radius: 10px; display: inline-flex; align-items: center; gap: 9px; text-decoration: none; color: #065f46; background: #ecfdf5; border: 1.5px solid #a7f3d0; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.2s ease-in-out;"
+               onmouseover="this.style.background='#d1fae5'; this.style.borderColor='#6ee7b7';"
+               onmouseout="this.style.background='#ecfdf5'; this.style.borderColor='#a7f3d0';">
+                <i class="fa-brands fa-android" style="color: #10b981; font-size: 18px;"></i>
+                <span>DESCARGAR APLICACIÓN PARA ANDROID</span>
             </a>
-            <div style="font-size: 11px; color: var(--text3); margin-top: 6px;">
-                GPS automático en segundo plano para Android
-            </div>
         </div>
     </form>
 

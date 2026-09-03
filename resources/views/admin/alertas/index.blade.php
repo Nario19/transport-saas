@@ -108,13 +108,13 @@
                                       style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); font-size:12.5px; color:var(--text); background:var(--bg); resize: vertical; font-family: inherit;"></textarea>
                         </div>
 
-                        {{-- Switch de Visibilidad --}}
+                        {{-- Switch de Visibilidad para Conductor --}}
                         <div style="background: var(--bg); border: 1.5px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; cursor: pointer;">
                             <input type="checkbox" id="visible_conductor" name="visible_conductor" value="1" checked style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--green);">
                             <label for="visible_conductor" style="font-weight: 700; font-size: 13px; color: var(--text); cursor: pointer; margin: 0; user-select: none;">
-                                Mostrar en la pantalla de los conductores
+                                Disponible para que el Conductor la emita
                                 <span style="display: block; font-size: 11px; font-weight: normal; color: var(--text3); margin-top: 1px;">
-                                    Si desmarcas este check, la alerta quedará guardada solo en administración y oculta para los choferes.
+                                    Si marcas este check, la alerta aparecerá en el dashboard de los conductores para que ellos puedan reportarla.
                                 </span>
                             </label>
                         </div>
@@ -158,7 +158,7 @@
                             </div>
                         @empty
                             <div style="text-align: center; color: var(--text3); font-size: 12px; padding: 12px;">
-                                No has agregado tipos personalizados aún.
+                                No hay tipos de alerta adicionales creados.
                             </div>
                         @endforelse
                     </div>
@@ -209,7 +209,7 @@
         {{-- COLUMNA 2: LISTADOS --}}
         <div style="display: flex; flex-direction: column; gap: 20px;">
             
-            {{-- ALERTAS ACTIVAS --}}
+            {{-- ALERTAS ACTIVAS EN TIEMPO REAL --}}
             <div class="card">
                 <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
                     <span class="card-title" style="font-size: 14.5px; font-weight: 800;">
@@ -224,9 +224,8 @@
                                 <tr>
                                     <th>Alerta / Detalle</th>
                                     <th>Ubicación</th>
-                                    <th style="text-align:center;">Visibilidad Chofer</th>
                                     <th>Expira en</th>
-                                    <th class="col-actions">Acciones</th>
+                                    <th class="col-actions" style="text-align: right;">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -240,15 +239,15 @@
                                                 {{ $alerta->titulo ?: 'Control / Operativo' }}
                                             </div>
                                             @if($alerta->mensaje)
-                                                <div style="font-size: 11.5px; color: var(--text2); margin-top: 3px; max-width: 240px; line-height: 1.3;">
+                                                <div style="font-size: 11.5px; color: var(--text2); margin-top: 3px; max-width: 260px; line-height: 1.3;">
                                                     {{ $alerta->mensaje }}
                                                 </div>
                                             @endif
                                             <div style="font-size: 10.5px; color: var(--text3); margin-top: 3px;">
                                                 @if($alerta->conductor)
-                                                    Conductor: <b>{{ $alerta->conductor->nombre_completo }}</b>
+                                                    Reportado por Conductor: <b>{{ $alerta->conductor->nombre_completo }}</b>
                                                 @else
-                                                    Admin: <b>{{ $alerta->user?->name ?? 'Sistema' }}</b>
+                                                    Reportado por Admin: <b>{{ $alerta->user?->name ?? 'Sistema' }}</b>
                                                 @endif
                                                 • {{ $alerta->created_at->format('h:i A') }}
                                             </div>
@@ -256,21 +255,7 @@
                                         <td style="font-weight: 700; font-size: 12.5px; color: var(--text2);">
                                             {{ $alerta->punto ?: 'Ubicación General' }}
                                         </td>
-                                        <td style="text-align: center;">
-                                            <form action="{{ route('admin.alertas.toggle-visibilidad', $alerta) }}" method="POST" style="display: inline;">
-                                                @csrf
-                                                @if($alerta->visible_conductor)
-                                                    <button type="submit" class="pill green" style="border: none; cursor: pointer; font-size: 10.5px; font-weight: 800; padding: 4px 8px; display: inline-flex; align-items: center; gap: 4px;" title="Clic para ocultar a los conductores">
-                                                        <i class="fa-solid fa-eye"></i> Visible
-                                                    </button>
-                                                @else
-                                                    <button type="submit" class="pill gray" style="border: none; cursor: pointer; font-size: 10.5px; font-weight: 800; padding: 4px 8px; display: inline-flex; align-items: center; gap: 4px;" title="Clic para mostrar a los conductores">
-                                                        <i class="fa-solid fa-eye-slash"></i> Oculta
-                                                    </button>
-                                                @endif
-                                            </form>
-                                        </td>
-                                        <td style="font-family: monospace; font-weight: 800; font-size: 12px;">
+                                        <td style="font-family: monospace; font-weight: 800; font-size: 12px; color: var(--red);">
                                             @php
                                                 $diffSeconds = now()->diffInSeconds($alerta->expires_at, false);
                                                 if ($diffSeconds > 0) {
@@ -282,10 +267,10 @@
                                                 }
                                             @endphp
                                         </td>
-                                        <td class="col-actions">
+                                        <td class="col-actions" style="text-align: right;">
                                             <form action="{{ route('admin.alertas.finalizar', $alerta) }}" method="POST" style="display: inline;">
                                                 @csrf
-                                                <button type="submit" class="btn-secondary" style="font-size: 11px; padding: 6px 10px; background: var(--green); color: white; border: none; font-weight: 700; border-radius: 6px; cursor: pointer;" title="Finalizar alerta">
+                                                <button type="submit" class="btn-secondary" style="font-size: 11px; padding: 6px 12px; background: var(--green); color: white; border: none; font-weight: 700; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;" title="Finalizar alerta">
                                                     <i class="fa-solid fa-check-double"></i> Finalizar
                                                 </button>
                                             </form>
@@ -293,7 +278,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="5" style="text-align:center; padding:40px; color:var(--text3);">
+                                        <td colspan="4" style="text-align:center; padding:40px; color:var(--text3);">
                                             <div style="font-size:32px; margin-bottom:10px;">🛡️</div>
                                             <div style="font-weight:700; font-size:14px; color:var(--text);">No hay reportes de operativos activos</div>
                                             <div style="font-size:11px; margin-top:2px;">Todo parece estar libre en la ruta por ahora.</div>
@@ -310,10 +295,10 @@
             <div class="card">
                 <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
                     <span class="card-title" style="font-size: 14px; font-weight: 800;">
-                        <i class="fa-solid fa-clock-rotate-left" style="color:var(--text3); margin-right:5px;"></i> Historial de Alertas Emitidas (Catálogo de Re-emisión)
+                        <i class="fa-solid fa-list-check" style="color:var(--accent); margin-right:5px;"></i> Catálogo de Alertas Guardadas (Listas para Emitir)
                     </span>
                     <span style="font-size: 11px; color: var(--text3); font-weight: 600;">
-                        Usa el botón <b>"Emitir de nuevo"</b> para reactivar cualquier alerta al instante
+                        Presiona <b>"Emitir de nuevo"</b> para reactivar en la flota
                     </span>
                 </div>
                 <div class="card-body" style="padding: 0;">

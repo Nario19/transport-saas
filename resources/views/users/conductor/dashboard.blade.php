@@ -87,43 +87,35 @@
         </div>
     </div>
 
-    {{-- Reportar Operativo / Alerta --}}
-    <div class="card mb16" style="margin-bottom: 16px;">
+    {{-- Reportar Alerta a la Flota (Solo alertas configuradas por administracion) --}}
+    <div class="card mb16" style="margin-bottom: 16px; width: 100%; box-sizing: border-box; overflow: hidden;">
         <div class="card-header">
             <span class="card-title"><i class="fa-solid fa-bullhorn" style="color: var(--accent); margin-right: 5px;"></i> Reportar Alerta a la Flota</span>
         </div>
-        <div class="card-body" style="padding: 16px;">
+        <div class="card-body" style="padding: 16px; width: 100%; box-sizing: border-box;">
             <p style="font-size: 12px; color: var(--text3); margin-bottom: 12px; line-height: 1.4;">
-                ¿Ves inspectores, desvíos u operativos en la ruta? Selecciona la alerta para avisar a todos los conductores en tiempo real.
+                Selecciona una de las alertas configuradas para avisar a todos los conductores en tiempo real.
             </p>
-            @if($alertasDisponibles->isEmpty() && $puntosControl->isEmpty())
-                <div style="text-align: center; color: var(--text3); font-size: 12px; padding: 10px; border: 1px dashed var(--border); border-radius: 8px;">
-                    No hay alertas ni puntos de control configurados por la administración en este momento.
+            @if($alertasDisponibles->isEmpty())
+                <div style="text-align: center; color: var(--text3); font-size: 12px; padding: 14px 10px; border: 1.5px dashed var(--border); border-radius: 10px; background: var(--bg2);">
+                    <i class="fa-solid fa-bell-slash" style="font-size: 18px; margin-bottom: 6px; display: block; opacity: 0.5;"></i>
+                    No hay alertas habilitadas por la administración en este momento.
                 </div>
             @else
-                <div style="display: flex; gap: 8px;">
-                    <select id="select-operativo-punto" style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--border); font-size:13px; font-weight:700; color:var(--text); height: 44px; background: var(--bg);">
-                        <option value="">-- Seleccionar alerta o punto --</option>
-                        @if($alertasDisponibles->isNotEmpty())
-                            <optgroup label="Alertas Configuradas por Administración">
-                                @foreach($alertasDisponibles as $al)
-                                    <option value="{{ $al->id }}" data-tipo="alerta">
-                                        🔔 {{ $al->titulo }} @if($al->punto && $al->punto !== 'Ubicación General') ({{ $al->punto }}) @endif
-                                    </option>
-                                @endforeach
-                            </optgroup>
-                        @endif
-                        @if($puntosControl->isNotEmpty())
-                            <optgroup label="Puntos de Control / Rutas">
-                                @foreach($puntosControl as $pt)
-                                    <option value="{{ $pt->nombre }}" data-tipo="punto">📍 {{ $pt->nombre }}</option>
-                                @endforeach
-                            </optgroup>
-                        @endif
-                    </select>
-                    <button onclick="reportarOperativoDynamic()" class="btn" style="background: #fee2e2; border: 1.5px solid #fecaca; color: #dc2626; font-weight: 800; font-size: 12.5px; height: 44px; padding: 0 16px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(220,38,38,0.1); flex-shrink: 0;">
-                        <i class="fa-solid fa-triangle-exclamation" style="font-size: 15px;"></i>
-                        <span>Emitir</span>
+                <div style="display: flex; flex-direction: column; gap: 10px; width: 100%; box-sizing: border-box;">
+                    <div style="width: 100%; box-sizing: border-box;">
+                        <select id="select-operativo-punto" style="width: 100%; box-sizing: border-box; padding: 12px 14px; border-radius: 10px; border: 1.5px solid var(--border); font-size: 13px; font-weight: 700; color: var(--text); height: 46px; background: var(--bg);">
+                            <option value="">-- Seleccionar Alerta --</option>
+                            @foreach($alertasDisponibles as $al)
+                                <option value="{{ $al->id }}" data-tipo="alerta">
+                                    🔔 {{ $al->titulo }} @if($al->punto && $al->punto !== 'Ubicación General') ({{ $al->punto }}) @endif
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <button onclick="reportarOperativoDynamic()" class="btn" style="width: 100%; box-sizing: border-box; justify-content: center; background: #fee2e2; border: 1.5px solid #fecaca; color: #dc2626; font-weight: 800; font-size: 13.5px; height: 44px; padding: 0 16px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 6px rgba(220,38,38,0.12);">
+                        <i class="fa-solid fa-triangle-exclamation" style="font-size: 16px;"></i>
+                        <span>Emitir Alerta a la Flota</span>
                     </button>
                 </div>
             @endif

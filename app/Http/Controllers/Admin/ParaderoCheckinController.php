@@ -80,23 +80,24 @@ class ParaderoCheckinController extends Controller
 
         $tipo = $paradero->tipo;
 
-        // Si es paradero de INICIO y no hay vuelta activa -> INICIAR VUELTA
-        if ($tipo === 'origen' && !$vueltaActiva) {
+        // Si no hay vuelta activa -> INICIAR VUELTA
+        if (!$vueltaActiva) {
             $ultimaVuelta = Vuelta::where('conductor_id', $conductor->id)
                 ->whereDate('fecha', today())
                 ->max('numero_vuelta') ?? 0;
             $numeroVuelta = $ultimaVuelta + 1;
 
             $vueltaActiva = Vuelta::create([
-                'empresa_id'   => $empresaId,
-                'vehiculo_id'  => $vehiculo->id,
-                'conductor_id' => $conductor->id,
-                'ruta_id'      => $paradero->ruta_id,
-                'created_by'   => auth()->id(),
-                'fecha'        => today(),
-                'numero_vuelta'=> $numeroVuelta,
-                'hora_salida'  => now()->format('H:i:s'),
-                'estado'       => 'activa',
+                'empresa_id'         => $empresaId,
+                'vehiculo_id'        => $vehiculo->id,
+                'conductor_id'       => $conductor->id,
+                'ruta_id'            => $paradero->ruta_id,
+                'paradero_salida_id' => $paradero->id,
+                'created_by'         => auth()->id(),
+                'fecha'              => today(),
+                'numero_vuelta'      => $numeroVuelta,
+                'hora_salida'        => now()->format('H:i:s'),
+                'estado'             => 'activa',
             ]);
         }
 
@@ -115,11 +116,22 @@ class ParaderoCheckinController extends Controller
 
         // Si es paradero de DESTINO (Fin de vuelta) -> TERMINAR VUELTA
         if ($tipo === 'destino' && $vueltaActiva) {
+            // Validar si el destino es permitido según el paradero de salida
+            $validos = \App\Models\RutaParadero::paraderosLlegadaValidos($vueltaActiva->ruta_id, $vueltaActiva->paradero_salida_id);
+            if ($vueltaActiva->paradero_salida_id && !$validos->pluck('id')->contains($paradero->id)) {
+                return response()->json([
+                    'status'   => 'warning',
+                    'conductor'=> $conductor->nombre . ' ' . $conductor->apellido,
+                    'mensaje'  => "El paradero {$paradero->nombre} no es un destino válido para esta vuelta iniciada en punto intermedio.",
+                ]);
+            }
+
             $vueltaActiva->update([
-                'hora_llegada' => now()->format('H:i:s'),
-                'estado'       => 'completada'
+                'hora_llegada'        => now()->format('H:i:s'),
+                'paradero_llegada_id' => $paradero->id,
+                'estado'              => 'completada'
             ]);
-            $mensaje = "Vuelta #{$vueltaActiva->numero_vuelta} COMPETADA exitosamente.";
+            $mensaje = "Vuelta #{$vueltaActiva->numero_vuelta} COMPLETADA exitosamente.";
         } elseif ($tipo === 'origen') {
             $mensaje = "Vuelta #{$vueltaActiva->numero_vuelta} INICIADA exitosamente.";
         } else {

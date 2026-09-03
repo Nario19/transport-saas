@@ -158,10 +158,10 @@ class VueltaAutoController extends Controller
                 ->with('info', 'No tienes una vuelta activa.');
         }
 
-        $paraderosLlegada = \App\Models\RutaParadero::where('ruta_id', $vuelta->ruta_id)
-            ->where('id', '!=', $vuelta->paradero_salida_id)
-            ->orderBy('orden')
-            ->get();
+        $paraderosLlegada = \App\Models\RutaParadero::paraderosLlegadaValidos(
+            $vuelta->ruta_id,
+            $vuelta->paradero_salida_id
+        );
 
         return view('users.vuelta.activa', compact('vuelta', 'conductor', 'paraderosLlegada'));
     }
@@ -172,6 +172,7 @@ class VueltaAutoController extends Controller
     public function terminar(Request $request)
     {
         $conductor = auth()->user()->conductor;
+        if (! $conductor) abort(403);
 
         $vuelta = Vuelta::where('conductor_id', $conductor->id)
             ->where('estado', 'activa')
@@ -188,7 +189,7 @@ class VueltaAutoController extends Controller
             'paradero_llegada_id' => 'required|exists:ruta_paraderos,id',
         ]);
 
-        $paraderoLlegadaId = $request->input('paradero_llegada_id');
+        $paraderoLlegadaId = (int) $request->input('paradero_llegada_id');
         $p = \App\Models\RutaParadero::findOrFail($paraderoLlegadaId);
 
         if ($p->ruta_id != $vuelta->ruta_id) {
@@ -196,6 +197,15 @@ class VueltaAutoController extends Controller
         }
         if ($p->id == $vuelta->paradero_salida_id) {
             return response()->json(['ok' => false, 'error' => 'No puedes terminar la vuelta en el mismo paradero de salida.'], 422);
+        }
+
+        // Validar regla de paradero intermedio (no volver al extremo terminal más cercano)
+        $paraderosPermitidos = \App\Models\RutaParadero::paraderosLlegadaValidos($vuelta->ruta_id, $vuelta->paradero_salida_id);
+        if (!$paraderosPermitidos->pluck('id')->contains($p->id)) {
+            return response()->json([
+                'ok' => false,
+                'error' => 'No puedes finalizar la vuelta en ' . $p->nombre . '. Al iniciar desde un punto intermedio, debes dirigirte hacia el extremo opuesto de la ruta.'
+            ], 422);
         }
 
         if (!is_null($p->latitud_a)) {

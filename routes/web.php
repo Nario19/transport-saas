@@ -31,8 +31,20 @@ use App\Http\Controllers\Conductor\VueltaController as ConductorVuelta;
 use App\Http\Controllers\Conductor\SancionController as ConductorSancion;
 use App\Http\Controllers\Conductor\VueltaAutoController;
 
-// ── Redirección raíz ──────────────────────────────────────────────
-Route::get('/', fn() => redirect()->route('login'));
+// ── Redirección raíz inteligente según autenticación y rol ────────
+Route::get('/', function () {
+    if (!auth()->check()) {
+        return redirect()->route('login');
+    }
+    $user = auth()->user();
+    if ($user->hasRole('conductor')) {
+        return redirect()->route('conductor.dashboard');
+    }
+    if ($user->hasRole('SUPER_ADMIN')) {
+        return redirect()->route('superadmin.dashboard');
+    }
+    return redirect()->route('dashboard');
+});
 
 // ── Autenticación ─────────────────────────────────────────────────
 Route::middleware('guest')->group(function () {

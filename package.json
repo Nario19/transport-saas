@@ -17,6 +17,10 @@
         "vite": "^7.0.7"
     },
     "dependencies": {
+        "@capacitor-community/background-geolocation": "^1.2.26",
+        "@capacitor/android": "^8.5.1",
+        "@capacitor/cli": "^8.5.1",
+        "@capacitor/core": "^8.5.1",
         "@heroicons/react": "^2.2.0",
         "heroicons": "^2.2.0"
     }

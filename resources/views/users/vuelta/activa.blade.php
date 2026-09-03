@@ -578,6 +578,9 @@ async function terminarVuelta(paraderoLlegadaId) {
         });
         const data = await resp.json();
         if (data.ok) {
+            // Apagar el GPS nativo de segundo plano al terminar la vuelta
+            await detenerCapacitorBackgroundGps();
+
             Swal.fire({
                 title: '¡Vuelta Finalizada!',
                 text: data.paradero ? `Has terminado la ruta en el paradero ${data.paradero}.` : 'Has terminado la vuelta correctamente.',
@@ -612,6 +615,8 @@ async function terminarVuelta(paraderoLlegadaId) {
 }
 
 let lastLat = null, lastLng = null, lastSendTime = 0, watchId = null;
+let capacitorWatcherId = null;
+
 function calcularDistanciaMetros(lat1, lon1, lat2, lon2) {
     const R = 6371000;
     const dLat = (lat2 - lat1) * Math.PI / 180, dLon = (lon2 - lon1) * Math.PI / 180;
@@ -619,8 +624,57 @@ function calcularDistanciaMetros(lat1, lon1, lat2, lon2) {
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
+async function iniciarCapacitorBackgroundGps() {
+    try {
+        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.BackgroundGeolocation) {
+            const BackgroundGeolocation = window.Capacitor.Plugins.BackgroundGeolocation;
+            capacitorWatcherId = await BackgroundGeolocation.addWatcher(
+                {
+                    backgroundMessage: "Transmitiendo vuelta en vivo...",
+                    backgroundTitle: "TransJunín Conductor",
+                    requestPermissions: true,
+                    stale: false,
+                    distanceFilter: 15
+                },
+                function (location, error) {
+                    if (error) {
+                        return;
+                    }
+                    if (location) {
+                        const lat = location.latitude;
+                        const lng = location.longitude;
+                        const heading = location.bearing || null;
+                        actualizarPosicionConductorEnMapa(lat, lng, heading);
+                        
+                        fetch(UBICACION_URL, { 
+                            method: 'POST', 
+                            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF }, 
+                            body: JSON.stringify({ latitud: lat, longitud: lng }) 
+                        }).catch(() => {});
+                    }
+                }
+            );
+        }
+    } catch (_) {}
+}
+
+async function detenerCapacitorBackgroundGps() {
+    try {
+        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.BackgroundGeolocation && capacitorWatcherId) {
+            await window.Capacitor.Plugins.BackgroundGeolocation.removeWatcher({
+                id: capacitorWatcherId
+            });
+            capacitorWatcherId = null;
+        }
+    } catch (_) {}
+}
+
 function iniciarRastreoGPS() {
     if (terminando) return;
+    
+    // Si corre en la App Nativa de Capacitor, encender el servicio Foreground
+    iniciarCapacitorBackgroundGps();
+
     if (!navigator.geolocation) return;
     watchId = navigator.geolocation.watchPosition(async (pos) => {
         if (terminando) { if (watchId) navigator.geolocation.clearWatch(watchId); return; }
@@ -640,6 +694,7 @@ function iniciarRastreoGPS() {
             });
             if (resp.status === 404) {
                 if (watchId) navigator.geolocation.clearWatch(watchId);
+                await detenerCapacitorBackgroundGps();
                 Swal.fire({
                     title: 'Vuelta Finalizada',
                     text: 'Esta vuelta ha sido dada por finalizada por la administración.',

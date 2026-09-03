@@ -1,0 +1,21 @@
+{
+  "appId": "com.transjunin.conductor",
+  "appName": "TransJunin Conductor",
+  "webDir": "public",
+  "server": {
+    "url": "https://www.transjunin.com/conductor/dashboard",
+    "cleartext": true
+  },
+  "android": {
+    "allowMixedContent": true,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false
+  },
+  "plugins": {
+    "BackgroundGeolocation": {
+      "notificationTitle": "TransJunín Conductor",
+      "notificationText": "Transmitiendo vuelta en vivo...",
+      "notificationIcon": "ic_stat_name"
+    }
+  }
+}

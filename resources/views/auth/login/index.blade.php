@@ -48,6 +48,17 @@
         <button type="submit" class="btn-primary" style="width:100%; padding:14px; font-weight:800; border-radius:10px; justify-content: center;">
             Entrar al Sistema
         </button>
+
+        {{-- Descarga de App Android --}}
+        <div style="margin-top: 20px; padding-top: 16px; border-top: 1px dashed var(--border); text-align: center;">
+            <a href="/descargas/TransJunin.apk" download class="btn-secondary" 
+               style="width: 100%; justify-content: center; padding: 10px; font-size: 13px; font-weight: 700; border-radius: 10px; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; color: var(--text);">
+                <i class="fa-brands fa-android" style="color: #22c55e; font-size: 16px;"></i> Descargar App Conductor (.apk)
+            </a>
+            <div style="font-size: 11px; color: var(--text3); margin-top: 6px;">
+                GPS automático en segundo plano para Android
+            </div>
+        </div>
     </form>
 
     <script>

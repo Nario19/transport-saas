@@ -5,26 +5,58 @@
 @section('extra_css')
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 <style>
-    .en-ruta-hero {
-        background: linear-gradient(135deg, #15803d 0%, #166534 100%);
-        border-radius: 16px;
-        padding: 16px;
-        color: #fff;
-        margin-bottom: 16px;
-        box-shadow: 0 4px 15px rgba(22, 101, 52, 0.25);
-    }
-    .map-box {
+    .map-container-full {
         position: relative;
-        border-radius: 12px;
+        margin: -16px -16px 16px -16px;
+        width: calc(100% + 32px);
+        height: 290px;
         overflow: hidden;
-        border: 2px solid rgba(255, 255, 255, 0.2);
-        margin-top: 12px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        border-bottom: 1px solid var(--border);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.06);
     }
     #map-conductor {
         width: 100%;
-        height: 230px;
+        height: 100%;
         background: #e2e8f0;
+    }
+    .map-floating-card {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        right: 12px;
+        z-index: 500;
+        background: rgba(15, 23, 42, 0.88);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 12px;
+        padding: 9px 14px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+    .map-recenter-btn {
+        position: absolute;
+        bottom: 12px;
+        right: 12px;
+        z-index: 500;
+        background: #ffffff;
+        color: #0f172a;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        width: 38px;
+        height: 38px;
+        box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        cursor: pointer;
+        transition: transform 0.15s ease;
+    }
+    .map-recenter-btn:active {
+        transform: scale(0.92);
     }
 
     /* Animación fluida de desplazamiento en hardware GPU */
@@ -134,34 +166,39 @@
     $flotaNum = $vuelta->vehiculo?->numero_flota ?? '';
 @endphp
 
-<div class="en-ruta-hero">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+{{-- 1. MAPA EDGE-TO-EDGE CON CARD FLOTANTE SUPERIOR --}}
+<div class="map-container-full">
+    {{-- Card Pequeña Flotante en la Parte Superior del Mapa --}}
+    <div class="map-floating-card">
         <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 18px; color: white;">
+            <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(59, 130, 246, 0.25); border: 1px solid rgba(96, 165, 250, 0.4); display: flex; align-items: center; justify-content: center; font-size: 14px; color: #60a5fa; flex-shrink: 0;">
                 <i class="fa-solid fa-car-side"></i>
             </div>
             <div>
-                <div style="font-size: 16px; font-weight: 800; line-height: 1.2;">¡En Ruta! Vuelta #{{ $vuelta->numero_vuelta }}</div>
-                <div style="font-size: 12px; opacity: 0.85; margin-top: 2px;">
-                    Hora de Inicio: <b>{{ $vuelta->hora_salida }}</b>
+                <div style="font-size: 13.5px; font-weight: 800; line-height: 1.2; letter-spacing: -0.01em; color: #ffffff;">
+                    ¡En Ruta! Vuelta #{{ $vuelta->numero_vuelta }}
+                </div>
+                <div style="font-size: 11px; opacity: 0.85; margin-top: 2px; color: #e2e8f0;">
+                    Hora de Inicio: <b style="color: #93c5fd;">{{ $vuelta->hora_salida }}</b>
                 </div>
             </div>
         </div>
         <div>
-            <span style="background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 99px; font-size: 11px; font-weight: 800; display: inline-flex; align-items: center; gap: 5px;">
-                <span class="pulse-dot" style="background:#4ade80; width:7px; height:7px; margin:0;"></span> EN VIVO
+            <span style="background: rgba(34, 197, 94, 0.2); border: 1px solid rgba(74, 222, 128, 0.35); color: #4ade80; padding: 4px 9px; border-radius: 99px; font-size: 10.5px; font-weight: 800; display: inline-flex; align-items: center; gap: 5px;">
+                <span class="pulse-dot" style="background:#4ade80; width:6px; height:6px; margin:0;"></span> EN VIVO
             </span>
         </div>
     </div>
 
-    <div class="map-box">
-        <div id="map-conductor"></div>
-        <button type="button" onclick="recentrarEnConductor()" 
-                style="position: absolute; bottom: 8px; right: 8px; z-index: 500; background: white; color: #0f172a; border: 1px solid var(--border); border-radius: 8px; width: 34px; height: 34px; box-shadow: 0 2px 6px rgba(0,0,0,0.25); display: flex; align-items: center; justify-content: center; font-size: 15px; cursor: pointer;"
-                title="Recentrar en mi ubicación">
-            <i class="fa-solid fa-crosshairs" style="color: var(--accent);"></i>
-        </button>
-    </div>
+    {{-- Contenedor del Mapa Leaflet --}}
+    <div id="map-conductor"></div>
+
+    {{-- Botón Recentrar Flotante --}}
+    <button type="button" onclick="recentrarEnConductor()" 
+            class="map-recenter-btn"
+            title="Recentrar en mi ubicación">
+        <i class="fa-solid fa-crosshairs" style="color: var(--accent);"></i>
+    </button>
 </div>
 
 <div class="card" style="margin-bottom: 16px;">

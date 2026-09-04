@@ -328,6 +328,11 @@
     </script>
     <style>
         @media print {
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color-adjust: exact !important;
+            }
 
             .sb,
             .topbar,
@@ -354,6 +359,21 @@
 
             body {
                 background: white !important;
+            }
+
+            .pill {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            .pill.purple,
+            .pill.morado,
+            [style*="#7c3aed"],
+            [style*="rgb(124, 58, 237)"] {
+                background-color: #7c3aed !important;
+                color: #ffffff !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
         }
     </style>

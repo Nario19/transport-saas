@@ -181,7 +181,7 @@
                                     $efectivoColor = $isDigital ? '#7c3aed' : 'inherit';
                                     $efectivoWeight = $isDigital ? '700' : 'normal';
                                 @endphp
-                                <strong>Pago registrado:</strong> {{ $tributoHoy->cobrado_at?->format('d/m/Y h:i A') }} vía <span style="color: {{ $efectivoColor }}; font-weight: {{ $efectivoWeight }};">EFECTIVO</span>
+                                <strong>Pago registrado:</strong> {{ $tributoHoy->cobrado_at?->format('d/m/Y h:i A') }} vía <span style="color: {{ $efectivoColor }}; font-weight: {{ $efectivoWeight }};">EFECTIVO{{ $isDigital ? ' •' : '' }}</span>
                             </div>
                         </div>
                     @endif

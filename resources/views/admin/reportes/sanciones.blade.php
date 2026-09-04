@@ -117,15 +117,15 @@
                                     <span class="pill {{ $s->estado === 'pagado' ? 'green' : ($s->estado === 'exonerado' ? 'blue' : 'red') }}" style="font-size:9px;">
                                         {{ strtoupper($s->estado) }}
                                     </span>
-                                    @if ($s->estado === 'pagado')
-                                         @php
-                                             $isDigital = in_array(strtolower($s->metodo_pago), ['yape', 'plin', 'mercadopago']);
-                                             $pillStyle = $isDigital ? 'background-color: #7c3aed !important; color: #ffffff !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;' : '';
-                                         @endphp
-                                         <span class="pill blue" style="font-size: 8px; padding: 2px 4px; font-weight: 800; {{ $pillStyle }}">
-                                             EFECTIVO
-                                         </span>
-                                     @endif
+                                     @if ($s->estado === 'pagado')
+                                          @php
+                                              $isDigital = in_array(strtolower($s->metodo_pago), ['yape', 'plin', 'mercadopago']);
+                                              $pillStyle = $isDigital ? 'background-color: #7c3aed !important; color: #ffffff !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;' : '';
+                                          @endphp
+                                          <span class="pill {{ $isDigital ? 'purple' : 'blue' }}" style="font-size: 8px; padding: 2px 5px; font-weight: 800; {{ $pillStyle }}">
+                                              EFECTIVO{{ $isDigital ? ' •' : '' }}
+                                          </span>
+                                      @endif
                                 </div>
                             </td>
                             <td style="text-align: right; font-weight: 900; color: {{ $s->estado === 'pagado' ? 'var(--green)' : 'var(--red)' }};">

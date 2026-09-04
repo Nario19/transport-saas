@@ -696,6 +696,14 @@
             color: var(--gold);
         }
 
+        .pill.purple,
+        .pill.morado {
+            background: #7c3aed !important;
+            color: #ffffff !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
         /* ── FORMS ── */
         .form-grid {
             display: grid;

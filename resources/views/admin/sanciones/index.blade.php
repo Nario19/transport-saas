@@ -104,10 +104,10 @@
                                                 <form action="{{ route('sanciones.pagar', $p->id) }}" method="POST" class="flex-h" style="gap: 4px;">
                                                     @csrf
                                                     <select name="metodo_pago" required class="filter-select"
-                                                         onchange="this.style.color = this.value === 'yape' ? '#7c3aed' : 'inherit'; this.style.fontWeight = this.value === 'yape' ? 'bold' : 'normal';"
-                                                         style="height: 32px; padding: 0 25px 0 8px; font-size: 10px; background: var(--bg); color: inherit;">
-                                                         <option value="efectivo" style="color: var(--text);">EFECTIVO</option>
-                                                         <option value="yape" style="color: #7c3aed; font-weight: bold;">EFECTIVO</option>
+                                                         onchange="this.style.color = this.value === 'yape' ? '#7c3aed' : 'inherit'; this.style.fontWeight = this.value === 'yape' ? '800' : 'normal';"
+                                                         style="height: 32px; padding: 0 25px 0 8px; font-size: 10.5px; background: var(--bg); color: inherit;">
+                                                         <option value="efectivo" style="color: var(--text); font-weight: normal;">EFECTIVO</option>
+                                                         <option value="yape" style="color: #7c3aed; font-weight: 800; background: #faf5ff;">EFECTIVO •</option>
                                                      </select>
                                                     <button type="submit" class="btn-primary btn-sm" style="background: var(--green); height: 32px; font-size: 10px;">
                                                         COBRAR
@@ -163,10 +163,10 @@
                                             <div style="font-size: 10px; color: var(--text3);">{{ $pag->motivo }}</div>
                                             @php
                                                 $isDigital = in_array(strtolower($pag->metodo_pago), ['yape', 'plin', 'mercadopago']);
-                                                $pillStyle = $isDigital ? 'background-color: #7c3aed; color: #fff;' : '';
+                                                $pillStyle = $isDigital ? 'background-color: #7c3aed !important; color: #ffffff !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;' : '';
                                             @endphp
-                                            <span class="pill blue" style="font-size: 8px; padding: 2px 6px; font-weight: 800; display: inline-block; margin-top: 4px; {{ $pillStyle }}">
-                                                EFECTIVO
+                                            <span class="pill {{ $isDigital ? 'purple' : 'blue' }}" style="font-size: 8px; padding: 2px 6px; font-weight: 800; display: inline-block; margin-top: 4px; {{ $pillStyle }}">
+                                                EFECTIVO{{ $isDigital ? ' •' : '' }}
                                             </span>
                                         </td>
                                         <td style="text-align: right; font-weight: 800; color: var(--green);">

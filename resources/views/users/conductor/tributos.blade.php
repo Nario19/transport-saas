@@ -64,7 +64,7 @@
                             $efectivoColor = $isDigital ? '#7c3aed' : 'inherit';
                             $efectivoWeight = $isDigital ? '700' : 'normal';
                         @endphp
-                        <span class="summary-val" style="font-weight:600; color: {{ $efectivoColor }}; font-weight: {{ $efectivoWeight }};">EFECTIVO</span>
+                        <span class="summary-val" style="font-weight:600; color: {{ $efectivoColor }}; font-weight: {{ $efectivoWeight }};">EFECTIVO{{ $isDigital ? ' •' : '' }}</span>
                     </div>
                     <div class="summary-row" style="display: flex; justify-content: space-between; padding: 10px 0;">
                         <span class="summary-label" style="font-weight:500; color:var(--text2);">Fecha y Hora</span>
@@ -106,7 +106,7 @@
                                     $efectivoColor = $isDigital ? '#7c3aed' : 'inherit';
                                     $efectivoWeight = $isDigital ? '700' : 'normal';
                                 @endphp
-                                <span style="color: {{ $efectivoColor }}; font-weight: {{ $efectivoWeight }};">EFECTIVO</span>
+                                <span style="color: {{ $efectivoColor }}; font-weight: {{ $efectivoWeight }};">EFECTIVO{{ $isDigital ? ' •' : '' }}</span>
                             @endif
                         </div>
                     </div>

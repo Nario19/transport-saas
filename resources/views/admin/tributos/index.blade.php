@@ -133,10 +133,10 @@
                                                     class="flex-h" style="gap: 4px;">
                                                     @csrf
                                                     <select name="metodo_pago" required class="filter-select"
-                                                        onchange="this.style.color = this.value === 'yape' ? '#7c3aed' : 'inherit'; this.style.fontWeight = this.value === 'yape' ? 'bold' : 'normal';"
-                                                        style="height: 32px; padding: 0 25px 0 8px; font-size: 10px; background-color: var(--bg); color: inherit;">
-                                                        <option value="efectivo" style="color: var(--text);">EFECTIVO</option>
-                                                        <option value="yape" style="color: #7c3aed; font-weight: bold;">EFECTIVO</option>
+                                                        onchange="this.style.color = this.value === 'yape' ? '#7c3aed' : 'inherit'; this.style.fontWeight = this.value === 'yape' ? '800' : 'normal';"
+                                                        style="height: 32px; padding: 0 25px 0 8px; font-size: 10.5px; background-color: var(--bg); color: inherit;">
+                                                        <option value="efectivo" style="color: var(--text); font-weight: normal;">EFECTIVO</option>
+                                                        <option value="yape" style="color: #7c3aed; font-weight: 800; background: #faf5ff;">EFECTIVO •</option>
                                                     </select>
                                                     <button type="submit" class="btn-primary"
                                                         style="height: 32px; background: var(--green); font-size: 10px; padding: 0 10px;">
@@ -206,10 +206,10 @@
                                         <td>
                                             @php
                                                 $isDigital = in_array(strtolower($pag->metodo_pago), ['yape', 'plin', 'mercadopago']);
-                                                $pillStyle = $isDigital ? 'background-color: #7c3aed; color: #fff;' : '';
+                                                $pillStyle = $isDigital ? 'background-color: #7c3aed !important; color: #ffffff !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;' : '';
                                             @endphp
-                                            <span class="pill blue" style="font-size: 9px; padding: 2px 8px; font-weight: 800; {{ $pillStyle }}">
-                                                EFECTIVO
+                                            <span class="pill {{ $isDigital ? 'purple' : 'blue' }}" style="font-size: 9px; padding: 2px 8px; font-weight: 800; {{ $pillStyle }}">
+                                                EFECTIVO{{ $isDigital ? ' •' : '' }}
                                             </span>
                                             @if($pag->cobrador)
                                                 <span class="text-sub" style="display:inline; margin-left: 5px;">Recibe:

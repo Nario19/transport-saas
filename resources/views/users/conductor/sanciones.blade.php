@@ -116,7 +116,7 @@
                                         $efectivoColor = $isDigital ? '#7c3aed' : 'inherit';
                                         $efectivoWeight = $isDigital ? '700' : 'normal';
                                     @endphp
-                                    <span style="color: {{ $efectivoColor }}; font-weight: {{ $efectivoWeight }}; font-size: 12.5px;">EFECTIVO</span>
+                                    <span style="color: {{ $efectivoColor }}; font-weight: {{ $efectivoWeight }}; font-size: 12.5px;">EFECTIVO{{ $isDigital ? ' •' : '' }}</span>
                                 </div>
                             @endif
                             <div style="display: flex; flex-direction: column; gap: 2px; text-align: right;">

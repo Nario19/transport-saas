@@ -112,40 +112,38 @@
                                 </td>
                                 <td style="font-size: 11.5px; max-width: 250px;">
                                     @if ($reg->estado === 'pagado')
-                                        <div style="display:flex; flex-direction:column; gap:2px;">
-                                             @php
-                                                 $isDigital = in_array(strtolower($reg->metodo_pago), ['yape', 'plin', 'mercadopago']);
-                                                 $pillStyle = $isDigital ? 'background-color: #7c3aed !important; color: #ffffff !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;' : '';
-                                             @endphp
-                                             <span class="pill blue" style="font-size: 9px; align-self:flex-start; {{ $pillStyle }}">
-                                                 EFECTIVO
-                                             </span>
-                                            @if ($reg->pagoMp)
-                                                <span style="font-size:9.5px; color:#009ee3; font-weight:600;">ID:
-                                                    {{ $reg->pagoMp->payment_id }}</span>
-                                            @endif
-                                        </div>
-                                    @elseif ($reg->estado === 'exonerado')
-                                        <span style="color:var(--text3); font-style:italic;">
-                                            <i class="fa-solid fa-info-circle"></i>
-                                            {{ \Str::limit($reg->observaciones, 40) }}
-                                        </span>
-                                    @else
-                                        <span style="color:var(--red); font-weight:600;">
-                                            <i class="fa-solid fa-clock"></i> Pendiente de Pago
-                                        </span>
-                                    @endif
-                                </td>
-                                <td
-                                    style="text-align:right; font-weight: 800; color: {{ $reg->estado === 'pagado' ? 'var(--green)' : ($reg->estado === 'exonerado' ? 'var(--text3)' : 'var(--red)') }};">
-                                    S/ {{ number_format($reg->monto, 2) }}
-                                </td>
-                                <td style="text-align:right; font-size: 10.5px; color:var(--text3);">
-                                    <div style="font-weight:600; color:var(--text2);">
-                                        {{ $reg->cobrador->name ?? 'Sistema' }}</div>
-                                    <div style="font-size:9px;">
-                                        {{ $reg->cobrador ? $reg->cobrador->roles->first()?->name : '-' }}</div>
-                                </td>
+                                         <div style="display:flex; flex-direction:column; gap:2px;">
+                                              @php
+                                                  $isDigital = in_array(strtolower($reg->metodo_pago), ['yape', 'plin', 'mercadopago']);
+                                                  $pillStyle = $isDigital ? 'background-color: #7c3aed !important; color: #ffffff !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;' : '';
+                                              @endphp
+                                              <span class="pill {{ $isDigital ? 'purple' : 'blue' }}" style="font-size: 9px; align-self:flex-start; font-weight: 800; {{ $pillStyle }}">
+                                                   EFECTIVO{{ $isDigital ? ' •' : '' }}
+                                              </span>
+                                             @if ($reg->pagoMp)
+                                                 <span style="font-size:9.5px; color:#009ee3; font-weight:600;">ID:
+                                                     {{ $reg->pagoMp->payment_id }}</span>
+                                             @endif
+                                         </div>
+                                     @elseif ($reg->estado === 'exonerado')
+                                         <span style="color:var(--text3); font-style:italic;">
+                                             <i class="fa-solid fa-info-circle"></i>
+                                             {{ \Str::limit($reg->observaciones, 40) }}
+                                         </span>
+                                     @else
+                                         <span style="color:var(--red); font-weight:600;">
+                                             <i class="fa-solid fa-clock"></i> Pendiente de Pago
+                                         </span>
+                                     @endif
+                                 </td>
+                                 <td
+                                     style="text-align:right; font-weight: 800; color: {{ $reg->estado === 'pagado' ? 'var(--green)' : ($reg->estado === 'exonerado' ? 'var(--text3)' : 'var(--red)') }};">
+                                     S/ {{ number_format($reg->monto, 2) }}
+                                 </td>
+                                 <td style="text-align:right; font-size: 11px; color:var(--text2);">
+                                     <div style="font-weight:700;">
+                                         {{ $reg->cobrador->name ?? 'Sistema' }}</div>
+                                 </td>
                             </tr>
                         @empty
                             <tr>

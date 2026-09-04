@@ -141,10 +141,24 @@
             </div>
             <div class="card-body" style="padding: 10px;">
                 @foreach($alertasOperativos as $alerta)
-                    <div style="padding: 10px; background: #f8fafc; border-radius: 8px; margin-bottom: 8px; border-left: 3px solid var(--accent);">
-                        <div style="font-weight: 700; font-size: 13px; color: var(--text);">{{ $alerta->titulo }}</div>
-                        <div style="font-size: 12px; color: var(--text2); margin-top: 2px;">{{ $alerta->descripcion }}</div>
-                        <div style="font-size: 10px; color: var(--text3); margin-top: 4px;">
+                    <div style="padding: 12px; background: #f8fafc; border-radius: 10px; margin-bottom: 8px; border-left: 4px solid var(--accent); border: 1px solid #e2e8f0; border-left-width: 4px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap;">
+                            <div style="font-weight: 800; font-size: 13.5px; color: var(--text);">{{ $alerta->titulo }}</div>
+                            @if($alerta->tipo)
+                                <span style="font-size: 10.5px; font-weight: 800; background: #e0f2fe; color: #0369a1; padding: 2px 7px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.3px;">
+                                    <i class="fa-solid fa-tag" style="font-size: 9px; margin-right: 2px;"></i>{{ $alerta->tipo }}
+                                </span>
+                            @endif
+                        </div>
+                        @if($alerta->punto && $alerta->punto !== 'Ubicación General')
+                            <div style="font-size: 11.5px; font-weight: 700; color: #d97706; margin-top: 3px;">
+                                <i class="fa-solid fa-location-dot" style="font-size: 10px;"></i> Ubicación: {{ $alerta->punto }}
+                            </div>
+                        @endif
+                        @if($alerta->mensaje)
+                            <div style="font-size: 12px; color: var(--text2); margin-top: 3px; line-height: 1.35;">{{ $alerta->mensaje }}</div>
+                        @endif
+                        <div style="font-size: 10.5px; color: var(--text3); margin-top: 5px;">
                             <i class="fa-regular fa-clock"></i> {{ $alerta->created_at->diffForHumans() }}
                         </div>
                     </div>

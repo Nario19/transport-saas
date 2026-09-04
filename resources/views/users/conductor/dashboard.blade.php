@@ -108,7 +108,7 @@
                             <option value="">-- Seleccionar Alerta --</option>
                             @foreach($alertasDisponibles as $al)
                                 <option value="{{ $al->id }}" data-tipo="alerta">
-                                    🔔 {{ $al->titulo }} @if($al->punto && $al->punto !== 'Ubicación General') ({{ $al->punto }}) @endif
+                                    🔔 {{ $al->titulo }} @if($al->tipo && $al->tipo !== 'General') [{{ $al->tipo }}] @endif @if($al->punto && $al->punto !== 'Ubicación General') ({{ $al->punto }}) @endif
                                 </option>
                             @endforeach
                         </select>

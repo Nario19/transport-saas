@@ -869,43 +869,51 @@
                             $iconClass = 'fa-solid fa-triangle-exclamation';
                             $iconColor = '#facc15';
 
-                            if ($opAlerta->tipo === 'desvio') {
+                            $tLower = strtolower($opAlerta->tipo ?? '');
+                            if (str_contains($tLower, 'desv')) {
                                 $bgGrad = 'linear-gradient(135deg, #d97706 0%, #b45309 100%)';
                                 $borderColor = '#f59e0b';
                                 $iconClass = 'fa-solid fa-route';
                                 $iconColor = '#fef08a';
-                            } elseif ($opAlerta->tipo === 'informativa') {
+                            } elseif (str_contains($tLower, 'info') || str_contains($tLower, 'aviso')) {
                                 $bgGrad = 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)';
                                 $borderColor = '#3b82f6';
                                 $iconClass = 'fa-solid fa-circle-info';
                                 $iconColor = '#93c5fd';
-                            } elseif ($opAlerta->tipo === 'urgente') {
+                            } elseif (str_contains($tLower, 'urgente') || str_contains($tLower, 'emergencia')) {
                                 $bgGrad = 'linear-gradient(135deg, #ea580c 0%, #9a3412 100%)';
                                 $borderColor = '#f97316';
                                 $iconClass = 'fa-solid fa-radiation';
                                 $iconColor = '#ffedd5';
                             }
                         @endphp
-                        <div id="operativo-card-{{ $opAlerta->id }}" class="alert-pulse-red" style="display: flex; justify-content: space-between; align-items: center; background: {{ $bgGrad }}; color: white; padding: 16px 14px; border-radius: 14px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25); border: 2px solid {{ $borderColor }}; position: relative; overflow: hidden; width: 100%; box-sizing: border-box; gap: 12px;">
+                        <div id="operativo-card-{{ $opAlerta->id }}" class="alert-pulse-red" style="display: flex; justify-content: space-between; align-items: center; background: {{ $bgGrad }}; color: white; padding: 14px; border-radius: 14px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25); border: 2px solid {{ $borderColor }}; position: relative; overflow: hidden; width: 100%; box-sizing: border-box; gap: 12px;">
                             <div style="display: flex; align-items: center; gap: 12px; z-index: 2; flex: 1;">
                                 <div style="width: 38px; height: 38px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; animation: pulse-icon 1.2s infinite; flex-shrink: 0;">
                                     <i class="{{ $iconClass }}" style="font-size: 18px; color: {{ $iconColor }};"></i>
                                 </div>
                                 <div style="text-align: left; flex: 1;">
-                                    <div style="font-weight: 900; font-size: 14px; letter-spacing: 0.3px; color: #ffffff; text-transform: uppercase;">
-                                        {{ $opAlerta->titulo ?: '⚠️ Alerta en Ruta' }}
+                                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 2px;">
+                                        <span style="font-weight: 900; font-size: 14px; letter-spacing: 0.3px; color: #ffffff; text-transform: uppercase;">
+                                            {{ $opAlerta->titulo ?: 'Alerta en Ruta' }}
+                                        </span>
+                                        @if($opAlerta->tipo)
+                                            <span style="background: rgba(255, 255, 255, 0.22); color: #ffffff; font-size: 10.5px; font-weight: 800; padding: 2px 7px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.3px; border: 1px solid rgba(255, 255, 255, 0.35); display: inline-flex; align-items: center; gap: 4px;">
+                                                <i class="fa-solid fa-tag" style="font-size: 9px;"></i> {{ $opAlerta->tipo }}
+                                            </span>
+                                        @endif
                                     </div>
                                     @if($opAlerta->punto && $opAlerta->punto !== 'Ubicación General')
-                                        <div style="font-size: 12px; font-weight: 700; opacity: 0.95; margin-top: 2px; color: #fef08a;">
-                                            Ubicación: <strong style="text-decoration: underline;">{{ $opAlerta->punto }}</strong>
+                                        <div style="font-size: 12px; font-weight: 700; opacity: 0.95; margin-top: 3px; color: #fef08a; display: flex; align-items: center; gap: 4px;">
+                                            <i class="fa-solid fa-location-dot" style="font-size: 11px;"></i> Ubicación: <strong style="text-decoration: underline;">{{ $opAlerta->punto }}</strong>
                                         </div>
                                     @endif
                                     @if($opAlerta->mensaje)
-                                        <div style="font-size: 12px; font-weight: 600; opacity: 0.95; margin-top: 3px; color: #f8fafc; line-height: 1.3;">
+                                        <div style="font-size: 12px; font-weight: 600; opacity: 0.95; margin-top: 4px; color: #f8fafc; line-height: 1.35; background: rgba(0,0,0,0.15); padding: 6px 10px; border-radius: 8px;">
                                             {{ $opAlerta->mensaje }}
                                         </div>
                                     @endif
-                                    <span style="font-size: 10px; display: block; opacity: 0.8; font-weight: normal; margin-top: 4px;">
+                                    <span style="font-size: 10px; display: block; opacity: 0.85; font-weight: normal; margin-top: 4px;">
                                         @php
                                             $creatorStr = 'Administración';
                                             if ($opAlerta->conductor) {
@@ -1046,38 +1054,47 @@
                                     borderColor = '#3b82f6';
                                     iconClass = 'fa-solid fa-circle-info';
                                     iconColor = '#93c5fd';
-                                } else if (tLower.includes('urgente')) {
+                                } else if (tLower.includes('urgente') || tLower.includes('emergencia')) {
                                     bgGrad = 'linear-gradient(135deg, #ea580c 0%, #9a3412 100%)';
                                     borderColor = '#f97316';
                                     iconClass = 'fa-solid fa-radiation';
                                     iconColor = '#ffedd5';
                                 }
 
+                                const tipoBadge = alerta.tipo ? `
+                                    <span style="background: rgba(255, 255, 255, 0.22); color: #ffffff; font-size: 10.5px; font-weight: 800; padding: 2px 7px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.3px; border: 1px solid rgba(255, 255, 255, 0.35); display: inline-flex; align-items: center; gap: 4px;">
+                                        <i class="fa-solid fa-tag" style="font-size: 9px;"></i> ${alerta.tipo}
+                                    </span>
+                                ` : '';
+
                                 const puntoHtml = (alerta.punto && alerta.punto !== 'Ubicación General') ? `
-                                    <div style="font-size: 12px; font-weight: 700; opacity: 0.95; margin-top: 2px; color: #fef08a;">
-                                        Ubicación: <strong style="text-decoration: underline;">${alerta.punto}</strong>
+                                    <div style="font-size: 12px; font-weight: 700; opacity: 0.95; margin-top: 3px; color: #fef08a; display: flex; align-items: center; gap: 4px;">
+                                        <i class="fa-solid fa-location-dot" style="font-size: 11px;"></i> Ubicación: <strong style="text-decoration: underline;">${alerta.punto}</strong>
                                     </div>
                                 ` : '';
 
                                 const mensajeHtml = alerta.mensaje ? `
-                                    <div style="font-size: 12px; font-weight: 600; opacity: 0.95; margin-top: 3px; color: #f8fafc; line-height: 1.3;">
+                                    <div style="font-size: 12px; font-weight: 600; opacity: 0.95; margin-top: 4px; color: #f8fafc; line-height: 1.35; background: rgba(0,0,0,0.15); padding: 6px 10px; border-radius: 8px;">
                                         ${alerta.mensaje}
                                     </div>
                                 ` : '';
 
                                 const cardHtml = `
-                                    <div id="operativo-card-${alerta.id}" class="alert-pulse-red" style="display: flex; justify-content: space-between; align-items: center; background: ${bgGrad}; color: white; padding: 16px 14px; border-radius: 14px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25); border: 2px solid ${borderColor}; position: relative; overflow: hidden; width: 100%; box-sizing: border-box; gap: 12px;">
+                                    <div id="operativo-card-${alerta.id}" class="alert-pulse-red" style="display: flex; justify-content: space-between; align-items: center; background: ${bgGrad}; color: white; padding: 14px; border-radius: 14px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25); border: 2px solid ${borderColor}; position: relative; overflow: hidden; width: 100%; box-sizing: border-box; gap: 12px;">
                                         <div style="display: flex; align-items: center; gap: 12px; z-index: 2; flex: 1;">
                                             <div style="width: 38px; height: 38px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; animation: pulse-icon 1.2s infinite; flex-shrink: 0;">
                                                 <i class="${iconClass}" style="font-size: 18px; color: ${iconColor};"></i>
                                             </div>
                                             <div style="text-align: left; flex: 1;">
-                                                <div style="font-weight: 900; font-size: 14px; letter-spacing: 0.3px; color: #ffffff; text-transform: uppercase;">
-                                                    ${alerta.titulo || '⚠️ ALERTA EN RUTA'}
+                                                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 2px;">
+                                                    <span style="font-weight: 900; font-size: 14px; letter-spacing: 0.3px; color: #ffffff; text-transform: uppercase;">
+                                                        ${alerta.titulo || 'ALERTA EN RUTA'}
+                                                    </span>
+                                                    ${tipoBadge}
                                                 </div>
                                                 ${puntoHtml}
                                                 ${mensajeHtml}
-                                                <span style="font-size: 10px; display: block; opacity: 0.8; font-weight: normal; margin-top: 4px;">
+                                                <span style="font-size: 10px; display: block; opacity: 0.85; font-weight: normal; margin-top: 4px;">
                                                     Emitido a las ${alerta.creado_at} por ${alerta.reportado_por}
                                                 </span>
                                             </div>
@@ -1093,11 +1110,25 @@
                                 notifiedAlertIds.push(alerta.id);
                                 sessionStorage.setItem('notified_alertas', JSON.stringify(notifiedAlertIds));
 
+                                let modalTipo = '';
+                                if (alerta.tipo) {
+                                    modalTipo = `
+                                        <div style="background:#f1f5f9; border:1px solid #e2e8f0; border-radius:10px; padding:10px 14px; margin-bottom:10px; text-align:left;">
+                                            <span style="font-size:11px; font-weight:800; color:#475569; text-transform:uppercase; display:flex; align-items:center; gap:5px;">
+                                                <i class="fa-solid fa-tag" style="color:#64748b;"></i> Tipo de Alerta
+                                            </span>
+                                            <span style="font-size:14px; font-weight:800; color:#0f172a; margin-top:2px; display:block;">${alerta.tipo}</span>
+                                        </div>
+                                    `;
+                                }
+
                                 let modalPunto = '';
                                 if (alerta.punto && alerta.punto !== 'Ubicación General') {
                                     modalPunto = `
                                         <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:10px 14px; margin-bottom:10px; text-align:left;">
-                                            <span style="font-size:11px; font-weight:800; color:#64748b; text-transform:uppercase; display:block;">📍 Punto Crítico / Ubicación</span>
+                                            <span style="font-size:11px; font-weight:800; color:#64748b; text-transform:uppercase; display:flex; align-items:center; gap:5px;">
+                                                <i class="fa-solid fa-location-dot" style="color:#dc2626;"></i> Punto Crítico / Ubicación
+                                            </span>
                                             <span style="font-size:14px; font-weight:800; color:#0f172a; margin-top:2px; display:block;">${alerta.punto}</span>
                                         </div>
                                     `;
@@ -1107,19 +1138,22 @@
                                 if (alerta.mensaje) {
                                     modalMensaje = `
                                         <div style="background:#fef2f2; border:1px solid #fee2e2; border-radius:10px; padding:10px 14px; margin-bottom:10px; text-align:left;">
-                                            <span style="font-size:11px; font-weight:800; color:#991b1b; text-transform:uppercase; display:block;">💬 Mensaje / Indicaciones</span>
+                                            <span style="font-size:11px; font-weight:800; color:#991b1b; text-transform:uppercase; display:flex; align-items:center; gap:5px;">
+                                                <i class="fa-solid fa-comment-dots" style="color:#991b1b;"></i> Mensaje / Indicaciones
+                                            </span>
                                             <span style="font-size:13.5px; font-weight:600; color:#7f1d1d; line-height:1.4; margin-top:2px; display:block;">${alerta.mensaje}</span>
                                         </div>
                                     `;
                                 }
 
                                 Swal.fire({
-                                    title: `<div style="font-size:18px; font-weight:900; color:#dc2626; text-transform:uppercase; letter-spacing:0.3px;">🚨 ${alerta.titulo || 'ALERTA EN RUTA'}</div>`,
+                                    title: `<div style="font-size:18px; font-weight:900; color:#dc2626; text-transform:uppercase; letter-spacing:0.3px;"><i class="fa-solid fa-triangle-exclamation" style="margin-right:6px;"></i> ${alerta.titulo || 'ALERTA EN RUTA'}</div>`,
                                     html: `
                                         <div style="margin-top:12px;">
+                                            ${modalTipo}
                                             ${modalPunto}
                                             ${modalMensaje}
-                                            <div style="font-size:11px; color:#64748b; margin-top:10px; font-weight:600;">
+                                            <div style="font-size:11.5px; color:#64748b; margin-top:12px; font-weight:600; text-align:center;">
                                                 Emitido a las <b>${alerta.creado_at}</b> por <b>${alerta.reportado_por}</b>
                                             </div>
                                         </div>

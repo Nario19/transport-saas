@@ -174,4 +174,55 @@ class AlertasOperativosTest extends TestCase
             'estado' => 'activo',
         ]);
     }
+
+    public function test_conductor_recibe_tipo_de_alerta_en_api_de_alertas_activas(): void
+    {
+        $roleConductor = Role::firstOrCreate(['name' => 'conductor', 'guard_name' => 'web']);
+        $userConductor = User::create([
+            'name' => 'Conductor Test',
+            'email' => 'conductor@transjunin.com',
+            'password' => bcrypt('password123'),
+            'empresa_id' => $this->empresa->id,
+            'activo' => true,
+        ]);
+        $userConductor->assignRole($roleConductor);
+
+        \App\Models\Conductor::create([
+            'user_id' => $userConductor->id,
+            'empresa_id' => $this->empresa->id,
+            'nombre' => 'Juan',
+            'apellidos' => 'Pérez',
+            'dni' => '12345678',
+            'telefono' => '987654321',
+            'licencia_conducir' => 'Q12345678',
+            'licencia_categoria' => 'A-IIa',
+            'licencia_vencimiento' => now()->addYear(),
+            'activo' => true,
+        ]);
+
+        AlertaOperativo::create([
+            'empresa_id'        => $this->empresa->id,
+            'user_id'           => $this->admin->id,
+            'titulo'            => 'Fiscalización SUTRAN',
+            'punto'             => 'Control Policial El Tambo',
+            'mensaje'           => 'Presentar documentos vigentes',
+            'tipo'              => 'Operativo Especial',
+            'visible_conductor' => true,
+            'estado'            => 'activo',
+            'expires_at'        => now()->addHour(),
+        ]);
+
+        $response = $this->actingAs($userConductor)->get(route('conductor.operativos.activos.api'));
+
+        $response->assertStatus(200);
+        $response->assertJsonStructure([
+            'alertas' => [
+                '*' => ['id', 'titulo', 'punto', 'mensaje', 'tipo', 'creado_at', 'es_creador', 'reportado_por']
+            ]
+        ]);
+        $response->assertJsonFragment([
+            'titulo' => 'Fiscalización SUTRAN',
+            'tipo'   => 'Operativo Especial',
+        ]);
+    }
 }

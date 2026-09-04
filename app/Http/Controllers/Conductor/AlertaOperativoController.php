@@ -175,26 +175,23 @@ class AlertaOperativoController extends Controller
         // Tipos de alerta registrados para la empresa
         $tiposAlerta = TipoAlerta::where('empresa_id', $empresaId)->orderBy('nombre')->get();
 
-        // Alertas Activas (estado activo y sin expirar)
-        $activas = AlertaOperativo::where('empresa_id', $empresaId)
-            ->where('estado', 'activo')
-            ->where('expires_at', '>', now())
+        // 1. Alertas Guardadas (Catálogo único de alertas configuradas)
+        $alertasGuardadas = AlertaOperativo::where('empresa_id', $empresaId)
             ->with(['conductor', 'user'])
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->get()
+            ->unique(function ($item) {
+                return trim(mb_strtolower($item->titulo)) . '|' . trim(mb_strtolower($item->punto ?? ''));
+            });
 
-        // Alertas Pasadas (finalizadas o ya expiradas)
+        // 2. Historial de todas las emisiones realizadas y por quién fue emitido
         $historial = AlertaOperativo::where('empresa_id', $empresaId)
-            ->where(function ($q) {
-                $q->where('estado', 'finalizado')
-                  ->orWhere('expires_at', '<=', now());
-            })
             ->with(['conductor', 'user'])
             ->orderBy('created_at', 'desc')
-            ->take(20)
+            ->take(30)
             ->get();
 
-        return view('admin.alertas.index', compact('activas', 'historial', 'puntos', 'tiposAlerta'));
+        return view('admin.alertas.index', compact('alertasGuardadas', 'historial', 'puntos', 'tiposAlerta'));
     }
 
     /**
@@ -209,15 +206,12 @@ class AlertaOperativoController extends Controller
             'punto' => 'nullable|string|max:150',
             'mensaje' => 'nullable|string|max:1000',
             'tipo' => 'nullable|string|max:100',
-            'duracion_minutos' => 'nullable|integer|min:5|max:10080',
-            'visible_conductor' => 'nullable',
+            'duracion_minutos' => 'nullable|integer|min:1|max:10080',
         ]);
 
         $punto = $request->input('punto') ?: 'Ubicación General';
         $duracion = (int) $request->input('duracion_minutos', 60);
         if ($duracion <= 0) $duracion = 60;
-
-        $visible = $request->has('visible_conductor') ? $request->boolean('visible_conductor') : true;
 
         $alerta = AlertaOperativo::create([
             'empresa_id'        => $empresaId,
@@ -226,8 +220,8 @@ class AlertaOperativoController extends Controller
             'titulo'            => $request->input('titulo'),
             'punto'             => $punto,
             'mensaje'           => $request->input('mensaje'),
-            'tipo'              => $request->input('tipo', 'Operativo / Control'),
-            'visible_conductor' => $visible,
+            'tipo'              => $request->input('tipo') ?: 'General',
+            'visible_conductor' => true,
             'estado'            => 'activo',
             'expires_at'        => now()->addMinutes($duracion),
         ]);
@@ -236,7 +230,7 @@ class AlertaOperativoController extends Controller
             broadcast(new AlertaOperativoCreada($alerta))->toOthers();
         } catch (\Exception $e) {}
 
-        return back()->with('success', "Alerta '{$alerta->titulo}' emitida correctamente.");
+        return back()->with('success', "Alerta '{$alerta->titulo}' guardada y emitida a la flota.");
     }
 
     /**
@@ -264,14 +258,19 @@ class AlertaOperativoController extends Controller
             abort(403, 'Acceso no autorizado.');
         }
 
-        if ($alerta->estado === 'activo') {
-            $alerta->update(['estado' => 'finalizado']);
-            try {
-                broadcast(new AlertaOperativoFinalizada($alerta))->toOthers();
-            } catch (\Exception $e) {}
-        }
+        AlertaOperativo::where('empresa_id', $alerta->empresa_id)
+            ->where('titulo', $alerta->titulo)
+            ->where('punto', $alerta->punto)
+            ->where('estado', 'activo')
+            ->update(['estado' => 'finalizado']);
 
-        return back()->with('success', 'La alerta se marcó como finalizada.');
+        $alerta->update(['estado' => 'finalizado']);
+
+        try {
+            broadcast(new AlertaOperativoFinalizada($alerta))->toOthers();
+        } catch (\Exception $e) {}
+
+        return back()->with('success', "La alerta '{$alerta->titulo}' fue finalizada.");
     }
 
     /**

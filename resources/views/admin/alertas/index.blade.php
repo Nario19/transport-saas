@@ -28,64 +28,60 @@
         </div>
     @endif
 
-    <div style="display: grid; grid-template-columns: 1fr 1.6fr; gap: 24px; align-items: start;">
+    <div style="display: grid; grid-template-columns: 1fr 1.65fr; gap: 24px; align-items: start;">
         
         {{-- COLUMNA 1: FORMULARIO REGISTRO & OPCIONES PREDEFINIDAS --}}
         <div style="display: flex; flex-direction: column; gap: 20px;">
             
-            {{-- EMITIR ALERTA PERSONALIZADA --}}
+            {{-- EMITIR ALERTA / GUARDAR NUEVA ALERTA --}}
             <div class="card">
                 <div class="card-header" style="background: var(--bg2); border-bottom: 1px solid var(--border);">
                     <span class="card-title" style="font-size: 14px; font-weight: 800;">
-                        <i class="fa-solid fa-paper-plane" style="color:var(--accent); margin-right:6px;"></i> Emitir Nueva Alerta
+                        <i class="fa-solid fa-bullhorn" style="color:var(--accent); margin-right:6px;"></i> Emitir Nueva Alerta
                     </span>
                 </div>
                 <div class="card-body" style="padding: 20px;">
                     <form action="{{ route('admin.alertas.store') }}" method="POST">
                         @csrf
                         
-                        {{-- Título de la alerta --}}
+                        {{-- Nombre / Título de la Alerta --}}
                         <div class="field" style="margin-bottom: 16px;">
                             <label style="font-weight:700; font-size:13px; color:var(--text); margin-bottom:6px; display:block;">
                                 Nombre / Título de la Alerta <span style="color:var(--red);">*</span>
                             </label>
                             <input type="text" name="titulo" required class="form-control" 
-                                   placeholder="Ej: Operativo Policial SUTRAN / Desvío por Obras" 
                                    style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); font-size:13px; font-weight:700; color:var(--text); background:var(--bg);">
                         </div>
 
-                        {{-- Tipo de Alerta & Duración --}}
+                        {{-- Tipo de Alerta & Duración Activa en Minutos --}}
                         <div style="display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 12px; margin-bottom: 16px;">
                             <div class="field">
-                                <label style="font-weight:700; font-size:12.5px; color:var(--text); margin-bottom:6px; display:block;">Tipo de Alerta</label>
+                                <label style="font-weight:700; font-size:12.5px; color:var(--text); margin-bottom:6px; display:block;">
+                                    Tipo de Alerta
+                                </label>
                                 <select name="tipo" class="form-control" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); font-size:12.5px; font-weight:700; color:var(--text); background:var(--bg);">
-                                    <option value="Operativo / Control">🚨 Operativo / Control</option>
-                                    <option value="Desvío / Obras">🚧 Desvío / Obras</option>
-                                    <option value="Urgente / Tránsito Cerrado">⚠️ Urgente / Tránsito Cerrado</option>
-                                    <option value="Aviso General">ℹ️ Aviso General</option>
                                     @if(isset($tiposAlerta) && $tiposAlerta->count() > 0)
-                                        <optgroup label="Mis Tipos Personalizados">
-                                            @foreach($tiposAlerta as $t)
-                                                <option value="{{ $t->nombre }}">🔔 {{ $t->nombre }}</option>
-                                            @endforeach
-                                        </optgroup>
+                                        @foreach($tiposAlerta as $t)
+                                            <option value="{{ $t->nombre }}">{{ $t->nombre }}</option>
+                                        @endforeach
+                                    @else
+                                        <option value="Operativo / Control">Operativo / Control</option>
+                                        <option value="Desvío / Obras">Desvío / Obras</option>
+                                        <option value="Fiscalización">Fiscalización</option>
+                                        <option value="Aviso General">Aviso General</option>
                                     @endif
                                 </select>
                             </div>
                             <div class="field">
-                                <label style="font-weight:700; font-size:12.5px; color:var(--text); margin-bottom:6px; display:block;">Duración Activa</label>
-                                <select name="duracion_minutos" class="form-control" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); font-size:12.5px; font-weight:700; color:var(--text); background:var(--bg);">
-                                    <option value="30">30 minutos</option>
-                                    <option value="60" selected>1 hora</option>
-                                    <option value="120">2 horas</option>
-                                    <option value="240">4 horas</option>
-                                    <option value="480">8 horas</option>
-                                    <option value="1440">Todo el día (24h)</option>
-                                </select>
+                                <label style="font-weight:700; font-size:12.5px; color:var(--text); margin-bottom:6px; display:block;">
+                                    Duración Activa (min)
+                                </label>
+                                <input type="number" name="duracion_minutos" value="60" min="5" max="1440" required class="form-control" 
+                                       style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border); font-size:13px; font-weight:700; color:var(--text); background:var(--bg);">
                             </div>
                         </div>
 
-                        {{-- Punto / Ubicación --}}
+                        {{-- Punto Crítico / Ubicación --}}
                         <div class="field" style="margin-bottom: 16px;">
                             <label style="font-weight:700; font-size:12.5px; color:var(--text); margin-bottom:6px; display:block;">
                                 Punto Crítico / Ubicación (Opcional)
@@ -98,29 +94,17 @@
                             </select>
                         </div>
 
-                        {{-- Mensaje / Descripción --}}
-                        <div class="field" style="margin-bottom: 16px;">
+                        {{-- Mensaje / Indicaciones para el Conductor --}}
+                        <div class="field" style="margin-bottom: 20px;">
                             <label style="font-weight:700; font-size:12.5px; color:var(--text); margin-bottom:6px; display:block;">
                                 Mensaje / Indicaciones para el Conductor
                             </label>
                             <textarea name="mensaje" rows="2" class="form-control" 
-                                      placeholder="Ej: Inspección de documentos, SOAT y revisión técnica. Manejar con precaución."
                                       style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); font-size:12.5px; color:var(--text); background:var(--bg); resize: vertical; font-family: inherit;"></textarea>
                         </div>
 
-                        {{-- Switch de Visibilidad para Conductor --}}
-                        <div style="background: var(--bg); border: 1.5px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; cursor: pointer;">
-                            <input type="checkbox" id="visible_conductor" name="visible_conductor" value="1" checked style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--green);">
-                            <label for="visible_conductor" style="font-weight: 700; font-size: 13px; color: var(--text); cursor: pointer; margin: 0; user-select: none;">
-                                Disponible para que el Conductor la emita
-                                <span style="display: block; font-size: 11px; font-weight: normal; color: var(--text3); margin-top: 1px;">
-                                    Si marcas este check, la alerta aparecerá en el dashboard de los conductores para que ellos puedan reportarla.
-                                </span>
-                            </label>
-                        </div>
-
-                        <button type="submit" class="btn-primary" style="width: 100%; height: 46px; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; font-weight: 800; border-radius: 10px;">
-                            <i class="fa-solid fa-bullhorn"></i> Emitir Alerta a la Flota
+                        <button type="submit" class="btn-primary" style="width: 100%; height: 46px; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; font-weight: 800; border-radius: 10px; cursor: pointer;">
+                            <i class="fa-solid fa-paper-plane"></i> Emitir Alerta a la Flota
                         </button>
                     </form>
                 </div>
@@ -137,7 +121,7 @@
                     <form action="{{ route('admin.tipos-alerta.store') }}" method="POST" style="margin-bottom: 14px; display: flex; gap: 8px;">
                         @csrf
                         <div class="field" style="margin: 0; flex: 1;">
-                            <input type="text" name="nombre" placeholder="Ej: Continental / SUTRAN / Fiscalización" required class="form-control" style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); font-size:12.5px; font-weight:700; height: 38px;">
+                            <input type="text" name="nombre" required class="form-control" style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); font-size:12.5px; font-weight:700; height: 38px;">
                         </div>
                         <button type="submit" class="btn-primary" style="height: 38px; padding: 0 14px; font-size: 12px; font-weight: 700; border-radius: 8px; flex-shrink:0;">
                             + Agregar
@@ -158,7 +142,7 @@
                             </div>
                         @empty
                             <div style="text-align: center; color: var(--text3); font-size: 12px; padding: 12px;">
-                                No hay tipos de alerta adicionales creados.
+                                No hay tipos de alerta registrados.
                             </div>
                         @endforelse
                     </div>
@@ -176,7 +160,7 @@
                     <form action="{{ route('admin.puntos.store') }}" method="POST" style="margin-bottom: 14px; display: flex; gap: 8px;">
                         @csrf
                         <div class="field" style="margin: 0; flex: 1;">
-                            <input type="text" name="nombre" placeholder="Ej: Óvalo Sumar / Quebrada" required class="form-control" style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); font-size:12.5px; font-weight:700; height: 38px;">
+                            <input type="text" name="nombre" required class="form-control" style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); font-size:12.5px; font-weight:700; height: 38px;">
                         </div>
                         <button type="submit" class="btn-primary" style="height: 38px; padding: 0 14px; font-size: 12px; font-weight: 700; border-radius: 8px; flex-shrink:0;">
                             + Agregar
@@ -206,16 +190,18 @@
 
         </div>
 
-        {{-- COLUMNA 2: LISTADOS --}}
+        {{-- COLUMNA 2: ALERTAS GUARDADAS & HISTORIAL --}}
         <div style="display: flex; flex-direction: column; gap: 20px;">
             
-            {{-- ALERTAS ACTIVAS EN TIEMPO REAL --}}
+            {{-- 1. ALERTAS GUARDADAS (LISTAS PARA GESTIONAR, EMITIR Y FINALIZAR) --}}
             <div class="card">
                 <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
                     <span class="card-title" style="font-size: 14.5px; font-weight: 800;">
-                        <i class="fa-solid fa-triangle-exclamation" style="color:var(--red); margin-right:6px;"></i> Alertas Activas en Ruta
+                        <i class="fa-solid fa-layer-group" style="color:var(--accent); margin-right:6px;"></i> Alertas Guardadas
                     </span>
-                    <span class="badge" style="background:var(--red-l); color:var(--red); font-weight:800; font-size:11px; padding:3px 8px; border-radius:6px;">{{ $activas->count() }} activas</span>
+                    <span class="badge" style="background:var(--accent-l); color:var(--accent); font-weight:800; font-size:11px; padding:3px 8px; border-radius:6px;">
+                        {{ $alertasGuardadas->count() }} configuradas
+                    </span>
                 </div>
                 <div class="card-body" style="padding: 0;">
                     <div class="tbl-wrap">
@@ -224,64 +210,100 @@
                                 <tr>
                                     <th>Alerta / Detalle</th>
                                     <th>Ubicación</th>
-                                    <th>Expira en</th>
+                                    <th style="text-align:center;">Visible para Conductor</th>
+                                    <th>Estado en Ruta</th>
                                     <th class="col-actions" style="text-align: right;">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse($activas as $alerta)
+                                @forelse($alertasGuardadas as $alerta)
+                                    @php
+                                        $activaInstancia = \App\Models\AlertaOperativo::where('empresa_id', auth()->user()->empresa_id)
+                                            ->where('titulo', $alerta->titulo)
+                                            ->where('punto', $alerta->punto)
+                                            ->where('estado', 'activo')
+                                            ->where('expires_at', '>', now())
+                                            ->first();
+                                    @endphp
                                     <tr>
                                         <td>
-                                            <div style="font-weight: 800; color: var(--text); font-size: 13.5px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                                                <span class="pill" style="background: #fee2e2; color: #991b1b; font-size: 10px; font-weight: 800; padding: 2px 6px;">
-                                                    {{ strtoupper($alerta->tipo ?: 'ALERTA') }}
+                                            <div style="font-weight: 800; color: var(--text); font-size: 13px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                                                <span class="pill blue" style="font-size: 9.5px; font-weight: 800; padding: 2px 6px;">
+                                                    {{ strtoupper($alerta->tipo ?: 'GENERAL') }}
                                                 </span>
-                                                {{ $alerta->titulo ?: 'Control / Operativo' }}
+                                                {{ $alerta->titulo }}
                                             </div>
                                             @if($alerta->mensaje)
-                                                <div style="font-size: 11.5px; color: var(--text2); margin-top: 3px; max-width: 260px; line-height: 1.3;">
+                                                <div style="font-size: 11.5px; color: var(--text2); margin-top: 3px; max-width: 240px; line-height: 1.3;">
                                                     {{ $alerta->mensaje }}
                                                 </div>
                                             @endif
-                                            <div style="font-size: 10.5px; color: var(--text3); margin-top: 3px;">
-                                                @if($alerta->conductor)
-                                                    Reportado por Conductor: <b>{{ $alerta->conductor->nombre_completo }}</b>
-                                                @else
-                                                    Reportado por Admin: <b>{{ $alerta->user?->name ?? 'Sistema' }}</b>
-                                                @endif
-                                                • {{ $alerta->created_at->format('h:i A') }}
-                                            </div>
                                         </td>
-                                        <td style="font-weight: 700; font-size: 12.5px; color: var(--text2);">
+                                        <td style="font-weight: 700; font-size: 12px; color: var(--text2);">
                                             {{ $alerta->punto ?: 'Ubicación General' }}
                                         </td>
-                                        <td style="font-family: monospace; font-weight: 800; font-size: 12px; color: var(--red);">
-                                            @php
-                                                $diffSeconds = now()->diffInSeconds($alerta->expires_at, false);
-                                                if ($diffSeconds > 0) {
-                                                    $mins = floor($diffSeconds / 60);
-                                                    $secs = $diffSeconds % 60;
-                                                    echo sprintf("%02dm %02ds", $mins, $secs);
-                                                } else {
-                                                    echo 'Expirando...';
-                                                }
-                                            @endphp
-                                        </td>
-                                        <td class="col-actions" style="text-align: right;">
-                                            <form action="{{ route('admin.alertas.finalizar', $alerta) }}" method="POST" style="display: inline;">
+                                        <td style="text-align: center;">
+                                            <form action="{{ route('admin.alertas.toggle-visibilidad', $alerta) }}" method="POST" style="margin: 0; display: inline-flex; align-items: center;">
                                                 @csrf
-                                                <button type="submit" class="btn-secondary" style="font-size: 11px; padding: 6px 12px; background: var(--green); color: white; border: none; font-weight: 700; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;" title="Finalizar alerta">
-                                                    <i class="fa-solid fa-check-double"></i> Finalizar
-                                                </button>
+                                                <label style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: 12px; font-weight: 700; color: {{ $alerta->visible_conductor ? 'var(--green)' : 'var(--text3)' }};" title="Marcar para que los conductores la puedan emitir desde su app">
+                                                    <input type="checkbox" onchange="this.form.submit()" {{ $alerta->visible_conductor ? 'checked' : '' }} style="width: 16px; height: 16px; accent-color: var(--green); cursor: pointer;">
+                                                    <span>{{ $alerta->visible_conductor ? 'Visible' : 'Oculto' }}</span>
+                                                </label>
                                             </form>
+                                        </td>
+                                        <td>
+                                            @if($activaInstancia)
+                                                @php
+                                                    $diffSec = now()->diffInSeconds($activaInstancia->expires_at, false);
+                                                    $mins = floor($diffSec / 60);
+                                                    $secs = $diffSec % 60;
+                                                @endphp
+                                                <span class="pill green" style="font-size: 10.5px; font-weight: 800; padding: 3px 8px; display: inline-flex; align-items: center; gap: 4px;">
+                                                    <i class="fa-solid fa-circle-dot"></i> Activa ({{ sprintf("%02dm %02ds", $mins, $secs) }})
+                                                </span>
+                                            @else
+                                                <span class="pill gray" style="font-size: 10.5px; font-weight: 700; padding: 3px 8px; display: inline-flex; align-items: center; gap: 4px;">
+                                                    <i class="fa-solid fa-circle-pause"></i> Inactiva
+                                                </span>
+                                            @endif
+                                        </td>
+                                        <td class="col-actions" style="text-align: right; white-space: nowrap;">
+                                            <div style="display: inline-flex; align-items: center; gap: 6px;">
+                                                @if($activaInstancia)
+                                                    {{-- Botón Finalizar --}}
+                                                    <form action="{{ route('admin.alertas.finalizar', $activaInstancia->id) }}" method="POST" style="display: inline;">
+                                                        @csrf
+                                                        <button type="submit" class="btn-secondary" style="font-size: 11px; padding: 5px 10px; background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; font-weight: 800; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;" title="Finalizar emisión activa">
+                                                            <i class="fa-solid fa-stop"></i> Finalizar
+                                                        </button>
+                                                    </form>
+                                                @else
+                                                    {{-- Botón Emitir --}}
+                                                    <form action="{{ route('admin.alertas.reemitir', $alerta) }}" method="POST" style="display: inline-flex; align-items: center; gap: 4px;">
+                                                        @csrf
+                                                        <input type="number" name="duracion_minutos" value="60" min="5" max="1440" style="width: 54px; font-size: 11px; padding: 3px 6px; border-radius: 6px; border: 1px solid var(--border); font-weight: 700; background: var(--bg); color: var(--text);" title="Minutos de duración">
+                                                        <button type="submit" class="btn-primary" style="font-size: 11px; padding: 5px 10px; font-weight: 800; border-radius: 6px; background: #2563eb; display: inline-flex; align-items: center; gap: 4px; cursor: pointer;" title="Emitir alerta a la flota">
+                                                            <i class="fa-solid fa-paper-plane"></i> Emitir
+                                                        </button>
+                                                    </form>
+                                                @endif
+
+                                                {{-- Botón Eliminar --}}
+                                                <form action="{{ route('admin.alertas.destroy', $alerta) }}" method="POST" style="display: inline;" onsubmit="return confirm('¿Seguro que deseas eliminar esta alerta?')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" style="background: none; border: none; color: var(--red); cursor: pointer; padding: 4px 6px; font-size: 12.5px;" title="Eliminar alerta">
+                                                        <i class="fa-solid fa-trash-can"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="4" style="text-align:center; padding:40px; color:var(--text3);">
-                                            <div style="font-size:32px; margin-bottom:10px;">🛡️</div>
-                                            <div style="font-weight:700; font-size:14px; color:var(--text);">No hay reportes de operativos activos</div>
-                                            <div style="font-size:11px; margin-top:2px;">Todo parece estar libre en la ruta por ahora.</div>
+                                        <td colspan="5" style="text-align:center; padding:35px; color:var(--text3); font-size:12.5px;">
+                                            <div style="font-size:28px; margin-bottom:8px;"><i class="fa-solid fa-folder-open" style="opacity: 0.5;"></i></div>
+                                            No hay alertas guardadas aún. Completa el formulario de la izquierda para emitir la primera.
                                         </td>
                                     </tr>
                                 @endforelse
@@ -291,14 +313,14 @@
                 </div>
             </div>
 
-            {{-- HISTORIAL DE ALERTAS Y CATÁLOGO PARA RE-EMITIR --}}
+            {{-- 2. HISTORIAL DE TODAS LAS ALERTAS EMITIDAS --}}
             <div class="card">
                 <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
                     <span class="card-title" style="font-size: 14px; font-weight: 800;">
-                        <i class="fa-solid fa-list-check" style="color:var(--accent); margin-right:5px;"></i> Catálogo de Alertas Guardadas (Listas para Emitir)
+                        <i class="fa-solid fa-clock-rotate-left" style="color:var(--accent); margin-right:6px;"></i> Historial de Alertas Emitidas
                     </span>
                     <span style="font-size: 11px; color: var(--text3); font-weight: 600;">
-                        Presiona <b>"Emitir de nuevo"</b> para reactivar en la flota
+                        Registro cronológico de avisos emitidos a la flota
                     </span>
                 </div>
                 <div class="card-body" style="padding: 0;">
@@ -306,88 +328,69 @@
                         <table class="tbl tbl-modern">
                             <thead>
                                 <tr>
-                                    <th>Alerta / Indicaciones</th>
+                                    <th>Alerta / Detalle</th>
                                     <th>Ubicación</th>
-                                    <th>Emisor y Fecha</th>
-                                    <th style="text-align:center;">Opción para Chofer</th>
-                                    <th class="col-actions" style="text-align:right;">Acciones</th>
+                                    <th>Emitido Por</th>
+                                    <th>Fecha y Hora</th>
+                                    <th style="text-align: right;">Estado</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse($historial as $alerta)
+                                @forelse($historial as $item)
                                     <tr>
                                         <td>
-                                            <div style="font-weight: 800; font-size: 13px; color: var(--text); display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                                                <span class="pill" style="background: #e0f2fe; color: #0369a1; font-size: 10px; font-weight: 800; padding: 2px 6px;">
-                                                    {{ strtoupper($alerta->tipo ?: 'ALERTA') }}
+                                            <div style="font-weight: 800; font-size: 12.5px; color: var(--text); display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                                                <span class="pill blue" style="font-size: 9.5px; font-weight: 800; padding: 2px 6px;">
+                                                    {{ strtoupper($item->tipo ?: 'GENERAL') }}
                                                 </span>
-                                                {{ $alerta->titulo ?: 'Control / Operativo' }}
+                                                {{ $item->titulo }}
                                             </div>
-                                            @if($alerta->mensaje)
-                                                <div style="font-size: 11.5px; color: var(--text2); margin-top: 2px; max-width: 260px; line-height: 1.3;">
-                                                    {{ $alerta->mensaje }}
+                                            @if($item->mensaje)
+                                                <div style="font-size: 11px; color: var(--text2); margin-top: 2px; max-width: 220px; line-height: 1.3;">
+                                                    {{ $item->mensaje }}
                                                 </div>
                                             @endif
                                         </td>
                                         <td style="font-weight: 700; font-size: 12px; color: var(--text2);">
-                                            {{ $alerta->punto ?: 'Ubicación General' }}
+                                            {{ $item->punto ?: 'Ubicación General' }}
+                                        </td>
+                                        <td style="font-size: 11.5px;">
+                                            @if($item->conductor)
+                                                <div style="display: flex; align-items: center; gap: 5px; font-weight: 700; color: #0284c7;">
+                                                    <i class="fa-solid fa-id-card"></i> {{ $item->conductor->nombre_completo }}
+                                                </div>
+                                                <span style="font-size: 10px; color: var(--text3);">Conductor</span>
+                                            @else
+                                                <div style="display: flex; align-items: center; gap: 5px; font-weight: 700; color: var(--accent);">
+                                                    <i class="fa-solid fa-user-shield"></i> {{ $item->user?->name ?? 'Administración' }}
+                                                </div>
+                                                <span style="font-size: 10px; color: var(--text3);">Admin</span>
+                                            @endif
                                         </td>
                                         <td style="font-size: 11px; color: var(--text3);">
-                                            <div>
-                                                @if($alerta->conductor)
-                                                    Chofer: <b>{{ $alerta->conductor->nombre_completo }}</b>
-                                                @else
-                                                    Admin: <b>{{ $alerta->user?->name ?? 'Sistema' }}</b>
-                                                @endif
-                                            </div>
-                                            <div style="margin-top: 2px;">{{ $alerta->created_at->format('d/m/Y h:i A') }}</div>
+                                            <div style="font-weight: 700; color: var(--text2);">{{ $item->created_at->format('d/m/Y') }}</div>
+                                            <div style="font-size: 10.5px;">{{ $item->created_at->format('h:i A') }}</div>
                                         </td>
-                                        <td style="text-align: center;">
-                                            <form action="{{ route('admin.alertas.toggle-visibilidad', $alerta) }}" method="POST" style="display: inline;">
-                                                @csrf
-                                                @if($alerta->visible_conductor)
-                                                    <button type="submit" class="pill green" style="border: none; cursor: pointer; font-size: 10.5px; font-weight: 800; padding: 4px 8px; display: inline-flex; align-items: center; gap: 4px;" title="Disponible para que el chofer la reporte. Clic para ocultar.">
-                                                        <i class="fa-solid fa-eye"></i> Visible
-                                                    </button>
-                                                @else
-                                                    <button type="submit" class="pill gray" style="border: none; cursor: pointer; font-size: 10.5px; font-weight: 800; padding: 4px 8px; display: inline-flex; align-items: center; gap: 4px;" title="Oculta para el chofer. Clic para ponerla disponible.">
-                                                        <i class="fa-solid fa-eye-slash"></i> Oculta
-                                                    </button>
-                                                @endif
-                                            </form>
-                                        </td>
-                                        <td class="col-actions" style="text-align: right; white-space: nowrap;">
-                                            <div style="display: inline-flex; align-items: center; gap: 6px;">
-                                                {{-- Formulario de Re-emisión --}}
-                                                <form action="{{ route('admin.alertas.reemitir', $alerta) }}" method="POST" style="display: inline-flex; align-items: center; gap: 4px;">
-                                                    @csrf
-                                                    <select name="duracion_minutos" style="font-size: 11px; padding: 4px 6px; border-radius: 6px; border: 1px solid var(--border); font-weight: 700; background: var(--bg); color: var(--text);">
-                                                        <option value="30">30m</option>
-                                                        <option value="60" selected>1h</option>
-                                                        <option value="120">2h</option>
-                                                        <option value="240">4h</option>
-                                                        <option value="1440">24h</option>
-                                                    </select>
-                                                    <button type="submit" class="btn-primary" style="font-size: 11.5px; padding: 5px 10px; font-weight: 800; border-radius: 6px; background: #2563eb; display: inline-flex; align-items: center; gap: 4px;" title="Emitir esta alerta de nuevo">
-                                                        <i class="fa-solid fa-bolt"></i> Emitir de nuevo
-                                                    </button>
-                                                </form>
-
-                                                {{-- Eliminar del historial --}}
-                                                <form action="{{ route('admin.alertas.destroy', $alerta) }}" method="POST" style="display: inline;" onsubmit="return confirm('¿Eliminar esta alerta del historial?')">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" style="background: none; border: none; color: var(--red); cursor: pointer; padding: 6px; font-size: 13px;" title="Eliminar registro">
-                                                        <i class="fa-solid fa-trash-can"></i>
-                                                    </button>
-                                                </form>
-                                            </div>
+                                        <td style="text-align: right;">
+                                            @if($item->estado === 'activo' && $item->expires_at > now())
+                                                <span class="pill green" style="font-size: 10px; font-weight: 800;">
+                                                    <i class="fa-solid fa-circle-dot"></i> Activa
+                                                </span>
+                                            @elseif($item->estado === 'finalizado')
+                                                <span class="pill gray" style="font-size: 10px; font-weight: 700;">
+                                                    Finalizada
+                                                </span>
+                                            @else
+                                                <span class="pill orange" style="font-size: 10px; font-weight: 700;">
+                                                    Expirada
+                                                </span>
+                                            @endif
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
                                         <td colspan="5" style="text-align:center; padding:30px; color:var(--text3); font-size:12px;">
-                                            Sin alertas anteriores registradas.
+                                            Sin historial de emisiones registrado.
                                         </td>
                                     </tr>
                                 @endforelse

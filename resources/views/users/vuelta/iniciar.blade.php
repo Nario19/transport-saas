@@ -553,6 +553,20 @@ function mostrarResultado(ok, msg) {
     el.innerHTML = `<span class="check-badge ${ok ? 'ok' : 'fail'}">${msg}</span>`;
 }
 
+async function verificarMockGps() {
+    try {
+        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.TransJuninGps) {
+            const res = await window.Capacitor.Plugins.TransJuninGps.checkMockLocation();
+            if (res && res.isMock) {
+                return true;
+            }
+        }
+    } catch (e) {
+        console.warn("Mock GPS check error:", e);
+    }
+    return false;
+}
+
 async function iniciarVuelta() {
     if (REQUIERE_FACIAL && !rostroVerificado) {
         alert('Espera a que se complete la verificación facial con éxito.');
@@ -562,6 +576,13 @@ async function iniciarVuelta() {
     const paraderoSelect = document.getElementById('paradero-select').value;
     if (!rutaSelect) { alert('Debes seleccionar una ruta antes de iniciar la vuelta.'); return; }
     if (!paraderoSelect) { alert('Debes seleccionar el paradero de inicio antes de iniciar la vuelta.'); return; }
+
+    // VALIDACIÓN ANTI FAKE GPS (Mock Location)
+    const isMock = await verificarMockGps();
+    if (isMock) {
+        alert('⚠️ ALERTA DE SEGURIDAD:\nSe ha detectado una aplicación de ubicación simulada / Fake GPS activa en tu dispositivo.\n\nPor políticas de seguridad de la empresa, debes desactivarla para poder iniciar la vuelta.');
+        return;
+    }
     
     document.getElementById('btn-iniciar-vuelta').disabled = true;
     document.getElementById('iniciando-msg').classList.remove('hidden');
@@ -577,7 +598,8 @@ async function iniciarVuelta() {
         ruta_id: rutaSelect, 
         ruta_paradero_id: paraderoSelect, 
         latitud: posFinal.lat, 
-        longitud: posFinal.lng 
+        longitud: posFinal.lng,
+        is_mock: isMock
     };
     try {
         const resp = await fetch(INICIAR_URL, {

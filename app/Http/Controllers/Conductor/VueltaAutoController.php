@@ -84,6 +84,10 @@ class VueltaAutoController extends Controller
 
         $request->validated();
 
+        if ($request->boolean('is_mock')) {
+            return response()->json(['ok' => false, 'error' => 'Ubicación simulada detectada. No se permite iniciar la vuelta con aplicaciones de GPS simulado.'], 422);
+        }
+
         if ($conductor->requiere_facial && !$request->verificado_rostro) {
             return response()->json(['ok' => false, 'error' => 'La verificación facial es requerida para poder iniciar la vuelta.'], 422);
         }
@@ -212,6 +216,25 @@ class VueltaAutoController extends Controller
                 'ok' => false,
                 'error' => 'No puedes finalizar la vuelta en ' . $p->nombre . '. Al iniciar desde un punto intermedio, debes dirigirte hacia el extremo opuesto de la ruta.'
             ], 422);
+        }
+
+        if ($request->boolean('is_mock')) {
+            return response()->json(['ok' => false, 'error' => 'Ubicación simulada detectada. No se permite finalizar la vuelta con aplicaciones de GPS simulado.'], 422);
+        }
+
+        // Validación Anti-Salto / Teletransportación
+        if (!is_null($vuelta->lat_actual) && !is_null($vuelta->lng_actual) && $vuelta->updated_at) {
+            $segundosDesdeUltimaPos = max(1, now()->diffInSeconds($vuelta->updated_at));
+            if ($segundosDesdeUltimaPos < 180) {
+                $distancia = $this->haversineDistance($vuelta->lat_actual, $vuelta->lng_actual, $request->latitud, $request->longitud);
+                $velocidadKmh = ($distancia / $segundosDesdeUltimaPos) * 3.6;
+                if ($distancia > 2000 && $velocidadKmh > 140) {
+                    return response()->json([
+                        'ok' => false,
+                        'error' => 'Salto anómalo de ubicación detectado. Tu última posición física registrada estaba a ' . round($distancia / 1000, 1) . ' km hace ' . $segundosDesdeUltimaPos . ' segundos.'
+                    ], 422);
+                }
+            }
         }
 
         if (!is_null($p->latitud_a)) {

@@ -107,6 +107,11 @@ public class GpsForegroundService extends Service implements LocationListener {
     public void onLocationChanged(Location location) {
         if (location == null) return;
 
+        if (TransJuninGpsPlugin.isLocationMock(location)) {
+            // Ignorar y bloquear transmisiones de Fake GPS / Ubicaciones simuladas
+            return;
+        }
+
         long now = System.currentTimeMillis();
 
         if (lastLocation != null) {

@@ -531,7 +531,35 @@ function confirmarTerminar() {
     });
 }
 
+async function verificarMockGps() {
+    try {
+        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.TransJuninGps) {
+            const res = await window.Capacitor.Plugins.TransJuninGps.checkMockLocation();
+            if (res && res.isMock) {
+                return true;
+            }
+        }
+    } catch (e) {
+        console.warn("Mock GPS check error:", e);
+    }
+    return false;
+}
+
 async function terminarVuelta(paraderoLlegadaId) {
+    // VALIDACIÓN ANTI FAKE GPS (Mock Location)
+    const isMock = await verificarMockGps();
+    if (isMock) {
+        Swal.fire({
+            title: 'Ubicación Simulada Detectada',
+            html: '<b>⚠️ ALERTA DE SEGURIDAD</b><br><br>Se ha detectado el uso de una aplicación de GPS falso / Ubicación simulada en tu dispositivo.<br><br>Por políticas de seguridad de la empresa, debes desactivarla para poder finalizar tu vuelta.',
+            icon: 'error',
+            confirmButtonColor: 'var(--red)',
+            confirmButtonText: 'Entendido'
+        });
+        terminando = false;
+        return;
+    }
+
     document.getElementById('btn-terminar').disabled = true;
     document.getElementById('terminando-msg').classList.remove('hidden');
 
@@ -573,7 +601,8 @@ async function terminarVuelta(paraderoLlegadaId) {
             body: JSON.stringify({ 
                 latitud: lat, 
                 longitud: lng, 
-                paradero_llegada_id: paraderoLlegadaId 
+                paradero_llegada_id: paraderoLlegadaId,
+                is_mock: isMock
             })
         });
         const data = await resp.json();
